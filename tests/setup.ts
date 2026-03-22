@@ -16,6 +16,14 @@ process.env.POSTGRES_PASSWORD = 'test_password';
 jest.setTimeout(30000);
 
 // Global test utilities
+declare global {
+  var testUtils: {
+    generateRandomString: (length: number) => string;
+    generateTestEmail: () => string;
+    wait: (ms: number) => Promise<void>;
+  };
+}
+
 global.testUtils = {
   generateRandomString: (length: number): string => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
