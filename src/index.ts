@@ -8,6 +8,7 @@
 export { CaptchaService } from './core/captcha-service';
 export { CryptoService } from './security/crypto';
 export { SecurityConfigurationService } from './security/config';
+export { InputValidationService } from './security/input-validation';
 
 // Export types
 export * from './types/captcha';
