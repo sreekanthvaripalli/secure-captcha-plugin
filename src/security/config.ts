@@ -110,36 +110,31 @@ export class SecurityConfigurationService {
    * Validate configuration
    */
   validateConfiguration(config: SecurityConfiguration): boolean {
-    try {
-      // Validate app settings
-      if (config.app.sessionTimeout <= 0) {
-        throw new Error('Session timeout must be positive');
-      }
-
-      if (config.app.maxLoginAttempts <= 0) {
-        throw new Error('Max login attempts must be positive');
-      }
-
-      // Validate crypto settings
-      if (config.crypto.encryption.keySize < 256) {
-        throw new Error('Encryption key size must be at least 256 bits');
-      }
-
-      if (config.crypto.encryption.ivLength < 12) {
-        throw new Error('IV length must be at least 12 bytes');
-      }
-
-      // Validate network settings
-      if (!config.network.enforceHttps) {
-        // HTTPS enforcement is disabled - not recommended for production
-        // This is a security warning that should be logged through proper channels
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Configuration validation failed:', error);
-      return false;
+    // Validate app settings
+    if (config.app.sessionTimeout <= 0) {
+      throw new Error('Session timeout must be positive');
     }
+
+    if (config.app.maxLoginAttempts <= 0) {
+      throw new Error('Max login attempts must be positive');
+    }
+
+    // Validate crypto settings
+    if (config.crypto.encryption.keySize < 256) {
+      throw new Error('Encryption key size must be at least 256 bits');
+    }
+
+    if (config.crypto.encryption.ivLength < 12) {
+      throw new Error('IV length must be at least 12 bytes');
+    }
+
+    // Validate network settings
+    if (!config.network.enforceHttps) {
+      // HTTPS enforcement is disabled - not recommended for production
+      // This is a security warning that should be logged through proper channels
+    }
+
+    return true;
   }
 
   /**
