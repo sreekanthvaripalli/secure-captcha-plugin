@@ -148,30 +148,30 @@ This document provides granular, trackable tasks for building an enterprise-grad
 ### Week 6: Text & Math Captcha
 
 #### 2.2.1 Text-Based Captcha
-- [ ] **Implement TextCaptchaGenerator**
-  - [ ] Generate cryptographically secure random text
-  - [ ] Create image generation with Sharp
-  - [ ] Apply security distortions
-  - [ ] Add noise patterns
-  - [ ] Implement configurable difficulty
+- [x] **Implement TextCaptchaGenerator** ✅ **COMPLETE**
+  - [x] Generate cryptographically secure random text ✅
+  - [x] Create image generation with Sharp ✅
+  - [x] Apply security distortions ✅
+  - [x] Add noise patterns ✅
+  - [x] Implement configurable difficulty ✅
 
-- [ ] **Write Text Captcha Tests**
-  - [ ] Test text generation
-  - [ ] Test image generation
-  - [ ] Test distortion application
-  - [ ] Test difficulty levels
+- [x] **Write Text Captcha Tests** ✅ **COMPLETE**
+  - [x] Test text generation ✅
+  - [x] Test image generation ✅
+  - [x] Test distortion application ✅
+  - [x] Test difficulty levels ✅
 
 #### 2.2.2 Mathematical Captcha
-- [ ] **Implement MathCaptchaGenerator**
-  - [ ] Generate arithmetic problems
-  - [ ] Implement PEMDAS validation
-  - [ ] Add fraction/decimal support
-  - [ ] Create configurable difficulty
+- [x] **Implement MathCaptchaGenerator** ✅ **COMPLETE**
+  - [x] Generate arithmetic problems ✅
+  - [x] Implement PEMDAS validation ✅
+  - [x] Add fraction/decimal support ✅
+  - [x] Create configurable difficulty ✅
 
-- [ ] **Write Math Captcha Tests**
-  - [ ] Test problem generation
-  - [ ] Test answer validation
-  - [ ] Test difficulty scaling
+- [x] **Write Math Captcha Tests** ✅ **COMPLETE**
+  - [x] Test problem generation ✅
+  - [x] Test answer validation ✅
+  - [x] Test difficulty scaling ✅
 
 ### Week 7: Logic & Image Captcha
 
