@@ -3,52 +3,34 @@
  * Implements comprehensive input validation with OWASP security standards
  */
 
-import { SecurityConfigurationService } from './config';
-import { SecurityEvent } from '../types/security';
-
 export class InputValidationService {
-  private readonly configService: SecurityConfigurationService;
   private readonly sqlInjectionPatterns: RegExp[];
   private readonly xssPatterns: RegExp[];
-  private readonly dangerousHeaders: string[];
 
-  constructor(configService?: SecurityConfigurationService) {
-    this.configService = configService || new SecurityConfigurationService();
-    
-    // SQL Injection patterns
-    this.sqlInjectionPatterns = [
-      /(\bselect\b|\binsert\b|\bupdate\b|\bdelete\b|\bdrop\b|\bunion\b|\bexec\b|\bexecute\b)/i,
-      /('|(\\')|(;)|(--)|(\||(\%27)|(\%3B)|(\%2D\%2D)|(\%7C))/i,
-      /(\bor\b|\band\b)\s+\w+\s*[=<>]/i,
-      /(\b1=1\b|\b'1'='1'\b|\btrue\b)/i,
-      /(\bdrop\s+table\b|\bcreate\s+table\b|\balter\s+table\b)/i
-    ];
+constructor() {
+  // SQL Injection patterns
+  this.sqlInjectionPatterns = [
+    /(\bselect\b|\binsert\b|\bupdate\b|\bdelete\b|\bdrop\b|\bunion\b|\bexec\b|\bexecute\b)/i,
+    /('|\')|(;)|(--)|(\||(%27)|(%3B)|(%2D%2D)|(%7C))/i,
+    /(\bor\b|\band\b)\s+\w+\s*[=<>]/i,
+    /(\b1=1\b|\b'1'='1'\b|\btrue\b)/i,
+    /(\bdrop\s+table\b|\bcreate\s+table\b|\balter\s+table\b)/i
+  ];
 
-    // XSS patterns
-    this.xssPatterns = [
-      /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-      /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
-      /javascript:/gi,
-      /onload\s*=/gi,
-      /onerror\s*=/gi,
-      /onclick\s*=/gi,
-      /onmouseover\s*=/gi,
-      /onfocus\s*=/gi,
-      /<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi,
-      /<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi
-    ];
-
-    // Dangerous headers that could indicate parameter pollution
-    this.dangerousHeaders = [
-      'content-type',
-      'content-length',
-      'authorization',
-      'cookie',
-      'x-forwarded-for',
-      'x-real-ip',
-      'user-agent'
-    ];
-  }
+  // XSS patterns
+  this.xssPatterns = [
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+    /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
+    /javascript:/gi,
+    /onload\s*=/gi,
+    /onerror\s*=/gi,
+    /onclick\s*=/gi,
+    /onmouseover\s*=/gi,
+    /onfocus\s*=/gi,
+    /<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi,
+    /<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi
+  ];
+}
 
   /**
    * Validate input against SQL injection attacks

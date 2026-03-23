@@ -9,6 +9,13 @@ export { CaptchaService } from './core/captcha-service';
 export { CryptoService } from './security/crypto';
 export { SecurityConfigurationService } from './security/config';
 export { InputValidationService } from './security/input-validation';
+export { 
+  CaptchaGenerator, 
+  BaseCaptchaGenerator, 
+  CaptchaGeneratorFactory, 
+  MultiLayerCaptchaGenerator, 
+  CaptchaGeneratorRegistry 
+} from './core/captcha-generator';
 
 // Export types
 export * from './types/captcha';
