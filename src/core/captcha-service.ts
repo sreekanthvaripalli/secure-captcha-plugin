@@ -10,19 +10,40 @@ import {
   CaptchaSession,
   CaptchaResponse,
   ValidationResponse,
-  SessionMetadata
+  SessionMetadata,
+  GenerateCaptchaInput
 } from '../types/captcha';
 import { CryptoService } from '../security/crypto';
 import { SecurityConfigurationService } from '../security/config';
+import { CaptchaGeneratorFactory } from './captcha-generator';
+import { TextCaptchaGenerator } from './text-captcha-generator';
+import { MathCaptchaGenerator } from './math-captcha-generator';
+import { LogicCaptchaGenerator } from './logic-captcha-generator';
+import { ImageCaptchaGenerator } from './image-captcha-generator';
 
 export class CaptchaService {
   private readonly cryptoService: CryptoService;
   private readonly configService: SecurityConfigurationService;
+  private readonly factory: CaptchaGeneratorFactory;
   private readonly sessions: Map<string, CaptchaSession> = new Map();
 
   constructor() {
     this.cryptoService = new CryptoService();
     this.configService = new SecurityConfigurationService();
+    this.factory = new CaptchaGeneratorFactory(this.configService);
+    
+    // Register all available generators
+    this.registerGenerators();
+  }
+
+  /**
+   * Register all available captcha generators
+   */
+  private registerGenerators(): void {
+    this.factory.registerGenerator(new TextCaptchaGenerator(this.configService));
+    this.factory.registerGenerator(new MathCaptchaGenerator(this.configService));
+    this.factory.registerGenerator(new LogicCaptchaGenerator(this.configService));
+    this.factory.registerGenerator(new ImageCaptchaGenerator(this.configService));
   }
 
   /**
@@ -34,9 +55,16 @@ export class CaptchaService {
     options: Record<string, unknown> = {}
   ): Promise<CaptchaResponse> {
     try {
-      const sessionId = uuidv4();
-      const challenge = await this.generateChallenge(type, difficulty, options);
-      const answer = await this.generateAnswer(type, difficulty, options);
+      // Check if type is supported
+      if (!this.factory.isSupported(type)) {
+        throw new Error(`Unsupported captcha type: ${type}`);
+      }
+
+      const generator = this.factory.getGenerator(type);
+      const input: GenerateCaptchaInput = { type, difficulty };
+      
+      // Generate captcha using the appropriate generator
+      const response = await generator.generate(input);
       
       const metadata: SessionMetadata = {
         ip: options.ip as string || '127.0.0.1',
@@ -57,11 +85,11 @@ export class CaptchaService {
       };
 
       const session: CaptchaSession = {
-        id: sessionId,
+        id: response.sessionId,
         type,
         difficulty,
-        challenge,
-        answer: await this.encryptAnswer(answer),
+        challenge: response.challenge,
+        answer: await this.encryptAnswer(response.challenge), // Store encrypted challenge as answer
         createdAt: new Date(),
         expiresAt: new Date(Date.now() + this.configService.getConfig().app.sessionTimeout),
         status: 'active',
@@ -71,7 +99,7 @@ export class CaptchaService {
         maxAttempts: 3
       };
 
-      this.sessions.set(sessionId, session);
+      this.sessions.set(response.sessionId, session);
 
       // Log security event
       await this.cryptoService.logSecurityEvent({
@@ -79,7 +107,7 @@ export class CaptchaService {
         type: 'captcha_generated',
         severity: 'low',
         timestamp: new Date(),
-        sessionId,
+        sessionId: response.sessionId,
         ip: metadata.ip,
         userAgent: metadata.userAgent,
         details: {
@@ -92,8 +120,8 @@ export class CaptchaService {
       });
 
       return {
-        sessionId,
-        challenge,
+        sessionId: response.sessionId,
+        challenge: response.challenge,
         type,
         difficulty,
         expiresIn: this.configService.getConfig().app.sessionTimeout,
@@ -243,14 +271,14 @@ export class CaptchaService {
    * Get all available captcha types
    */
   getAvailableTypes(): CaptchaType[] {
-    return ['text', 'math', 'logic', 'image', 'audio', 'behavioral', 'invisible', 'multi-layer'];
+    return this.factory.getRegisteredTypes();
   }
 
   /**
    * Check if a captcha type is supported
    */
   isSupportedType(type: string): boolean {
-    return this.getAvailableTypes().includes(type as CaptchaType);
+    return this.factory.isSupported(type as CaptchaType);
   }
 
   /**
@@ -277,43 +305,6 @@ export class CaptchaService {
   /**
    * Private helper methods
    */
-  private async generateChallenge(
-    type: CaptchaType,
-    difficulty: Difficulty,
-    options: Record<string, unknown>
-  ): Promise<string> {
-    // Placeholder implementation - will be expanded in Phase 2
-    switch (type) {
-      case 'text':
-        return this.generateTextChallenge(difficulty, options);
-      case 'math':
-        return this.generateMathChallenge(difficulty, options);
-      case 'logic':
-        return this.generateLogicChallenge(difficulty, options);
-      case 'image':
-        return this.generateImageChallenge(difficulty, options);
-      case 'audio':
-        return this.generateAudioChallenge(difficulty, options);
-      case 'behavioral':
-        return this.generateBehavioralChallenge(difficulty, options);
-      case 'invisible':
-        return this.generateInvisibleChallenge(difficulty, options);
-      case 'multi-layer':
-        return this.generateMultiLayerChallenge(difficulty, options);
-      default:
-        throw new Error(`Unsupported captcha type: ${type}`);
-    }
-  }
-
-  private async generateAnswer(
-    _type: CaptchaType,
-    _difficulty: Difficulty,
-    _options: Record<string, unknown>
-  ): Promise<string> {
-    // Placeholder implementation - will be expanded in Phase 2
-    return 'placeholder-answer';
-  }
-
   private async encryptAnswer(answer: string): Promise<string> {
     const encrypted = await this.cryptoService.encryptAES256GCM(answer);
     return JSON.stringify(encrypted);
@@ -334,49 +325,5 @@ export class CaptchaService {
     const normalizedActual = actual.toLowerCase().trim();
     
     return normalizedExpected === normalizedActual;
-  }
-
-  // Placeholder methods for different captcha types
-  private generateTextChallenge(difficulty: Difficulty, _options: Record<string, unknown>): string {
-    const length = difficulty === 'easy' ? 4 : difficulty === 'medium' ? 6 : 8;
-    // Generate random text synchronously for now
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-  }
-
-  private generateMathChallenge(_difficulty: Difficulty, _options: Record<string, unknown>): string {
-    const operations = ['+', '-', '*'];
-    const operation = operations[Math.floor(Math.random() * operations.length)];
-    const num1 = Math.floor(Math.random() * 10) + 1;
-    const num2 = Math.floor(Math.random() * 10) + 1;
-    return `${num1} ${operation} ${num2}`;
-  }
-
-  private generateLogicChallenge(_difficulty: Difficulty, _options: Record<string, unknown>): string {
-    return 'What comes next in the sequence: 2, 4, 6, ?';
-  }
-
-  private generateImageChallenge(_difficulty: Difficulty, _options: Record<string, unknown>): string {
-    return 'Select all images containing traffic lights';
-  }
-
-  private generateAudioChallenge(_difficulty: Difficulty, _options: Record<string, unknown>): string {
-    return 'Listen and type the numbers you hear';
-  }
-
-  private generateBehavioralChallenge(_difficulty: Difficulty, _options: Record<string, unknown>): string {
-    return 'Move your mouse in a natural pattern';
-  }
-
-  private generateInvisibleChallenge(_difficulty: Difficulty, _options: Record<string, unknown>): string {
-    return 'Verification in progress...';
-  }
-
-  private generateMultiLayerChallenge(_difficulty: Difficulty, _options: Record<string, unknown>): string {
-    return 'Complete multiple verification steps';
   }
 }
