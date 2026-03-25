@@ -92,10 +92,15 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
     
     // Log security event
     this.logSecurityEvent('captcha_generated' as SecurityEventType, sessionId, {
-      type: 'math',
-      difficulty,
-      expression: problem.expression,
-      answer: problem.answer
+      action: 'generate',
+      resource: 'captcha',
+      reason: 'Math captcha generation',
+      metadata: {
+        type: 'math',
+        difficulty,
+        expression: problem.expression,
+        answer: problem.answer
+      }
     });
 
     return {
@@ -131,8 +136,13 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
     // In a real implementation, this would check against stored session data
     // For now, we'll log the validation attempt
     this.logSecurityEvent('captcha_validated' as SecurityEventType, sessionId, {
-      type: 'math',
-      responseLength: response.length
+      action: 'validate',
+      resource: 'captcha',
+      reason: 'Math captcha validation',
+      metadata: {
+        type: 'math',
+        responseLength: response.length
+      }
     });
 
     // Placeholder: In production, this would verify against the stored answer
@@ -170,9 +180,7 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
           ops.push(otherOps[Math.floor(Math.random() * otherOps.length)]);
         }
       }
-    } 
-    // For hard difficulty, guarantee at least one division
-    else if (difficulty === 'hard') {
+    } else if (difficulty === 'hard') {
       // Ensure division is included by forcing it at a random position
       const divPosition = Math.floor(Math.random() * (complexity - 1));
       for (let i = 0; i < complexity - 1; i++) {
@@ -184,9 +192,7 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
           ops.push(otherOps[Math.floor(Math.random() * otherOps.length)]);
         }
       }
-    } 
-    // For easy difficulty, use random selection
-    else {
+    } else {
       for (let i = 0; i < complexity - 1; i++) {
         ops.push(operations[Math.floor(Math.random() * operations.length)]);
       }
@@ -320,9 +326,9 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
   }
 
   /**
-   * Get current configuration
+   * Get current math captcha configuration
    */
-  getConfig(): MathCaptchaConfig {
+  getMathConfig(): MathCaptchaConfig {
     return { ...this.config };
   }
 
@@ -342,19 +348,19 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
    */
   private evaluateExpression(expression: string): number {
     // Simple expression parser for basic arithmetic
-    const tokens = expression.match(/(\d+\.?\d*|\+|\-|\*|\/)/g);
-    if (!tokens) return 0;
+    const tokens = expression.match(/(\d+\.?\d*|\+|-|\*|\/)/g);
+    if (!tokens) {return 0;}
 
     const numbers: number[] = [];
     const operations: string[] = [];
 
-    for (const token of tokens) {
-      if (/^\d/.test(token)) {
-        numbers.push(parseFloat(token));
-      } else {
-        operations.push(token);
-      }
+  for (const token of tokens) {
+    if (/^\d/.test(token)) {
+      numbers.push(parseFloat(token));
+    } else {
+      operations.push(token);
     }
+  }
 
     // Evaluate with PEMDAS
     const result = this.evaluateWithPEMDAS(numbers, operations);

@@ -1,6 +1,6 @@
 import { SecurityConfigurationService } from '../security/config';
 import { CaptchaType, Difficulty, GenerateCaptchaInput, CaptchaResponse } from '../types/captcha';
-import { SecurityEvent, SecurityEventType } from '../types/security';
+import { SecurityEvent, SecurityEventType, SecurityEventDetails, SecurityConfiguration } from '../types/security';
 
 /**
  * Interface for all captcha generators
@@ -31,7 +31,7 @@ export interface CaptchaGenerator {
  * Abstract base class for all captcha generators
  */
 export abstract class BaseCaptchaGenerator implements CaptchaGenerator {
-  protected configService: SecurityConfigurationService;
+  protected readonly configService: SecurityConfigurationService;
 
   constructor(configService: SecurityConfigurationService) {
     this.configService = configService;
@@ -61,6 +61,7 @@ export abstract class BaseCaptchaGenerator implements CaptchaGenerator {
    * Generate cryptographically secure random string
    */
   protected generateSecureRandom(length: number, charset: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'): string {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const crypto = require('crypto');
     let result = '';
     const charsetLength = charset.length;
@@ -100,7 +101,7 @@ export abstract class BaseCaptchaGenerator implements CaptchaGenerator {
   /**
    * Log security events
    */
-  protected logSecurityEvent(type: SecurityEventType, sessionId: string, details: any): void {
+  protected logSecurityEvent(type: SecurityEventType, sessionId: string, details: SecurityEventDetails): void {
     const event: SecurityEvent = {
       id: this.generateSecureRandom(32),
       type,
@@ -114,13 +115,14 @@ export abstract class BaseCaptchaGenerator implements CaptchaGenerator {
     };
 
     // Log the event (implementation depends on logging service)
+    // eslint-disable-next-line no-console
     console.log('Security Event:', JSON.stringify(event, null, 2));
   }
 
   /**
    * Get configuration for the generator
    */
-  protected getConfig(): any {
+  protected getConfig(): SecurityConfiguration {
     return this.configService.getConfig();
   }
 }
@@ -129,8 +131,8 @@ export abstract class BaseCaptchaGenerator implements CaptchaGenerator {
  * Factory for creating captcha generators
  */
 export class CaptchaGeneratorFactory {
-  private configService: SecurityConfigurationService;
-  private generators: Map<CaptchaType, CaptchaGenerator> = new Map();
+  private readonly configService: SecurityConfigurationService;
+  private readonly generators: Map<CaptchaType, CaptchaGenerator> = new Map();
 
   constructor(configService: SecurityConfigurationService) {
     this.configService = configService;
@@ -182,8 +184,8 @@ export class CaptchaGeneratorFactory {
  * Multi-layer captcha generator that combines multiple generators
  */
 export class MultiLayerCaptchaGenerator extends BaseCaptchaGenerator {
-  private factory: CaptchaGeneratorFactory;
-  private layers: CaptchaType[];
+  private readonly factory: CaptchaGeneratorFactory;
+  private readonly layers: CaptchaType[];
 
   constructor(
     configService: SecurityConfigurationService,
@@ -252,9 +254,14 @@ export class MultiLayerCaptchaGenerator extends BaseCaptchaGenerator {
     };
 
     this.logSecurityEvent('captcha_generated' as SecurityEventType, combinedResponse.sessionId, {
-      type: 'multi-layer',
-      layers: this.layers,
-      difficulty: input.difficulty
+      action: 'generate',
+      resource: 'captcha',
+      reason: 'Multi-layer captcha generation',
+      metadata: {
+        type: 'multi-layer',
+        layers: this.layers,
+        difficulty: input.difficulty
+      }
     });
 
     return combinedResponse;
@@ -265,8 +272,13 @@ export class MultiLayerCaptchaGenerator extends BaseCaptchaGenerator {
     // This would typically involve checking against stored session data
     // For now, return true as placeholder
     this.logSecurityEvent('captcha_validated' as SecurityEventType, sessionId, {
-      type: 'multi-layer',
-      responseLength: response.length
+      action: 'validate',
+      resource: 'captcha',
+      reason: 'Multi-layer captcha validation',
+      metadata: {
+        type: 'multi-layer',
+        responseLength: response.length
+      }
     });
 
     return true;
@@ -278,7 +290,7 @@ export class MultiLayerCaptchaGenerator extends BaseCaptchaGenerator {
  */
 export class CaptchaGeneratorRegistry {
   private static instance: CaptchaGeneratorRegistry;
-  private factory: CaptchaGeneratorFactory;
+  private readonly factory: CaptchaGeneratorFactory;
 
   private constructor(configService: SecurityConfigurationService) {
     this.factory = new CaptchaGeneratorFactory(configService);

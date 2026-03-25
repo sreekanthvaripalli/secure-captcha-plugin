@@ -165,7 +165,7 @@ describe('MathCaptchaGenerator', () => {
 
   describe('configuration', () => {
     test('should return default configuration', () => {
-      const config = generator.getConfig();
+      const config = generator.getMathConfig();
 
       expect(config).toBeDefined();
       expect(config.operations).toBeDefined();
@@ -195,7 +195,7 @@ describe('MathCaptchaGenerator', () => {
       };
 
       generator.updateConfig(newConfig);
-      const config = generator.getConfig();
+      const config = generator.getMathConfig();
 
       expect(config.operations.easy).toContain('*');
       expect(config.complexity.easy).toBe(3);
@@ -204,7 +204,7 @@ describe('MathCaptchaGenerator', () => {
     });
 
     test('should not affect other config properties when updating', () => {
-      const originalConfig = generator.getConfig();
+      const originalConfig = generator.getMathConfig();
       const originalAllowFractions = originalConfig.allowFractions;
 
       generator.updateConfig({
@@ -215,7 +215,7 @@ describe('MathCaptchaGenerator', () => {
         }
       });
 
-      const updatedConfig = generator.getConfig();
+      const updatedConfig = generator.getMathConfig();
       expect(updatedConfig.allowFractions).toBe(originalAllowFractions);
     });
   });

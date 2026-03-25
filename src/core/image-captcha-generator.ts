@@ -96,9 +96,14 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
     const sessionId = this.generateSecureRandom(32);
     
     this.logSecurityEvent('captcha_generated' as SecurityEventType, sessionId, {
-      type: 'image',
-      puzzleType,
-      difficulty
+      action: 'generate',
+      resource: 'captcha',
+      reason: 'Image captcha generation',
+      metadata: {
+        type: 'image',
+        puzzleType,
+        difficulty
+      }
     });
 
     const challenge = this.formatChallenge(puzzle);
@@ -134,8 +139,13 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
    */
   async validate(sessionId: string, response: string): Promise<boolean> {
     this.logSecurityEvent('captcha_validated' as SecurityEventType, sessionId, {
-      type: 'image',
-      responseLength: response.length
+      action: 'validate',
+      resource: 'captcha',
+      reason: 'Image captcha validation',
+      metadata: {
+        type: 'image',
+        responseLength: response.length
+      }
     });
 
     return true;

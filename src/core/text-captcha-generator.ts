@@ -104,11 +104,16 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
     
     // Log security event
     this.logSecurityEvent('captcha_generated' as SecurityEventType, sessionId, {
-      type: 'text',
-      difficulty,
-      textLength,
-      hasNoise: true,
-      hasDistortion: true
+      action: 'generate',
+      resource: 'captcha',
+      reason: 'Text captcha generation',
+      metadata: {
+        type: 'text',
+        difficulty,
+        textLength: text.length,
+        hasNoise: true,
+        hasDistortion: true
+      }
     });
 
     return {
@@ -144,8 +149,13 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
     // In a real implementation, this would check against stored session data
     // For now, we'll log the validation attempt
     this.logSecurityEvent('captcha_validated' as SecurityEventType, sessionId, {
-      type: 'text',
-      responseLength: response.length
+      action: 'validate',
+      resource: 'captcha',
+      reason: 'Text captcha validation',
+      metadata: {
+        type: 'text',
+        responseLength: response.length
+      }
     });
 
     // Placeholder: In production, this would verify against the stored answer
@@ -314,9 +324,9 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
   }
 
   /**
-   * Get current configuration
+   * Get current text captcha configuration
    */
-  getConfig(): TextCaptchaConfig {
+  getTextConfig(): TextCaptchaConfig {
     return { ...this.config };
   }
 }

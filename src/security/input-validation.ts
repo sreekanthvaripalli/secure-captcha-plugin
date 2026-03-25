@@ -7,15 +7,15 @@ export class InputValidationService {
   private readonly sqlInjectionPatterns: RegExp[];
   private readonly xssPatterns: RegExp[];
 
-constructor() {
-  // SQL Injection patterns
-  this.sqlInjectionPatterns = [
-    /(\bselect\b|\binsert\b|\bupdate\b|\bdelete\b|\bdrop\b|\bunion\b|\bexec\b|\bexecute\b)/i,
-    /('|\')|(;)|(--)|(\||(%27)|(%3B)|(%2D%2D)|(%7C))/i,
-    /(\bor\b|\band\b)\s+\w+\s*[=<>]/i,
-    /(\b1=1\b|\b'1'='1'\b|\btrue\b)/i,
-    /(\bdrop\s+table\b|\bcreate\s+table\b|\balter\s+table\b)/i
-  ];
+  constructor() {
+    // SQL Injection patterns
+    this.sqlInjectionPatterns = [
+      /(\bselect\b|\binsert\b|\bupdate\b|\bdelete\b|\bdrop\b|\bunion\b|\bexec\b|\bexecute\b)/i,
+      /(')|(;)|(--)|(\|(%27)|(%3B)|(%2D%2D)|(%7C))/i,
+      /(\bor\b|\band\b)\s+\w+\s*[=<>]/i,
+      /(\b1=1\b|\b'1'='1'\b|\btrue\b)/i,
+      /(\bdrop\s+table\b|\bcreate\s+table\b|\balter\s+table\b)/i
+    ];
 
   // XSS patterns
   this.xssPatterns = [
@@ -116,8 +116,8 @@ constructor() {
   /**
    * Validate against parameter pollution
    */
-  validateParameterPollution(params: Record<string, any>): { isValid: boolean; threat?: string; cleanParams?: Record<string, any> } {
-    const cleanParams: Record<string, any> = {};
+  validateParameterPollution(params: Record<string, unknown>): { isValid: boolean; threat?: string; cleanParams?: Record<string, unknown> } {
+    const cleanParams: Record<string, unknown> = {};
     const seenParams = new Set<string>();
 
     for (const [key, value] of Object.entries(params)) {
@@ -159,7 +159,7 @@ constructor() {
         cleanParams[key] = xssValidation.sanitized || value;
       } else if (typeof value === 'object' && value !== null) {
         // Recursively validate nested objects
-        const nestedValidation = this.validateParameterPollution(value);
+        const nestedValidation = this.validateParameterPollution(value as Record<string, unknown>);
         if (!nestedValidation.isValid) {
           return nestedValidation;
         }
@@ -178,7 +178,7 @@ constructor() {
   /**
    * Validate JSON schema
    */
-  validateJSONSchema(data: any, schema: any): { isValid: boolean; errors?: string[] } {
+  validateJSONSchema(data: unknown, schema: Record<string, unknown>): { isValid: boolean; errors?: string[] } {
     const errors: string[] = [];
     
     try {
@@ -375,25 +375,25 @@ constructor() {
     return /^[a-zA-Z0-9_]+$/.test(name);
   }
 
-  private validateSchemaRecursive(data: any, schema: any, path: string, errors: string[]): void {
+  private validateSchemaRecursive(data: unknown, schema: Record<string, unknown>, path: string, errors: string[]): void {
     if (schema.type === 'string') {
       if (typeof data !== 'string') {
         errors.push(`${path}: Expected string, got ${typeof data}`);
       }
-      if (schema.maxLength && data.length > schema.maxLength) {
+      if (schema.maxLength && (data as string).length > (schema.maxLength as number)) {
         errors.push(`${path}: String too long (max ${schema.maxLength})`);
       }
-      if (schema.minLength && data.length < schema.minLength) {
+      if (schema.minLength && (data as string).length < (schema.minLength as number)) {
         errors.push(`${path}: String too short (min ${schema.minLength})`);
       }
     } else if (schema.type === 'number') {
       if (typeof data !== 'number') {
         errors.push(`${path}: Expected number, got ${typeof data}`);
       }
-      if (schema.maximum !== undefined && data > schema.maximum) {
+      if (schema.maximum !== undefined && (data as number) > (schema.maximum as number)) {
         errors.push(`${path}: Number too large (max ${schema.maximum})`);
       }
-      if (schema.minimum !== undefined && data < schema.minimum) {
+      if (schema.minimum !== undefined && (data as number) < (schema.minimum as number)) {
         errors.push(`${path}: Number too small (min ${schema.minimum})`);
       }
     } else if (schema.type === 'object') {
@@ -402,9 +402,9 @@ constructor() {
       } else {
         for (const [key, value] of Object.entries(schema.properties || {})) {
           const propertyPath = path ? `${path}.${key}` : key;
-          if (data[key] !== undefined) {
-            this.validateSchemaRecursive(data[key], value, propertyPath, errors);
-          } else if (schema.required && schema.required.includes(key)) {
+          if ((data as Record<string, unknown>)[key] !== undefined) {
+            this.validateSchemaRecursive((data as Record<string, unknown>)[key], value as Record<string, unknown>, propertyPath, errors);
+          } else if (schema.required && (schema.required as string[]).includes(key)) {
             errors.push(`${propertyPath}: Required field missing`);
           }
         }
@@ -413,8 +413,8 @@ constructor() {
       if (!Array.isArray(data)) {
         errors.push(`${path}: Expected array, got ${typeof data}`);
       } else {
-        for (let i = 0; i < data.length; i++) {
-          this.validateSchemaRecursive(data[i], schema.items, `${path}[${i}]`, errors);
+        for (let i = 0; i < (data as unknown[]).length; i++) {
+          this.validateSchemaRecursive((data as unknown[])[i], schema.items as Record<string, unknown>, `${path}[${i}]`, errors);
         }
       }
     }

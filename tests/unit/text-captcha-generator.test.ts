@@ -165,7 +165,7 @@ describe('TextCaptchaGenerator', () => {
 
   describe('configuration', () => {
     test('should return default configuration', () => {
-      const config = generator.getConfig();
+      const config = generator.getTextConfig();
 
       expect(config).toBeDefined();
       expect(config.length).toBeDefined();
@@ -188,7 +188,7 @@ describe('TextCaptchaGenerator', () => {
       };
 
       generator.updateConfig(newConfig);
-      const config = generator.getConfig();
+      const config = generator.getTextConfig();
 
       expect(config.length.easy).toBe(5);
       expect(config.length.medium).toBe(7);
@@ -196,7 +196,7 @@ describe('TextCaptchaGenerator', () => {
     });
 
     test('should not affect other config properties when updating', () => {
-      const originalConfig = generator.getConfig();
+      const originalConfig = generator.getTextConfig();
       const originalCharset = originalConfig.charset;
 
       generator.updateConfig({
@@ -207,7 +207,7 @@ describe('TextCaptchaGenerator', () => {
         }
       });
 
-      const updatedConfig = generator.getConfig();
+      const updatedConfig = generator.getTextConfig();
       expect(updatedConfig.charset).toBe(originalCharset);
     });
   });
@@ -316,7 +316,7 @@ describe('TextCaptchaGenerator', () => {
     });
 
     test('should exclude similar characters from charset', () => {
-      const config = generator.getConfig();
+      const config = generator.getTextConfig();
       const charset = config.charset;
 
       // Should not contain similar looking characters

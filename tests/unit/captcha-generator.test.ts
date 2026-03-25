@@ -226,7 +226,12 @@ describe('BaseCaptchaGenerator', () => {
   test('should log security event', () => {
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
     
-    generator['logSecurityEvent']('captcha_generated', 'test-session', { test: 'data' });
+    generator['logSecurityEvent']('captcha_generated', 'test-session', {
+      action: 'generate',
+      resource: 'captcha',
+      reason: 'Test generation',
+      metadata: { test: 'data' }
+    });
     
     expect(consoleSpy).toHaveBeenCalledWith(
       'Security Event:',

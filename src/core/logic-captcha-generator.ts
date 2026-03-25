@@ -95,9 +95,14 @@ export class LogicCaptchaGenerator extends BaseCaptchaGenerator {
     const sessionId = this.generateSecureRandom(32);
     
     this.logSecurityEvent('captcha_generated' as SecurityEventType, sessionId, {
-      type: 'logic',
-      puzzleType,
-      difficulty
+      action: 'generate',
+      resource: 'captcha',
+      reason: 'Logic captcha generation',
+      metadata: {
+        type: 'logic',
+        puzzleType,
+        difficulty
+      }
     });
 
     const challenge = this.formatChallenge(puzzle);
@@ -133,8 +138,13 @@ export class LogicCaptchaGenerator extends BaseCaptchaGenerator {
    */
   async validate(sessionId: string, response: string): Promise<boolean> {
     this.logSecurityEvent('captcha_validated' as SecurityEventType, sessionId, {
-      type: 'logic',
-      responseLength: response.length
+      action: 'validate',
+      resource: 'captcha',
+      reason: 'Logic captcha validation',
+      metadata: {
+        type: 'logic',
+        responseLength: response.length
+      }
     });
 
     return true;
