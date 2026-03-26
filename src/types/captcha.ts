@@ -12,6 +12,7 @@ export type CaptchaType =
   | 'invisible' 
   | 'multi-layer';
 
+export type CaptchaDifficulty = 'easy' | 'medium' | 'hard';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export type SessionStatus = 'active' | 'validated' | 'expired' | 'failed';

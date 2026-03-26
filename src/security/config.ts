@@ -4,9 +4,13 @@
  */
 
 import { SecurityConfiguration } from '../types/security';
+import { SecurityLogger } from './security-logger';
+import { CryptoService } from './crypto';
 
 export class SecurityConfigurationService {
   private config: SecurityConfiguration;
+  public securityLogger: SecurityLogger;
+  public cryptoService: CryptoService;
 
   constructor(config?: Partial<SecurityConfiguration>) {
     this.config = {
@@ -87,6 +91,18 @@ export class SecurityConfigurationService {
         ...config?.compliance
       }
     };
+
+    // Initialize security logger
+    this.securityLogger = new SecurityLogger({
+      level: this.config.logging.level as 'debug' | 'info' | 'warn' | 'error',
+      enableFileLogging: this.config.logging.enableFileLogging,
+      logFilePath: this.config.logging.logFilePath,
+      maxLogFileSize: this.config.logging.maxLogFileSize,
+      maxLogFiles: this.config.logging.maxLogFiles
+    });
+
+    // Initialize crypto service
+    this.cryptoService = new CryptoService(this.config.crypto);
   }
 
   /**
