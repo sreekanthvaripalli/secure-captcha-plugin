@@ -477,6 +477,69 @@ const result = await captchaService.validateResponse(
 );
 ```
 
+### Application Testing
+
+Test the running application with these commands:
+
+```bash
+# Start the application
+npm run start
+
+# Test health check endpoint
+curl http://localhost:3000/api/v1/health
+
+# Test captcha generation
+curl -X POST http://localhost:3000/api/v1/captcha/generate \
+  -H "Content-Type: application/json" \
+  -d '{"type":"text","difficulty":"easy"}'
+
+# Test captcha validation
+curl -X POST http://localhost:3000/api/v1/captcha/validate \
+  -H "Content-Type: application/json" \
+  -d '{"sessionId":"your-session-id","response":"user-response"}'
+
+# Test captcha types endpoint
+curl http://localhost:3000/api/v1/captcha/types
+
+# Test metrics endpoint
+curl http://localhost:3000/api/v1/metrics
+
+# Test with different captcha types
+curl -X POST http://localhost:3000/api/v1/captcha/generate \
+  -H "Content-Type: application/json" \
+  -d '{"type":"math","difficulty":"medium"}'
+
+curl -X POST http://localhost:3000/api/v1/captcha/generate \
+  -H "Content-Type: application/json" \
+  -d '{"type":"logic","difficulty":"hard"}'
+
+curl -X POST http://localhost:3000/api/v1/captcha/generate \
+  -H "Content-Type: application/json" \
+  -d '{"type":"image","difficulty":"easy"}'
+```
+
+### Performance Testing
+
+```bash
+# Test API response times
+time curl -s http://localhost:3000/api/v1/health
+
+# Test concurrent requests (requires Apache Bench)
+ab -n 1000 -c 100 http://localhost:3000/api/v1/health
+
+# Test captcha generation performance
+ab -n 500 -c 50 -p post_data.json -T application/json \
+  http://localhost:3000/api/v1/captcha/generate
+```
+
+**Sample post_data.json:**
+```json
+{
+  "type": "text",
+  "difficulty": "medium"
+}
+```
+
 ### Docker Deployment
 
 ```bash
