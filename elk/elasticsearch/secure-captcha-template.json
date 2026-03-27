@@ -1,0 +1,196 @@
+{
+  "index_patterns": ["secure-captcha-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1,
+      "index.refresh_interval": "5s",
+      "index.mapping.total_fields.limit": 2000,
+      "analysis": {
+        "analyzer": {
+          "captcha_analyzer": {
+            "type": "custom",
+            "tokenizer": "standard",
+            "filter": ["lowercase", "stop", "snowball"]
+          }
+        }
+      }
+    },
+    "mappings": {
+      "dynamic": true,
+      "dynamic_templates": [
+        {
+          "strings_as_keyword": {
+            "match_mapping_type": "string",
+            "mapping": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        }
+      ],
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "service": {
+          "type": "keyword"
+        },
+        "level": {
+          "type": "keyword"
+        },
+        "message": {
+          "type": "text",
+          "analyzer": "captcha_analyzer"
+        },
+        "type": {
+          "type": "keyword"
+        },
+        "log_type": {
+          "type": "keyword"
+        },
+        "log_level": {
+          "type": "keyword"
+        },
+        "service_name": {
+          "type": "keyword"
+        },
+        "request_id": {
+          "type": "keyword"
+        },
+        "session_id": {
+          "type": "keyword"
+        },
+        "client_ip": {
+          "type": "ip"
+        },
+        "user_agent": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "endpoint": {
+          "type": "keyword"
+        },
+        "http_method": {
+          "type": "keyword"
+        },
+        "status_code": {
+          "type": "integer"
+        },
+        "response_time_ms": {
+          "type": "float"
+        },
+        "captcha_type": {
+          "type": "keyword"
+        },
+        "difficulty": {
+          "type": "keyword"
+        },
+        "error_name": {
+          "type": "keyword"
+        },
+        "error_message": {
+          "type": "text"
+        },
+        "error_stack": {
+          "type": "text"
+        },
+        "event_type": {
+          "type": "keyword"
+        },
+        "severity": {
+          "type": "keyword"
+        },
+        "metric_name": {
+          "type": "keyword"
+        },
+        "metric_value": {
+          "type": "float"
+        },
+        "metric_unit": {
+          "type": "keyword"
+        },
+        "audit_action": {
+          "type": "keyword"
+        },
+        "hostname": {
+          "type": "keyword"
+        },
+        "geoip": {
+          "properties": {
+            "location": {
+              "type": "geo_point"
+            },
+            "country_name": {
+              "type": "keyword"
+            },
+            "city_name": {
+              "type": "keyword"
+            },
+            "region_name": {
+              "type": "keyword"
+            },
+            "continent_code": {
+              "type": "keyword"
+            },
+            "country_code2": {
+              "type": "keyword"
+            },
+            "ip": {
+              "type": "ip"
+            }
+          }
+        },
+        "ua": {
+          "properties": {
+            "name": {
+              "type": "keyword"
+            },
+            "major": {
+              "type": "keyword"
+            },
+            "minor": {
+              "type": "keyword"
+            },
+            "os": {
+              "type": "keyword"
+            },
+            "os_name": {
+              "type": "keyword"
+            },
+            "device": {
+              "type": "keyword"
+            }
+          }
+        },
+        "details": {
+          "properties": {
+            "action": {
+              "type": "keyword"
+            },
+            "resource": {
+              "type": "keyword"
+            },
+            "reason": {
+              "type": "text"
+            },
+            "metadata": {
+              "type": "object",
+              "enabled": false
+            }
+          }
+        }
+      }
+    }
+  },
+  "priority": 100,
+  "version": 1,
+  "_meta": {
+    "description": "Template for Secure CAPTCHA Plugin logs"
+  }
+}

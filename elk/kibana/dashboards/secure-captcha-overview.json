@@ -1,0 +1,159 @@
+{
+  "version": "8.11.0",
+  "objects": [
+    {
+      "id": "secure-captcha-overview",
+      "type": "dashboard",
+      "attributes": {
+        "title": "Secure CAPTCHA - Overview Dashboard",
+        "description": "Overview of Secure CAPTCHA Plugin logs and metrics",
+        "hits": 0,
+        "columns": ["_source"],
+        "sort": ["@timestamp", "desc"],
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"index\":\"secure-captcha-*\",\"filter\":[],\"query\":{\"query\":\"\",\"language\":\"kuery\"}}"
+        }
+      },
+      "references": [
+        {
+          "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+          "type": "index-pattern",
+          "id": "secure-captcha-*"
+        }
+      ]
+    },
+    {
+      "id": "log-volume-visualization",
+      "type": "visualization",
+      "attributes": {
+        "title": "Log Volume Over Time",
+        "description": "Shows log volume over time by log type",
+        "visState": "{\"title\":\"Log Volume Over Time\",\"type\":\"line\",\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"params\":{},\"schema\":\"metric\"},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1\",\"extended_bounds\":{}},\"schema\":\"segment\"},{\"id\":\"3\",\"enabled\":true,\"type\":\"terms\",\"params\":{\"field\":\"log_type\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"1\"},\"schema\":\"group\"}],\"params\":{\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"showCircles\":true,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}}}",
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"index\":\"secure-captcha-*\",\"filter\":[],\"query\":{\"query\":\"\",\"language\":\"kuery\"}}"
+        }
+      },
+      "references": [
+        {
+          "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+          "type": "index-pattern",
+          "id": "secure-captcha-*"
+        }
+      ]
+    },
+    {
+      "id": "log-level-distribution",
+      "type": "visualization",
+      "attributes": {
+        "title": "Log Level Distribution",
+        "description": "Distribution of log levels",
+        "visState": "{\"title\":\"Log Level Distribution\",\"type\":\"pie\",\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"params\":{},\"schema\":\"metric\"},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"params\":{\"field\":\"log_level\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"1\"},\"schema\":\"segment\"}],\"params\":{\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"isDonut\":true,\"labels\":{\"show\":false,\"values\":true\",\"last_level\":true,\"truncate\":100},\"type\":\"pie\"}}",
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"index\":\"secure-captcha-*\",\"filter\":[],\"query\":{\"query\":\"\",\"language\":\"kuery\"}}"
+        }
+      },
+      "references": [
+        {
+          "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+          "type": "index-pattern",
+          "id": "secure-captcha-*"
+        }
+      ]
+    },
+    {
+      "id": "response-time-visualization",
+      "type": "visualization",
+      "attributes": {
+        "title": "Average Response Time",
+        "description": "Average response time over time",
+        "visState": "{\"title\":\"Average Response Time\",\"type\":\"line\",\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg\",\"params\":{\"field\":\"response_time_ms\"},\"schema\":\"metric\"},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1\",\"extended_bounds\":{}},\"schema\":\"segment\"}],\"params\":{\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"showCircles\":true,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}}}",
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"index\":\"secure-captcha-*\",\"filter\":[{\"meta\":{\"index\":\"secure-captcha-*\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"phrase\",\"key\":\"response_time_ms\",\"value\":\"exists\"},\"query\":{\"match_phrase\":{\"response_time_ms\":\"exists\"}},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"kuery\"}}"
+        }
+      },
+      "references": [
+        {
+          "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+          "type": "index-pattern",
+          "id": "secure-captcha-*"
+        }
+      ]
+    },
+    {
+      "id": "captcha-type-usage",
+      "type": "visualization",
+      "attributes": {
+        "title": "Captcha Type Usage",
+        "description": "Usage distribution by captcha type",
+        "visState": "{\"title\":\"Captcha Type Usage\",\"type\":\"horizontal_bar\",\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"params\":{},\"schema\":\"metric\"},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"params\":{\"field\":\"captcha_type\",\"size\":10,\"order\":\"desc\",\"orderBy\":\"1\"},\"schema\":\"segment\"}],\"params\":{\"addTooltip\":true,\"addLegend\":false,\"legendPosition\":\"right\",\"isDonut\":false,\"labels\":{\"show\":true,\"values\":true,\"last_level\":true,\"truncate\":100},\"type\":\"horizontal_bar\"}}",
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"index\":\"secure-captcha-*\",\"filter\":[{\"meta\":{\"index\":\"secure-captcha-*\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"captcha_type\",\"value\":\"exists\"},\"query\":{\"exists\":{\"field\":\"captcha_type\"}},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"kuery\"}}"
+        }
+      },
+      "references": [
+        {
+          "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+          "type": "index-pattern",
+          "id": "secure-captcha-*"
+        }
+      ]
+    },
+    {
+      "id": "error-rate-visualization",
+      "type": "visualization",
+      "attributes": {
+        "title": "Error Rate",
+        "description": "Error rate over time",
+        "visState": "{\"title\":\"Error Rate\",\"type\":\"line\",\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"params\":{},\"schema\":\"metric\"},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1\",\"extended_bounds\":{}},\"schema\":\"segment\"}],\"params\":{\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"showCircles\":true,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{}}}",
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"index\":\"secure-captcha-*\",\"filter\":[{\"meta\":{\"index\":\"secure-captcha-*\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"phrase\",\"key\":\"log_level\",\"value\":\"error\"},\"query\":{\"match_phrase\":{\"log_level\":\"error\"}},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"kuery\"}}"
+        }
+      },
+      "references": [
+        {
+          "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+          "type": "index-pattern",
+          "id": "secure-captcha-*"
+        }
+      ]
+    },
+    {
+      "id": "top-endpoints-visualization",
+      "type": "visualization",
+      "attributes": {
+        "title": "Top Endpoints",
+        "description": "Most accessed endpoints",
+        "visState": "{\"title\":\"Top Endpoints\",\"type\":\"horizontal_bar\",\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"params\":{},\"schema\":\"metric\"},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"params\":{\"field\":\"endpoint\",\"size\":10,\"order\":\"desc\",\"orderBy\":\"1\"},\"schema\":\"segment\"}],\"params\":{\"addTooltip\":true,\"addLegend\":false,\"legendPosition\":\"right\",\"isDonut\":false,\"labels\":{\"show\":true,\"values\":true,\"last_level\":true,\"truncate\":100},\"type\":\"horizontal_bar\"}}",
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"index\":\"secure-captcha-*\",\"filter\":[{\"meta\":{\"index\":\"secure-captcha-*\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"endpoint\",\"value\":\"exists\"},\"query\":{\"exists\":{\"field\":\"endpoint\"}},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"kuery\"}}"
+        }
+      },
+      "references": [
+        {
+          "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+          "type": "index-pattern",
+          "id": "secure-captcha-*"
+        }
+      ]
+    },
+    {
+      "id": "geographic-distribution",
+      "type": "visualization",
+      "attributes": {
+        "title": "Geographic Distribution",
+        "description": "Geographic distribution of requests",
+        "visState": "{\"title\":\"Geographic Distribution\",\"type\":\"tile_map\",\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"params\":{},\"schema\":\"metric\"},{\"id\":\"2\",\"enabled\":true,\"type\":\"geohash_grid\",\"params\":{\"field\":\"geoip.location\",\"precision\":2},\"schema\":\"segment\"}],\"params\":{\"colorSchema\":\"Yellow to Red\",\"mapType\":\"Scaled Circle Markers\",\"isDesaturated\":true,\"addTooltip\":true,\"heatClusterSize\":1.5\",\"legendPosition\":\"bottomright\",\"mapZoom\":2\",\"mapCenter\":[0,0],\"wms\":{\"enabled\":false,\"options\":{\"format\":\"image/png\",\"transparent\":true}}}}",
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"index\":\"secure-captcha-*\",\"filter\":[{\"meta\":{\"index\":\"secure-captcha-*\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"geoip.location\",\"value\":\"exists\"},\"query\":{\"exists\":{\"field\":\"geoip.location\"}},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"kuery\"}}"
+        }
+      },
+      "references": [
+        {
+          "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+          "type": "index-pattern",
+          "id": "secure-captcha-*"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+filebeat.inputs:
+  # Application logs
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/secure-captcha/*.log
+    fields:
+      log_type: application
+      service: secure-captcha-plugin
+    fields_under_root: true
+    json.keys_under_root: true
+    json.add_error_key: true
+    json.message_key: message
+    multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+    multiline.negate: true
+    multiline.match: after
+
+  # Docker container logs
+  - type: container
+    enabled: true
+    paths:
+      - '/var/lib/docker/containers/*/*.log'
+    processors:
+      - add_docker_metadata:
+          host: "unix:///var/run/docker.sock"
+    fields:
+      log_type: docker
+      service: secure-captcha-plugin
+    fields_under_root: true
+
+  # System logs
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/syslog
+      - /var/log/auth.log
+    fields:
+      log_type: system
+      service: secure-captcha-plugin
+    fields_under_root: true
+
+  # Nginx logs (if using Nginx as reverse proxy)
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/nginx/access.log
+      - /var/log/nginx/error.log
+    fields:
+      log_type: nginx
+      service: secure-captcha-plugin
+    fields_under_root: true
+
+processors:
+  # Add host metadata
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
+
+  # Decode JSON logs
+  - decode_json_fields:
+      fields: ["message"]
+      target: "json"
+      overwrite_keys: true
+      add_error_key: true
+
+  # Drop empty messages
+  - drop_event:
+      when:
+        equals:
+          message: ""
+
+  # Add timestamp
+  - timestamp:
+      field: json.timestamp
+      layouts:
+        - '2006-01-02T15:04:05.000Z'
+        - '2006-01-02T15:04:05Z'
+        - '2006-01-02 15:04:05'
+      test:
+        - '2023-01-01T12:00:00.000Z'
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  index: "secure-captcha-%{+yyyy.MM.dd}"
+  pipeline: "secure-captcha-pipeline"
+
+setup.template.enabled: true
+setup.template.name: "secure-captcha"
+setup.template.pattern: "secure-captcha-*"
+setup.template.fields: "/usr/share/filebeat/fields.yml"
+setup.template.overwrite: true
+setup.template.settings:
+  index.number_of_shards: 1
+  index.number_of_replicas: 1
+  index.refresh_interval: "5s"
+
+setup.ilm.enabled: false
+
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /usr/share/filebeat/logs
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
+
+monitoring.enabled: true
+monitoring.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+
+xpack.monitoring.enabled: true

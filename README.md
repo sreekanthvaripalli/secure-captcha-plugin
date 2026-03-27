@@ -477,6 +477,157 @@ const result = await captchaService.validateResponse(
 );
 ```
 
+### ELK Stack Setup
+
+The Secure CAPTCHA Plugin includes a complete ELK Stack (Elasticsearch, Logstash, Kibana) for centralized logging and monitoring.
+
+#### Start ELK Stack
+
+```bash
+# Navigate to the elk directory
+cd elk
+
+# Start the ELK Stack using Docker Compose
+docker-compose -f docker-compose.elk.yml up -d
+
+# Check the status of all services
+docker-compose -f docker-compose.elk.yml ps
+
+# View logs
+docker-compose -f docker-compose.elk.yml logs -f
+```
+
+#### Access Kibana Dashboards
+
+Once the ELK Stack is running, access the dashboards at:
+
+- **Kibana Dashboard**: http://localhost:5601
+- **Elasticsearch**: http://localhost:9200
+- **Logstash**: http://localhost:9600
+
+#### Import Kibana Dashboards
+
+1. Open Kibana at http://localhost:5601
+2. Navigate to **Management** → **Stack Management** → **Saved Objects**
+3. Click **Import** and select the dashboard files:
+   - `elk/kibana/dashboards/secure-captcha-overview.json`
+   - `elk/kibana/dashboards/secure-captcha-security.json`
+4. Navigate to **Analytics** → **Dashboard** to view the imported dashboards
+
+#### ELK Stack Configuration
+
+**Environment Variables:**
+
+```bash
+# Elasticsearch Configuration
+ELASTICSEARCH_NODE=http://localhost:9200
+ELASTICSEARCH_USERNAME=elastic
+ELASTICSEARCH_PASSWORD=changeme
+ELASTICSEARCH_SSL_VERIFY=false
+
+# Logging Configuration
+LOG_LEVEL=info
+LOG_CONSOLE=true
+LOG_FILE=true
+LOG_ELASTICSEARCH=true
+LOG_FILE_PATH=./logs/app.log
+LOG_MAX_FILE_SIZE=10485760
+LOG_MAX_FILES=5
+```
+
+**Enable ELK Logging in Your Application:**
+
+```typescript
+import { getELKLogger } from 'secure-captcha-plugin';
+
+// Initialize ELK Logger
+const logger = getELKLogger({
+  elasticsearch: {
+    node: process.env.ELASTICSEARCH_NODE || 'http://localhost:9200',
+    index: 'secure-captcha-logs',
+    indexPrefix: 'secure-captcha',
+    indexSuffixPattern: 'YYYY.MM.DD'
+  },
+  logLevel: 'info',
+  enableConsole: true,
+  enableFile: true,
+  enableElasticsearch: true
+});
+
+// Use the logger
+logger.logRequest({ endpoint: '/api/captcha', method: 'POST' });
+logger.logSecurityEvent({ action: 'captcha_generated', resource: 'text' });
+logger.logPerformance('captcha_generation_time', 45);
+```
+
+#### Kibana Dashboard Features
+
+**Overview Dashboard:**
+- Log volume over time by log type
+- Log level distribution (debug, info, warn, error)
+- Average response time trends
+- Captcha type usage statistics
+- Error rate monitoring
+- Top accessed endpoints
+- Geographic distribution of requests
+
+**Security Dashboard:**
+- Security events timeline
+- Security event types distribution
+- Failed validations over time
+- Rate limit violations
+- Suspicious activity detection
+- Top attacking IP addresses
+- Security events geographic map
+
+#### Stopping ELK Stack
+
+```bash
+# Stop all services
+docker-compose -f docker-compose.elk.yml down
+
+# Stop and remove volumes (clears all data)
+docker-compose -f docker-compose.elk.yml down -v
+
+# Remove all images
+docker-compose -f docker-compose.elk.yml down --rmi all
+```
+
+#### Troubleshooting ELK Stack
+
+**Check Service Health:**
+
+```bash
+# Elasticsearch health
+curl http://localhost:9200/_cluster/health?pretty
+
+# Kibana status
+curl http://localhost:5601/api/status
+
+# Logstash stats
+curl http://localhost:9600/_node/stats?pretty
+```
+
+**View Service Logs:**
+
+```bash
+# Elasticsearch logs
+docker logs secure-captcha-elasticsearch
+
+# Logstash logs
+docker logs secure-captcha-logstash
+
+# Kibana logs
+docker logs secure-captcha-kibana
+```
+
+**Common Issues:**
+
+1. **Elasticsearch won't start**: Increase Docker memory to at least 4GB
+2. **Kibana can't connect**: Wait for Elasticsearch to be healthy first
+3. **No logs appearing**: Check that `LOG_ELASTICSEARCH=true` is set
+4. **Permission errors**: Run Docker with `--user root` or fix volume permissions
+
 ### Application Testing
 
 Test the running application with these commands:

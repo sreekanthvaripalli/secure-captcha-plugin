@@ -1,0 +1,132 @@
+metricbeat.modules:
+  # System metrics
+  - module: system
+    metricsets:
+      - cpu
+      - load
+      - memory
+      - network
+      - process
+      - process_summary
+      - socket_summary
+      - filesystem
+      - fsstat
+    enabled: true
+    period: 10s
+    processes: ['.*']
+    cpu.metrics: ["percentages", "normalized_percentages"]
+    core.metrics: ["percentages"]
+
+  # Docker metrics
+  - module: docker
+    metricsets:
+      - container
+      - cpu
+      - diskio
+      - healthcheck
+      - info
+      - memory
+      - network
+    hosts: ["unix:///var/run/docker.sock"]
+    period: 10s
+    enabled: true
+
+  # Elasticsearch metrics
+  - module: elasticsearch
+    metricsets:
+      - node
+      - node_stats
+      - cluster_stats
+      - index
+      - index_recovery
+      - index_summary
+      - shard
+      - pending_tasks
+    hosts: ["http://elasticsearch:9200"]
+    period: 10s
+    enabled: true
+
+  # Logstash metrics
+  - module: logstash
+    metricsets:
+      - node
+      - node_stats
+    hosts: ["http://logstash:9600"]
+    period: 10s
+    enabled: true
+
+  # Kibana metrics
+  - module: kibana
+    metricsets:
+      - status
+      - stats
+    hosts: ["http://kibana:5601"]
+    period: 10s
+    enabled: true
+
+  # Nginx metrics (if using Nginx)
+  - module: nginx
+    metricsets:
+      - stubstatus
+    hosts: ["http://nginx:80"]
+    period: 10s
+    enabled: false
+
+  # PostgreSQL metrics (if using PostgreSQL)
+  - module: postgresql
+    metricsets:
+      - database
+      - bgwriter
+      - activity
+    hosts: ["postgres://postgres:5432"]
+    period: 10s
+    enabled: false
+
+  # Redis metrics (if using Redis)
+  - module: redis
+    metricsets:
+      - info
+      - keyspace
+    hosts: ["redis://redis:6379"]
+    period: 10s
+    enabled: false
+
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  index: "metricbeat-%{+yyyy.MM.dd}"
+
+setup.template.enabled: true
+setup.template.name: "metricbeat"
+setup.template.pattern: "metricbeat-*"
+setup.template.fields: "/usr/share/metricbeat/fields.yml"
+setup.template.overwrite: true
+setup.template.settings:
+  index.number_of_shards: 1
+  index.number_of_replicas: 1
+  index.refresh_interval: "5s"
+
+setup.ilm.enabled: false
+
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /usr/share/metricbeat/logs
+  name: metricbeat
+  keepfiles: 7
+  permissions: 0644
+
+monitoring.enabled: true
+monitoring.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+
+xpack.monitoring.enabled: true
+
+# Metricbeat dashboards
+setup.dashboards.enabled: true
+setup.dashboards.directory: "/usr/share/metricbeat/kibana"
