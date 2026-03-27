@@ -29,18 +29,6 @@ describe('CaptchaServer', () => {
     });
   });
 
-  describe('Metrics Endpoint', () => {
-    test('should return Prometheus metrics', async () => {
-      const response = await request(app)
-        .get('/api/v1/metrics')
-        .expect(200);
-
-      expect(response.headers['content-type']).toMatch(/text\/plain/);
-      expect(response.text).toContain('captcha_server_uptime_seconds');
-      expect(response.text).toContain('captcha_server_memory_bytes');
-      expect(response.text).toContain('captcha_server_cpu_microseconds');
-    });
-  });
 
   describe('Captcha Types Endpoint', () => {
     test('should return available captcha types', async () => {

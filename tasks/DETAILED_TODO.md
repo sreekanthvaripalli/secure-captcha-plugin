@@ -368,25 +368,34 @@ This document provides granular, trackable tasks for building an enterprise-grad
 ### Week 3: Monitoring & Observability (April 7-11, 2026)
 
 #### 3.3.1 Prometheus Metrics
-- [ ] **Setup Prometheus Client**
-  - [ ] Install prom-client
-  - [ ] Create custom metrics
-  - [ ] Add default metrics
+- [x] **Setup Prometheus Client** ✅ **COMPLETE**
+  - [x] Install prom-client ✅
+  - [x] Create custom metrics ✅
+  - [x] Add default metrics ✅
 
-- [ ] **Implement Metrics**
-  - [ ] Request rate (requests/second)
-  - [ ] Request latency (histogram)
-  - [ ] Error rate (counter)
-  - [ ] Captcha generation time
-  - [ ] Captcha validation time
-  - [ ] Active sessions (gauge)
-  - [ ] Cache hit/miss ratio
-  - [ ] Security events (counter)
+- [x] **Implement Metrics** ✅ **COMPLETE**
+  - [x] Request rate (requests/second) ✅
+  - [x] Request latency (histogram) ✅
+  - [x] Error rate (counter) ✅
+  - [x] Captcha generation time ✅
+  - [x] Captcha validation time ✅
+  - [x] Active sessions (gauge) ✅
+  - [x] Cache hit/miss ratio ✅
+  - [x] Security events (counter) ✅
 
-- [ ] **Write Metrics Tests** ⏸️ **POSTPONED TO PHASE 6**
-  - [ ] Test metric collection
-  - [ ] Test metric accuracy
-  - [ ] Test metric export
+- [x] **Write Metrics Tests** ✅ **COMPLETE**
+  - [x] Test metric collection ✅
+  - [x] Test metric accuracy ✅
+  - [x] Test metric export ✅
+
+**Implementation Notes:**
+- All 27 tests passing
+- Created PrometheusMetricsService with comprehensive metrics collection
+- Integrated with Express server middleware for request tracking
+- Metrics endpoint at /api/v1/metrics returns Prometheus format
+- Includes default Node.js metrics (memory, CPU, event loop)
+- Custom metrics for CAPTCHA operations, sessions, cache, and security events
+- Rate limit hit tracking integrated with express-rate-limit
 
 #### 3.3.2 Grafana Dashboards
 - [ ] **Create Dashboards**

@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { CaptchaService } from './core/captcha-service';
 import { SecurityConfigurationService } from './security/config';
 import { InputValidationService } from './security/input-validation';
+import { prometheusMetrics } from './services/prometheus-metrics';
 
 // Extend Express Request interface
 declare global {
@@ -80,12 +81,16 @@ export class CaptchaServer {
       next();
     });
 
-    // Request logging
+    // Request logging and metrics
     this.app.use((req: Request, res: Response, next: NextFunction) => {
       const start = Date.now();
       
       res.on('finish', () => {
         const duration = Date.now() - start;
+        
+        // Record Prometheus metrics
+        prometheusMetrics.recordRequest(req.method, req.path, res.statusCode, duration);
+        
         console.log(JSON.stringify({
           timestamp: new Date().toISOString(),
           requestId: req.id,
@@ -114,6 +119,9 @@ export class CaptchaServer {
       },
       standardHeaders: true,
       legacyHeaders: false,
+      handler: (req: Request, _res: Response) => {
+        prometheusMetrics.recordRateLimitHit(req.path);
+      }
     });
     this.app.use('/api/', limiter);
 
@@ -165,10 +173,15 @@ export class CaptchaServer {
     });
 
     // Metrics endpoint (Prometheus format)
-    this.app.get('/api/v1/metrics', (_req: Request, res: Response) => {
-      const metrics = this.getMetrics();
-      res.set('Content-Type', 'text/plain');
-      res.send(metrics);
+    this.app.get('/api/v1/metrics', async (_req: Request, res: Response) => {
+      try {
+        const metrics = await prometheusMetrics.getMetrics();
+        res.set('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
+        res.send(metrics);
+      } catch (error) {
+        console.error('Error generating metrics:', error);
+        res.status(500).send('# Error generating metrics\n');
+      }
     });
 
     // Captcha generation endpoint
@@ -341,36 +354,6 @@ export class CaptchaServer {
       console.log('SIGINT received, shutting down gracefully');
       this.shutdown();
     });
-  }
-
-  /**
-   * Get Prometheus metrics
-   */
-  private getMetrics(): string {
-    const memoryUsage = process.memoryUsage();
-    const cpuUsage = process.cpuUsage();
-
-    return `
-# HELP captcha_server_uptime_seconds Server uptime in seconds
-# TYPE captcha_server_uptime_seconds gauge
-captcha_server_uptime_seconds ${process.uptime()}
-
-# HELP captcha_server_memory_bytes Memory usage in bytes
-# TYPE captcha_server_memory_bytes gauge
-captcha_server_memory_bytes{type="rss"} ${memoryUsage.rss}
-captcha_server_memory_bytes{type="heapTotal"} ${memoryUsage.heapTotal}
-captcha_server_memory_bytes{type="heapUsed"} ${memoryUsage.heapUsed}
-captcha_server_memory_bytes{type="external"} ${memoryUsage.external}
-
-# HELP captcha_server_cpu_microseconds CPU usage in microseconds
-# TYPE captcha_server_cpu_microseconds counter
-captcha_server_cpu_microseconds{type="user"} ${cpuUsage.user}
-captcha_server_cpu_microseconds{type="system"} ${cpuUsage.system}
-
-# HELP captcha_server_active_sessions Number of active captcha sessions
-# TYPE captcha_server_active_sessions gauge
-captcha_server_active_sessions 0
-`.trim();
   }
 
   /**
