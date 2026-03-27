@@ -564,74 +564,150 @@
       "title": "Cache Hit Rate",
       "type": "timeseries"
     },
-    {
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisLabel": "Cache Operations",
+                "drawStyle": "bars",
+                "fillOpacity": 80,
+                "lineWidth": 1,
+                "pointSize": 5,
+                "showPoints": "never",
+                "spanNulls": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": []
           },
-          "custom": {
-            "axisLabel": "Cache Operations",
-            "drawStyle": "bars",
-            "fillOpacity": 80,
-            "lineWidth": 1,
-            "pointSize": 5,
-            "showPoints": "never",
-            "spanNulls": false
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 27
           },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
+          "id": 8,
+          "options": {
+            "legend": {
+              "calcs": [
+                "sum",
+                "mean",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
           },
-          "unit": "ops"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 27
-      },
-      "id": 8,
-      "options": {
-        "legend": {
-          "calcs": [
-            "sum",
-            "mean",
-            "max"
+          "targets": [
+            {
+              "expr": "sum(rate(captcha_cache_hits_total[5m])) by (level)",
+              "legendFormat": "Hits {{level}}",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(rate(captcha_cache_misses_total[5m]))",
+              "legendFormat": "Misses",
+              "refId": "B"
+            }
           ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "expr": "sum(rate(captcha_cache_hits_total[5m])) by (level)",
-          "legendFormat": "Hits {{level}}",
-          "refId": "A"
+          "title": "Cache Operations",
+          "type": "timeseries"
         },
         {
-          "expr": "sum(rate(captcha_cache_misses_total[5m]))",
-          "legendFormat": "Misses",
-          "refId": "B"
-        }
-      ],
-      "title": "Cache Operations",
-      "type": "timeseries"
-    },
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisLabel": "Cache Operation Duration",
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "lineWidth": 2,
+                "pointSize": 5,
+                "showPoints": "never",
+                "spanNulls": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 0.1
+                  },
+                  {
+                    "color": "red",
+                    "value": 0.5
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 35
+          },
+          "id": 15,
+          "options": {
+            "legend": {
+              "calcs": [
+                "mean",
+                "max",
+                "p95"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(captcha_cache_operation_duration_seconds_bucket[5m])) by (le, operation, level))",
+              "legendFormat": "p95 {{operation}} {{level}}",
+              "refId": "A"
+            },
+            {
+              "expr": "rate(captcha_cache_operation_duration_seconds_sum[5m]) / rate(captcha_cache_operation_duration_seconds_count[5m])",
+              "legendFormat": "avg {{operation}} {{level}}",
+              "refId": "B"
+            }
+          ],
+          "title": "Cache Operation Duration",
+          "type": "timeseries"
+        },
     {
       "collapsed": false,
       "gridPos": {
