@@ -44,7 +44,7 @@
     "npm": ">=10.0.0"
   },
   "dependencies": {
-    "@tensorflow/tfjs-node": "^4.17.0",
+    "@tensorflow/tfjs-node": "^4.22.0",
     "@types/pg": "^8.20.0",
     "bcrypt": "^5.1.1",
     "bull": "^4.12.0",

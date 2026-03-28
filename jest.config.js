@@ -37,7 +37,8 @@ module.exports = {
     '^@core/(.*)$': '<rootDir>/src/core/$1',
     '^@security/(.*)$': '<rootDir>/src/security/$1',
     '^@types/(.*)$': '<rootDir>/src/types/$1',
-    '^@utils/(.*)$': '<rootDir>/src/utils/$1'
+    '^@utils/(.*)$': '<rootDir>/src/utils/$1',
+    '^@tensorflow/tfjs-node$': '<rootDir>/__mocks__/@tensorflow/tfjs-node.js'
   },
   globals: {
     'ts-jest': {

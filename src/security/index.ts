@@ -10,3 +10,4 @@ export * from './security-logger';
 export * from './mouse-movement-analyzer';
 export * from './keystroke-dynamics-analyzer';
 export * from './device-fingerprint-analyzer';
+export * from './bot-detection-ml';
