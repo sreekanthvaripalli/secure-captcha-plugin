@@ -786,15 +786,28 @@ This document provides granular, trackable tasks for building an enterprise-grad
 - Integrated with existing security system via `src/security/index.ts`
 
 #### 4.2.3 Threat Intelligence
-- [ ] **Implement Threat Intelligence**
-  - [ ] IP reputation checking
-  - [ ] Known bot signatures
-  - [ ] Attack pattern database
-  - [ ] Real-time threat feeds
+- [x] **Implement Threat Intelligence** ✅ **COMPLETE**
+  - [x] IP reputation checking ✅
+  - [x] Known bot signatures ✅
+  - [x] Attack pattern database ✅
+  - [x] Real-time threat feeds ✅
 
-- [ ] **Write Threat Tests** ⏸️ **POSTPONED TO PHASE 6**
-  - [ ] Test IP checking
-  - [ ] Test signature matching
+- [x] **Write Threat Tests** ✅ **COMPLETE**
+  - [x] Test IP checking ✅
+  - [x] Test signature matching ✅
+
+**Implementation Notes:**
+- Created `ThreatIntelligence` service in `src/security/threat-intelligence.ts`
+- Features include:
+  - **IP Reputation Checking**: Check IP addresses against threat indicators, calculate reputation scores (0-100), categorize threats (bot, scanner, spam, malware, phishing, ddos, bruteforce, etc.), cache results for performance
+  - **Bot Signatures**: Pre-configured signatures for known bots (Googlebot, Bingbot, etc.), detection of suspicious automation tools (Headless Chrome, Selenium, Puppeteer, PhantomJS), detection of scraping tools (Scrapy, Python Requests, curl, wget)
+  - **Attack Patterns**: SQL Injection detection (UNION, OR/AND conditions, comments), XSS detection (script tags, event handlers), path traversal detection, command injection detection, brute force pattern detection, CWE and CVSS scoring
+  - **Threat Feeds**: Support for multiple threat feed sources, configurable update intervals, support for different feed formats (JSON, text, CSV, STIX)
+  - **Comprehensive Threat Checking**: Combined analysis of IP, user agent, and input, risk scoring and threat level determination, actionable recommendations for mitigation
+- Updated `src/security/index.ts` to export the new ThreatIntelligence module
+- Created 45 comprehensive unit tests in `tests/unit/threat-intelligence.test.ts`
+- All 45 tests passing
+- Integrated with existing security system via SecurityLogger
 
 ### Week 3: Enterprise Authentication (May 5-9, 2026)
 

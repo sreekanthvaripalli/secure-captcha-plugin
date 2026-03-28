@@ -169,6 +169,155 @@ graph TB
 - **Pattern Randomization**: Unpredictable patterns
 - **Human-Only Patterns**: Patterns only humans can recognize
 
+### Threat Intelligence
+
+- **IP Reputation Checking**: Real-time IP reputation scoring against threat indicators
+- **Bot Signature Detection**: Pre-configured signatures for known bots (Googlebot, Bingbot, Headless Chrome, Selenium, Puppeteer, PhantomJS, etc.)
+- **Attack Pattern Database**: Detection of SQL injection, XSS, path traversal, command injection, and brute force patterns
+- **Threat Feeds**: Support for multiple threat feed sources with configurable update intervals
+- **Comprehensive Threat Analysis**: Combined analysis of IP, user agent, and input with risk scoring and actionable recommendations
+
+#### Threat Intelligence Usage
+
+```typescript
+import { ThreatIntelligence } from 'secure-captcha-plugin';
+
+// Initialize threat intelligence
+const threatIntel = new ThreatIntelligence({
+  enableIPReputation: true,
+  enableBotSignatures: true,
+  enableAttackPatterns: true,
+  enableThreatFeeds: true,
+  confidenceThreshold: 0.7
+}, securityLogger);
+
+// Check IP reputation
+const ipReputation = await threatIntel.checkIPReputation('192.168.1.1');
+if (ipReputation && ipReputation.reputation < 50) {
+  console.log(`Suspicious IP detected: ${ipReputation.threatLevel}`);
+}
+
+// Check user agent against bot signatures
+const botSignatures = threatIntel.checkBotSignatures(
+  'Mozilla/5.0 (compatible; Googlebot/2.1)'
+);
+if (botSignatures.length > 0) {
+  console.log(`Bot detected: ${botSignatures[0].name}`);
+}
+
+// Check input for attack patterns
+const attackPatterns = threatIntel.checkAttackPatterns(
+  "1 UNION SELECT * FROM users"
+);
+if (attackPatterns.length > 0) {
+  console.log(`Attack detected: ${attackPatterns[0].name}`);
+}
+
+// Comprehensive threat check
+const threatResult = await threatIntel.checkThreat({
+  ip: '192.168.1.1',
+  userAgent: 'Mozilla/5.0',
+  input: 'user-input-data'
+});
+
+if (threatResult.isThreat) {
+  console.log(`Threat level: ${threatResult.threatLevel}`);
+  console.log(`Recommendations: ${threatResult.recommendations}`);
+}
+
+// Add custom threat indicator
+threatIntel.addThreatIndicator({
+  type: 'ip',
+  value: '10.0.0.1',
+  category: 'bot',
+  threatLevel: 'high',
+  confidence: 0.9,
+  source: 'internal',
+  description: 'Known malicious IP',
+  tags: ['malicious', 'bot'],
+  metadata: {}
+});
+
+// Add custom bot signature
+threatIntel.addBotSignature({
+  name: 'Custom Bot',
+  pattern: /custombot/i,
+  patternType: 'regex',
+  category: 'bot',
+  threatLevel: 'medium',
+  description: 'Custom bot detection',
+  confidence: 0.8,
+  source: 'internal',
+  isActive: true
+});
+
+// Get threat intelligence statistics
+const stats = threatIntel.getStats();
+console.log(`Total indicators: ${stats.totalIndicators}`);
+console.log(`Bot signatures: ${stats.botSignatures}`);
+console.log(`Attack patterns: ${stats.attackPatterns}`);
+```
+
+#### Threat Intelligence Configuration
+
+```typescript
+const threatIntelConfig = {
+  // IP Reputation
+  enableIPReputation: true,
+  ipReputationCacheTTL: 3600, // seconds
+  ipReputationSources: ['internal', 'abuseipdb', 'virustotal'],
+  
+  // Bot Signatures
+  enableBotSignatures: true,
+  botSignatureCacheTTL: 1800, // seconds
+  
+  // Attack Patterns
+  enableAttackPatterns: true,
+  attackPatternCacheTTL: 1800, // seconds
+  
+  // Threat Feeds
+  enableThreatFeeds: true,
+  threatFeedUpdateInterval: 60, // minutes
+  maxIndicatorsPerFeed: 10000,
+  
+  // General
+  enableRealTimeUpdates: true,
+  enableLogging: true,
+  confidenceThreshold: 0.7, // 0-1
+  maxCacheSize: 100000
+};
+```
+
+#### Pre-configured Bot Signatures
+
+The Threat Intelligence module includes pre-configured signatures for common bots and automation tools:
+
+| Bot/Tool | Category | Threat Level | Description |
+|----------|----------|--------------|-------------|
+| Googlebot | bot | low | Google search crawler |
+| Bingbot | bot | low | Bing search crawler |
+| Scrapy | scanner | medium | Web scraping framework |
+| Python Requests | scanner | medium | Python HTTP library |
+| curl | scanner | low | Command line HTTP client |
+| wget | scanner | low | Download utility |
+| Headless Chrome | bot | high | Headless browser automation |
+| PhantomJS | bot | high | Headless browser |
+| Selenium | bot | high | WebDriver automation |
+| Puppeteer | bot | high | Headless browser automation |
+
+#### Pre-configured Attack Patterns
+
+| Attack Type | Severity | CWE | CVSS | Description |
+|-------------|----------|-----|------|-------------|
+| SQL Injection - UNION | critical | CWE-89 | 9.8 | UNION-based SQL injection |
+| SQL Injection - OR/AND | critical | CWE-89 | 9.8 | Boolean-based SQL injection |
+| SQL Injection - Comment | high | CWE-89 | 8.6 | Comment-based SQL injection |
+| XSS - Script Tag | high | CWE-79 | 7.5 | Script tag injection |
+| XSS - Event Handlers | high | CWE-79 | 7.5 | Event handler injection |
+| Path Traversal | high | CWE-22 | 7.5 | Directory traversal attacks |
+| Command Injection | critical | CWE-78 | 9.8 | OS command injection |
+| Brute Force | high | CWE-307 | 7.5 | Multiple failed logins |
+
 ---
 
 ## 🚀 Technology Stack
@@ -411,6 +560,511 @@ import { CaptchaWidget } from 'secure-captcha-plugin/react';
 // Add to any form
 <?php echo captcha_get_html(); ?>
 ```
+
+---
+
+## 🔐 Cryptographic Service
+
+The CryptoService provides enterprise-grade cryptographic operations for securing CAPTCHA sessions and sensitive data.
+
+### CryptoService Usage
+
+```typescript
+import { CryptoService } from 'secure-captcha-plugin';
+
+// Initialize the crypto service
+const cryptoService = new CryptoService({
+  encryption: {
+    algorithm: 'aes-256-gcm',
+    keySize: 256,
+    ivLength: 16,
+    tagLength: 16
+  },
+  hashing: {
+    algorithm: 'sha256',
+    saltLength: 32
+  },
+  signing: {
+    algorithm: 'rsa',
+    keySize: 2048
+  }
+});
+
+// Encrypt sensitive data
+const encrypted = await cryptoService.encrypt('sensitive-data', 'encryption-key');
+console.log(encrypted.encryptedData);
+console.log(encrypted.iv);
+console.log(encrypted.authTag);
+
+// Decrypt data
+const decrypted = await cryptoService.decrypt(
+  encrypted.encryptedData,
+  'encryption-key',
+  encrypted.iv,
+  encrypted.authTag
+);
+
+// Generate HMAC signature
+const signature = await cryptoService.generateHMAC('data-to-sign', 'secret-key');
+console.log(signature.hash);
+
+// Verify HMAC signature
+const isValid = await cryptoService.verifyHMAC(
+  'data-to-sign',
+  signature.hash,
+  'secret-key'
+);
+
+// Generate RSA key pair
+const keyPair = await cryptoService.generateKeyPair();
+console.log(keyPair.publicKey);
+console.log(keyPair.privateKey);
+
+// Generate secure random token
+const token = await cryptoService.generateSecureToken(32);
+console.log(token);
+
+// Generate session token with UUID v4
+const sessionToken = await cryptoService.generateSessionToken();
+console.log(sessionToken.sessionId);
+
+// Get cryptographic statistics
+const stats = cryptoService.getStats();
+console.log(`Total operations: ${stats.totalOperations}`);
+console.log(`Success rate: ${stats.successfulOperations / stats.totalOperations * 100}%`);
+```
+
+### CryptoService Configuration
+
+```typescript
+const cryptoConfig = {
+  encryption: {
+    algorithm: 'aes-256-gcm',
+    keySize: 256,
+    ivLength: 16,
+    tagLength: 16
+  },
+  hashing: {
+    algorithm: 'sha256',
+    saltLength: 32
+  },
+  signing: {
+    algorithm: 'rsa',
+    keySize: 2048
+  },
+  random: {
+    algorithm: 'crypto',
+    minEntropy: 256
+  }
+};
+```
+
+---
+
+## 🎯 CAPTCHA Generators
+
+The plugin provides multiple CAPTCHA generator types, each designed for different use cases and security levels.
+
+### Text CAPTCHA
+
+```typescript
+import { TextCaptchaGenerator } from 'secure-captcha-plugin';
+
+const textGenerator = new TextCaptchaGenerator({
+  minLength: 4,
+  maxLength: 8,
+  characterSet: 'alphanumeric',
+  caseSensitive: false,
+  distortionLevel: 'medium',
+  noiseLevel: 'medium'
+});
+
+// Generate text CAPTCHA
+const captcha = await textGenerator.generate({
+  difficulty: 'medium',
+  sessionId: 'session-123'
+});
+
+console.log(captcha.image); // Base64 encoded image
+console.log(captcha.sessionId);
+console.log(captcha.expiresAt);
+
+// Validate response
+const isValid = await textGenerator.validate(
+  captcha.sessionId,
+  userResponse
+);
+```
+
+### Math CAPTCHA
+
+```typescript
+import { MathCaptchaGenerator } from 'secure-captcha-plugin';
+
+const mathGenerator = new MathCaptchaGenerator({
+  operations: ['+', '-', '*'],
+  minNumber: 1,
+  maxNumber: 20,
+  includeFractions: false,
+  includeDecimals: false,
+  complexityLevel: 'medium'
+});
+
+// Generate math CAPTCHA
+const captcha = await mathGenerator.generate({
+  difficulty: 'hard',
+  sessionId: 'session-456'
+});
+
+console.log(captcha.problem); // e.g., "12 + 8 * 3"
+console.log(captcha.image);
+
+// Validate response (follows PEMDAS order)
+const isValid = await mathGenerator.validate(
+  captcha.sessionId,
+  userResponse
+);
+```
+
+### Logic CAPTCHA
+
+```typescript
+import { LogicCaptchaGenerator } from 'secure-captcha-plugin';
+
+const logicGenerator = new LogicCaptchaGenerator({
+  puzzleTypes: ['pattern', 'sequence', 'spatial'],
+  minComplexity: 3,
+  maxComplexity: 7,
+  timeLimit: 60000
+});
+
+// Generate logic CAPTCHA
+const captcha = await logicGenerator.generate({
+  difficulty: 'hard',
+  sessionId: 'session-789'
+});
+
+console.log(captcha.puzzleType); // e.g., 'pattern'
+console.log(captcha.instructions);
+console.log(captcha.image);
+
+// Validate response
+const isValid = await logicGenerator.validate(
+  captcha.sessionId,
+  userResponse
+);
+```
+
+### Image CAPTCHA
+
+```typescript
+import { ImageCaptchaGenerator } from 'secure-captcha-plugin';
+
+const imageGenerator = new ImageCaptchaGenerator({
+  objectCount: 3,
+  objectTypes: ['car', 'bus', 'traffic_light', 'crosswalk'],
+  gridSize: 3,
+  includeLabels: true,
+  timeLimit: 45000
+});
+
+// Generate image CAPTCHA
+const captcha = await imageGenerator.generate({
+  difficulty: 'medium',
+  sessionId: 'session-101'
+});
+
+console.log(captcha.challenge); // e.g., "Select all images with cars"
+console.log(captcha.images); // Array of image URLs
+console.log(captcha.gridSize);
+
+// Validate response
+const isValid = await imageGenerator.validate(
+  captcha.sessionId,
+  selectedImages
+);
+```
+
+### Multi-Layer CAPTCHA
+
+```typescript
+import { CaptchaService } from 'secure-captcha-plugin';
+
+const captchaService = new CaptchaService({
+  layers: ['text', 'math', 'behavioral'],
+  difficulty: 'hard',
+  sessionTimeout: 300000,
+  maxAttempts: 3
+});
+
+// Generate multi-layer CAPTCHA
+const captcha = await captchaService.generateMultiLayer({
+  sessionId: 'session-multi',
+  layers: ['text', 'behavioral'],
+  difficulty: 'hard'
+});
+
+console.log(captcha.layers); // Array of CAPTCHA layers
+console.log(captcha.currentLayer);
+console.log(captcha.totalLayers);
+
+// Validate each layer
+for (const layer of captcha.layers) {
+  const isValid = await captchaService.validateLayer(
+    captcha.sessionId,
+    layer.id,
+    userResponses[layer.id]
+  );
+}
+```
+
+---
+
+## 🖱️ Behavioral Analysis
+
+The behavioral analysis system tracks user interactions to distinguish between humans and bots.
+
+### Mouse Movement Tracking
+
+```typescript
+import { MouseMovementAnalyzer } from 'secure-captcha-plugin';
+
+const mouseAnalyzer = new MouseMovementAnalyzer({
+  samplingRate: 50, // ms
+  minDataPoints: 10,
+  anomalyThreshold: 0.7
+});
+
+// Analyze mouse movement session
+const analysis = await mouseAnalyzer.analyze(sessionData);
+
+console.log(analysis.movementNaturalness); // 0-1 score
+console.log(analysis.velocityConsistency);
+console.log(analysis.accelerationPattern);
+console.log(analysis.pathEfficiency);
+console.log(analysis.microMovementPresence);
+
+// Detect anomalies
+if (analysis.anomalies.length > 0) {
+  console.log('Detected anomalies:');
+  analysis.anomalies.forEach(anomaly => {
+    console.log(`- ${anomaly.type}: ${anomaly.description}`);
+  });
+}
+
+// Get bot detection result
+const botDetection = await mouseAnalyzer.performBotDetection(sessionData);
+console.log(`Verdict: ${botDetection.verdict}`); // 'human', 'bot', 'suspicious'
+console.log(`Confidence: ${botDetection.confidence}`);
+console.log(`Bot score: ${botDetection.botScore}`);
+```
+
+### Keystroke Dynamics
+
+```typescript
+import { KeystrokeDynamicsAnalyzer } from 'secure-captcha-plugin';
+
+const keystrokeAnalyzer = new KeystrokeDynamicsAnalyzer({
+  minEvents: 5,
+  anomalyThreshold: 0.6
+});
+
+// Analyze keystroke patterns
+const analysis = await keystrokeAnalyzer.analyze(keystrokeEvents);
+
+console.log(analysis.typingSpeed); // Characters per minute
+console.log(analysis.rhythmConsistency);
+console.log(analysis.holdTimeVariance);
+console.log(analysis.flightTimeVariance);
+console.log(analysis.errorRate);
+
+// Detect bot-like typing patterns
+const botDetection = await keystrokeAnalyzer.performBotDetection(keystrokeEvents);
+console.log(`Verdict: ${botDetection.verdict}`);
+console.log(`Risk factors: ${botDetection.riskFactors}`);
+```
+
+### Device Fingerprinting
+
+```typescript
+import { DeviceFingerprintAnalyzer } from 'secure-captcha-plugin';
+
+const fingerprintAnalyzer = new DeviceFingerprintAnalyzer({
+  includeCanvas: true,
+  includeWebGL: true,
+  includeAudio: true,
+  includeFonts: true,
+  anomalyThreshold: 0.5
+});
+
+// Generate device fingerprint
+const fingerprint = await fingerprintAnalyzer.generate(request);
+
+console.log(fingerprint.browser); // Browser fingerprint
+console.log(fingerprint.canvas); // Canvas fingerprint
+console.log(fingerprint.webgl); // WebGL fingerprint
+console.log(fingerprint.audio); // Audio fingerprint
+console.log(fingerprint.fonts); // Font fingerprint
+console.log(fingerprint.hardware); // Hardware fingerprint
+console.log(fingerprint.network); // Network fingerprint
+
+// Check for anomalies
+const anomalies = await fingerprintAnalyzer.detectAnomalies(fingerprint);
+if (anomalies.length > 0) {
+  console.log('Fingerprint anomalies detected:');
+  anomalies.forEach(anomaly => {
+    console.log(`- ${anomaly.type}: ${anomaly.description}`);
+  });
+}
+
+// Calculate risk score
+const riskScore = await fingerprintAnalyzer.calculateRiskScore(fingerprint);
+console.log(`Risk score: ${riskScore.score}`); // 0-100
+console.log(`Risk level: ${riskScore.level}`); // 'low', 'medium', 'high'
+```
+
+---
+
+## 🤖 Machine Learning Bot Detection
+
+The ML-based bot detection system uses TensorFlow.js to analyze behavioral patterns and detect automated traffic.
+
+### Bot Detection ML Usage
+
+```typescript
+import { BotDetectionML } from 'secure-captcha-plugin';
+
+const botDetector = new BotDetectionML({
+  modelPath: './models/bot-detection',
+  featureDimensions: 50,
+  confidenceThreshold: 0.7,
+  usePretrainedModel: true
+});
+
+// Initialize the ML model
+await botDetector.initialize();
+
+// Extract features from behavioral session
+const features = botDetector.extractFeatures(sessionData);
+console.log(`Extracted ${features.length} features`);
+
+// Make prediction
+const prediction = await botDetector.predict(sessionData);
+console.log(`Bot probability: ${prediction.botProbability}`);
+console.log(`Human probability: ${prediction.humanProbability}`);
+console.log(`Confidence: ${prediction.confidence}`);
+
+// Comprehensive bot detection (ML + rule-based)
+const detection = await botDetector.detectBot(sessionData);
+console.log(`Verdict: ${detection.verdict}`);
+console.log(`Bot score: ${detection.botScore}`);
+console.log(`Anomalies: ${detection.anomalies.length}`);
+console.log(`Risk factors: ${detection.riskFactors}`);
+
+// Train model with new data
+const trainingData = {
+  features: [/* feature arrays */],
+  labels: [0, 1, 0, 1, ...], // 0 = human, 1 = bot
+  metadata: [/* session metadata */]
+};
+
+const metrics = await botDetector.train(trainingData);
+console.log(`Accuracy: ${metrics.accuracy}`);
+console.log(`Precision: ${metrics.precision}`);
+console.log(`Recall: ${metrics.recall}`);
+console.log(`F1 Score: ${metrics.f1Score}`);
+
+// Save trained model
+await botDetector.saveModel('./models/custom-model');
+
+// Get model statistics
+const stats = botDetector.getStats();
+console.log(`Model loaded: ${stats.modelLoaded}`);
+console.log(`Feature cache size: ${stats.featureCacheSize}`);
+```
+
+### Feature Engineering
+
+The ML model extracts 50 features from behavioral sessions:
+
+| Category | Features | Count |
+|----------|----------|-------|
+| **Movement** | Velocity, acceleration, path efficiency, angles, jerk | 20 |
+| **Keystroke** | Hold time, flight time, typing speed, rhythm | 15 |
+| **Click** | Duration, variance, accuracy, interval | 8 |
+| **Scroll** | Speed, direction consistency, smoothness | 5 |
+| **Timing** | Session duration, response time | 2 |
+
+---
+
+## 📊 Anomaly Detection
+
+The anomaly detection system uses statistical analysis, time series analysis, and pattern deviation detection to identify suspicious behavior.
+
+### Anomaly Detection Usage
+
+```typescript
+import { AnomalyDetector } from 'secure-captcha-plugin';
+
+const anomalyDetector = new AnomalyDetector({
+  statisticalThreshold: 2.0,
+  timeSeriesWindowSize: 100,
+  patternDeviationThreshold: 0.3,
+  adaptiveThresholdLearningRate: 0.1
+});
+
+// Detect anomalies in behavioral session
+const result = await anomalyDetector.detectAnomalies(sessionData);
+
+console.log(`Anomaly score: ${result.anomalyScore}`); // 0-1
+console.log(`Anomalies detected: ${result.anomalies.length}`);
+
+// Review detected anomalies
+result.anomalies.forEach(anomaly => {
+  console.log(`Type: ${anomaly.type}`);
+  console.log(`Severity: ${anomaly.severity}`);
+  console.log(`Confidence: ${anomaly.confidence}`);
+  console.log(`Description: ${anomaly.description}`);
+});
+
+// Statistical analysis
+const stats = result.statisticalAnalysis.get('movement');
+console.log(`Mean: ${stats.mean}`);
+console.log(`Standard deviation: ${stats.standardDeviation}`);
+console.log(`Outliers: ${stats.outliers.length}`);
+
+// Time series analysis
+const timeSeries = result.timeSeriesAnalysis.get('movement');
+console.log(`Trend: ${timeSeries.trend}`);
+console.log(`Seasonality: ${timeSeries.seasonality}`);
+
+// Pattern deviations
+const patterns = result.patternDeviations.get('movement');
+console.log(`Deviation: ${patterns.deviationPercentage}%`);
+console.log(`Significant deviations: ${patterns.significantDeviations.length}`);
+
+// Adaptive thresholds
+const thresholds = result.adaptiveThresholds.get('movement_velocity');
+console.log(`Baseline: ${thresholds.baseline}`);
+console.log(`Current: ${thresholds.current}`);
+console.log(`Upper bound: ${thresholds.upperBound}`);
+console.log(`Lower bound: ${thresholds.lowerBound}`);
+```
+
+### Anomaly Types Detected
+
+| Anomaly Type | Description | Severity |
+|--------------|-------------|----------|
+| `unnatural_movement` | Suspiciously linear or robotic movement | medium-high |
+| `perfect_timing` | Inhumanly consistent timing patterns | high |
+| `no_variation` | Lack of natural variation in behavior | medium |
+| `too_fast` | Unnaturally fast interactions | high |
+| `too_slow` | Unnaturally slow interactions | low-medium |
+| `linear_movement` | Perfectly straight line movements | high |
+| `no_acceleration` | Constant velocity without acceleration | medium |
+| `repeated_pattern` | Identical repeated patterns | high |
+| `inhuman_precision` | Unnaturally precise movements | high |
+| `missing_micro_movements` | Absence of natural micro-movements | medium |
 
 ---
 
