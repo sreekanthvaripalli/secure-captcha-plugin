@@ -5,3 +5,4 @@
 
 export * from './captcha';
 export * from './security';
+export * from './behavioral';
