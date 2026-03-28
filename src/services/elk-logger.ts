@@ -295,7 +295,14 @@ export class ELKLogger {
    */
   async close(): Promise<void> {
     await new Promise<void>((resolve) => {
-      this.logger.on('finish', resolve);
+      const timeout = setTimeout(() => {
+        resolve();
+      }, 1000);
+      
+      this.logger.on('finish', () => {
+        clearTimeout(timeout);
+        resolve();
+      });
       this.logger.end();
     });
   }

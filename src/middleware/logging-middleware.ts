@@ -85,7 +85,7 @@ export function errorLoggingMiddleware(
   const logger = getELKLogger();
   
   const context: LogContext = {
-    requestId: req.requestId,
+    requestId: req.requestId || req.headers['x-request-id'] as string || uuidv4(),
     ip: req.ip || req.socket.remoteAddress,
     userAgent: req.headers['user-agent'],
     endpoint: req.path,
@@ -126,7 +126,7 @@ export function rateLimitLoggingMiddleware(
   // Check if rate limit was hit
   if (res.getHeader('X-RateLimit-Remaining') === '0') {
     const context: LogContext = {
-      requestId: req.requestId,
+      requestId: req.requestId || req.headers['x-request-id'] as string || uuidv4(),
       ip: req.ip || req.socket.remoteAddress,
       userAgent: req.headers['user-agent'],
       endpoint: req.path,
@@ -151,7 +151,7 @@ export function rateLimitLoggingMiddleware(
  */
 export function securityLoggingMiddleware(
   req: LoggingRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): void {
   const logger = getELKLogger();
@@ -191,8 +191,8 @@ export function securityLoggingMiddleware(
         reason: `Suspicious pattern detected: ${pattern.source}`,
         metadata: {
           pattern: pattern.source,
-          body: requestBody.substring(0, 500),
-          query: requestQuery.substring(0, 500)
+          body: requestBody.length > 500 ? requestBody.substring(0, 500) + '...' : requestBody,
+          query: requestQuery.length > 500 ? requestQuery.substring(0, 500) + '...' : requestQuery
         }
       }, context);
       
