@@ -707,13 +707,161 @@ docker run -d \
 
 ### Kubernetes Deployment
 
-```bash
-# Install via Helm
-helm install secure-captcha-plugin ./helm/secure-captcha-plugin
+The Secure CAPTCHA Plugin includes production-ready Kubernetes manifests and Helm charts for easy deployment.
 
-# Or apply manifests
+#### Option 1: Helm Chart (Recommended)
+
+```bash
+# Add dependencies (Redis and PostgreSQL)
+cd helm/secure-captcha
+helm dependency update
+
+# Install the chart
+helm install secure-captcha ./helm/secure-captcha \
+  --namespace secure-captcha \
+  --create-namespace \
+  --set app.image.repository=secure-captcha \
+  --set app.image.tag=latest
+
+# Or install with custom values
+helm install secure-captcha ./helm/secure-captcha \
+  --namespace secure-captcha \
+  --create-namespace \
+  -f custom-values.yaml
+
+# Upgrade an existing release
+helm upgrade secure-captcha ./helm/secure-captcha \
+  --namespace secure-captcha
+
+# Uninstall
+helm uninstall secure-captcha --namespace secure-captcha
+```
+
+**Helm Chart Features:**
+- Automatic Redis and PostgreSQL deployment (via Bitnami charts)
+- Horizontal Pod Autoscaling (3-10 replicas)
+- Pod Disruption Budgets for high availability
+- Network Policies for pod-to-pod security
+- RBAC with least-privilege access
+- ServiceMonitor for Prometheus integration
+- Ingress with TLS and security headers
+
+**Customizing the Deployment:**
+
+Create a `custom-values.yaml` file:
+
+```yaml
+app:
+  replicaCount: 5
+  image:
+    repository: your-registry/secure-captcha
+    tag: v1.0.0
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+config:
+  REDIS_HOST: redis-cluster
+  POSTGRES_HOST: postgres-cluster
+  LOG_LEVEL: debug
+
+ingress:
+  hosts:
+    - host: captcha.yourdomain.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: captcha-tls
+      hosts:
+        - captcha.yourdomain.com
+```
+
+#### Option 2: Raw Kubernetes Manifests
+
+```bash
+# Create namespace
+kubectl apply -f k8s/namespace.yaml
+
+# Create secrets (update with your actual values)
+kubectl apply -f k8s/secret.yaml
+
+# Create configmap
+kubectl apply -f k8s/configmap.yaml
+
+# Create persistent volume claims
+kubectl apply -f k8s/pvc.yaml
+
+# Create RBAC resources
+kubectl apply -f k8s/rbac.yaml
+
+# Create network policies
+kubectl apply -f k8s/network-policy.yaml
+
+# Create deployments and services
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+
+# Create ingress
+kubectl apply -f k8s/ingress.yaml
+
+# Create horizontal pod autoscaler
+kubectl apply -f k8s/hpa.yaml
+
+# Or apply all at once
 kubectl apply -f k8s/
 ```
+
+#### Verifying the Deployment
+
+```bash
+# Check pod status
+kubectl get pods -n secure-captcha
+
+# Check services
+kubectl get svc -n secure-captcha
+
+# Check ingress
+kubectl get ingress -n secure-captcha
+
+# Check HPA status
+kubectl get hpa -n secure-captcha
+
+# View logs
+kubectl logs -f deployment/secure-captcha -n secure-captcha
+
+# Port forward for local testing
+kubectl port-forward svc/secure-captcha-service 3000:80 -n secure-captcha
+
+# Test the deployment
+curl http://localhost:3000/api/v1/health
+```
+
+#### Kubernetes Architecture
+
+The deployment includes:
+
+- **Main Application**: 3-10 replicas with auto-scaling
+- **Redis**: Session management and caching
+- **PostgreSQL**: Persistent data storage
+- **Prometheus**: Metrics collection
+- **Grafana**: Metrics visualization
+- **Network Policies**: Pod-to-pod communication security
+- **RBAC**: Least-privilege access control
+- **Pod Disruption Budgets**: High availability guarantees
+- **Horizontal Pod Autoscaling**: Automatic scaling based on CPU/memory
+
+#### Production Considerations
+
+1. **Update Secrets**: Replace base64-encoded secrets in `k8s/secret.yaml` with your actual values
+2. **Configure Ingress**: Update `k8s/ingress.yaml` with your domain and TLS certificates
+3. **Storage Classes**: Adjust `storageClassName` in `k8s/pvc.yaml` for your cloud provider
+4. **Resource Limits**: Tune resource requests/limits based on your workload
+5. **Monitoring**: Access Grafana at `grafana.captcha.example.com` for dashboards
 
 ---
 
