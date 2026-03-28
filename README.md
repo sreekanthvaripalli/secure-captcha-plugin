@@ -157,7 +157,7 @@ graph TB
 - **Dynamic Challenge Generation**: Each captcha is unique
 - **Time-based Expiration**: Challenges expire in 30-60 seconds
 - **Behavioral Analysis**: Mouse movement, keystroke patterns
-- **Device Fingerprinting**: Browser, canvas, WebGL fingerprints
+- **Device Fingerprinting**: Comprehensive browser, canvas, WebGL, audio, font, hardware, and network fingerprinting with anomaly detection and risk scoring
 - **IP Reputation**: Known bot IP blocking
 - **Rate Limiting**: Progressive delays for suspicious activity
 
@@ -321,7 +321,7 @@ class CircuitBreaker {
 | **Mouse Movement Analysis** | Human vs bot detection | Speed, acceleration, patterns |
 | **Keystroke Dynamics** | Typing pattern analysis | Timing, pressure, rhythm |
 | **Timing Analysis** | Interaction patterns | Response time, consistency |
-| **Device Fingerprinting** | Unique device identification | Browser, canvas, WebGL |
+| **Device Fingerprinting** | Unique device identification | Browser, canvas, WebGL, audio, fonts, hardware, network, anomaly detection, risk scoring |
 
 ---
 
