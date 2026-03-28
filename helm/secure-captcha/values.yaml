@@ -1,0 +1,440 @@
+# Default values for secure-captcha Helm chart
+# This is a YAML-formatted file.
+
+# Global settings
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+
+# Application settings
+app:
+  name: secure-captcha
+  replicaCount: 3
+  
+  image:
+    repository: secure-captcha
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  
+  # Resource limits
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+    annotations: {}
+  
+  # Ingress configuration
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    hosts:
+      - host: captcha.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+      - host: api.captcha.example.com
+        paths:
+          - path: /api
+            pathType: Prefix
+          - path: /metrics
+            pathType: Exact
+    tls:
+      - secretName: secure-captcha-tls
+        hosts:
+          - captcha.example.com
+          - api.captcha.example.com
+  
+  # Autoscaling configuration
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 70
+      - type: Resource
+        resource:
+          name: memory
+          target:
+            type: Utilization
+            averageUtilization: 80
+      - type: Pods
+        pods:
+          metric:
+            name: http_requests_per_second
+          target:
+            type: AverageValue
+            averageValue: "1000"
+  
+  # Probes configuration
+  livenessProbe:
+    httpGet:
+      path: /api/v1/health
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  
+  readinessProbe:
+    httpGet:
+      path: /api/v1/health
+      port: http
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+  
+  startupProbe:
+    httpGet:
+      path: /api/v1/health
+      port: http
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 30
+  
+  # Security context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    fsGroup: 1001
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+  
+  # Pod anti-affinity
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - secure-captcha
+          topologyKey: kubernetes.io/hostname
+  
+  # Node selector
+  nodeSelector: {}
+  
+  # Tolerations
+  tolerations: []
+  
+  # Affinity
+  affinity: {}
+
+# Configuration
+config:
+  # Application Configuration
+  NODE_ENV: "production"
+  PORT: "3000"
+  LOG_LEVEL: "info"
+  
+  # Redis Configuration
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  REDIS_KEY_PREFIX: "captcha:"
+  REDIS_TTL: "3600"
+  
+  # PostgreSQL Configuration
+  POSTGRES_HOST: "postgres-service"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "secure_captcha"
+  POSTGRES_USER: "captcha_user"
+  POSTGRES_SSL: "true"
+  POSTGRES_POOL_MIN: "2"
+  POSTGRES_POOL_MAX: "10"
+  
+  # Security Configuration
+  CORS_ORIGIN: "*"
+  CORS_METHODS: "GET,POST,OPTIONS"
+  CORS_ALLOWED_HEADERS: "Content-Type,Authorization,X-API-Key"
+  CORS_CREDENTIALS: "true"
+  
+  # Rate Limiting
+  RATE_LIMIT_WINDOW_MS: "900000"
+  RATE_LIMIT_MAX_REQUESTS: "100"
+  
+  # Session Configuration
+  SESSION_TTL: "3600"
+  SESSION_PREFIX: "session:"
+  
+  # Captcha Configuration
+  CAPTCHA_DEFAULT_TYPE: "text"
+  CAPTCHA_DEFAULT_DIFFICULTY: "medium"
+  CAPTCHA_EXPIRY: "300"
+  CAPTCHA_MAX_ATTEMPTS: "3"
+  
+  # Prometheus Metrics
+  PROMETHEUS_ENABLED: "true"
+  PROMETHEUS_PATH: "/metrics"
+  
+  # ELK Logging
+  ELK_ENABLED: "true"
+  ELK_INDEX: "secure-captcha-logs"
+
+# Secrets (base64 encoded)
+secrets:
+  # Database Password
+  POSTGRES_PASSWORD: "Y2hhbmdlX21lX2luX3Byb2R1Y3Rpb24="
+  
+  # Redis Password
+  REDIS_PASSWORD: "Y2hhbmdlX21lX2luX3Byb2R1Y3Rpb24="
+  
+  # JWT Secret
+  JWT_SECRET: "c3VwZXJfc2VjcmV0X2p3dF9rZXlfY2hhbmdlX21l"
+  
+  # API Keys Encryption Key
+  API_KEY_ENCRYPTION_KEY: "Y2hhbmdlX21lX2luX3Byb2R1Y3Rpb24="
+  
+  # Session Secret
+  SESSION_SECRET: "c3VwZXJfc2VjcmV0X3Nlc3Npb25fa2V5X2NoYW5nZV9tZQ=="
+  
+  # Encryption Key for Captcha Data
+  CAPTCHA_ENCRYPTION_KEY: "Y2hhbmdlX21lX2luX3Byb2R1Y3Rpb24="
+  
+  # Grafana Admin Password
+  GF_SECURITY_ADMIN_PASSWORD: "YWRtaW4xMjM="
+
+# Redis configuration (using Bitnami chart)
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      size: 5Gi
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 200m
+        memory: 512Mi
+
+# PostgreSQL configuration (using Bitnami chart)
+postgresql:
+  enabled: true
+  auth:
+    username: captcha_user
+    password: "change_me_in_production"
+    database: secure_captcha
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    initdb:
+      scripts:
+        init.sql: |
+          -- Create tables for Secure CAPTCHA
+          CREATE TABLE IF NOT EXISTS captcha_sessions (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            session_id VARCHAR(255) UNIQUE NOT NULL,
+            captcha_type VARCHAR(50) NOT NULL,
+            difficulty VARCHAR(20) NOT NULL,
+            challenge_data JSONB NOT NULL,
+            answer_hash VARCHAR(255) NOT NULL,
+            attempts INTEGER DEFAULT 0,
+            max_attempts INTEGER DEFAULT 3,
+            expires_at TIMESTAMP NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            ip_address INET,
+            user_agent TEXT,
+            is_solved BOOLEAN DEFAULT FALSE,
+            solved_at TIMESTAMP
+          );
+
+          CREATE TABLE IF NOT EXISTS security_events (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            event_type VARCHAR(100) NOT NULL,
+            severity VARCHAR(20) NOT NULL,
+            source_ip INET,
+            user_agent TEXT,
+            details JSONB,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            session_id VARCHAR(255),
+            api_key VARCHAR(255)
+          );
+
+          CREATE TABLE IF NOT EXISTS api_keys (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            key_hash VARCHAR(255) UNIQUE NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            permissions JSONB DEFAULT '[]',
+            rate_limit INTEGER DEFAULT 1000,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_used_at TIMESTAMP,
+            expires_at TIMESTAMP
+          );
+
+          -- Create indexes
+          CREATE INDEX idx_captcha_sessions_session_id ON captcha_sessions(session_id);
+          CREATE INDEX idx_captcha_sessions_expires_at ON captcha_sessions(expires_at);
+          CREATE INDEX idx_security_events_event_type ON security_events(event_type);
+          CREATE INDEX idx_security_events_timestamp ON security_events(timestamp);
+          CREATE INDEX idx_api_keys_key_hash ON api_keys(key_hash);
+
+          -- Create function for updating updated_at
+          CREATE OR REPLACE FUNCTION update_updated_at_column()
+          RETURNS TRIGGER AS $$
+          BEGIN
+            NEW.updated_at = CURRENT_TIMESTAMP;
+            RETURN NEW;
+          END;
+          $$ language 'plpgsql';
+
+          -- Create trigger for captcha_sessions
+          CREATE TRIGGER update_captcha_sessions_updated_at
+            BEFORE UPDATE ON captcha_sessions
+            FOR EACH ROW
+            EXECUTE FUNCTION update_updated_at_column();
+
+# Prometheus configuration
+prometheus:
+  enabled: true
+  image:
+    repository: prom/prometheus
+    tag: "v2.45.0"
+  persistence:
+    enabled: true
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  service:
+    type: ClusterIP
+    port: 9090
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/auth-type: "basic"
+      nginx.ingress.kubernetes.io/auth-secret: "prometheus-basic-auth"
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    hosts:
+      - host: prometheus.captcha.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: prometheus-tls
+        hosts:
+          - prometheus.captcha.example.com
+
+# Grafana configuration
+grafana:
+  enabled: true
+  image:
+    repository: grafana/grafana
+    tag: "10.0.0"
+  persistence:
+    enabled: true
+    size: 5Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  service:
+    type: ClusterIP
+    port: 3000
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/auth-type: "basic"
+      nginx.ingress.kubernetes.io/auth-secret: "grafana-basic-auth"
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    hosts:
+      - host: grafana.captcha.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: grafana-tls
+        hosts:
+          - grafana.captcha.example.com
+
+# Network Policy
+networkPolicy:
+  enabled: true
+
+# RBAC
+rbac:
+  create: true
+
+# Service Account
+serviceAccount:
+  create: true
+  name: "secure-captcha-sa"
+  annotations: {}
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# Monitoring
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    scrapeTimeout: 10s
+
+# Logging
+logging:
+  level: info
+  format: json
+
+# Security
+security:
+  podSecurityPolicy:
+    enabled: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    fsGroup: 1001

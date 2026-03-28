@@ -1,0 +1,14 @@
+{{- if .Values.podDisruptionBudget.enabled -}}
+apiVersion: {{ include "secure-captcha.pdb.apiVersion" . }}
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "secure-captcha.pdbName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "secure-captcha.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "secure-captcha.selectorLabels" . | nindent 6 }}
+{{- end }}

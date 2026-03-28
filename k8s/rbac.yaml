@@ -1,0 +1,105 @@
+---
+# Service Account for Secure CAPTCHA Application
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: secure-captcha-sa
+  namespace: secure-captcha
+  labels:
+    app.kubernetes.io/name: secure-captcha
+    app.kubernetes.io/component: serviceaccount
+  annotations:
+    description: "Service account for Secure CAPTCHA application pods"
+
+---
+# Role for Secure CAPTCHA Application
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: secure-captcha-role
+  namespace: secure-captcha
+  labels:
+    app.kubernetes.io/name: secure-captcha
+    app.kubernetes.io/component: role
+rules:
+  # Allow reading ConfigMaps and Secrets in the namespace
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+  
+  # Allow reading Pods for service discovery
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  
+  # Allow reading Services for service discovery
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch"]
+  
+  # Allow creating and managing Events for logging
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+
+---
+# Role Binding for Secure CAPTCHA Application
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: secure-captcha-rolebinding
+  namespace: secure-captcha
+  labels:
+    app.kubernetes.io/name: secure-captcha
+    app.kubernetes.io/component: rolebinding
+subjects:
+  - kind: ServiceAccount
+    name: secure-captcha-sa
+    namespace: secure-captcha
+roleRef:
+  kind: Role
+  name: secure-captcha-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ClusterRole for Prometheus Monitoring (if needed)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: secure-captcha-monitoring-role
+  labels:
+    app.kubernetes.io/name: secure-captcha
+    app.kubernetes.io/component: monitoring-role
+rules:
+  # Allow Prometheus to scrape metrics from pods
+  - apiGroups: [""]
+    resources: ["pods", "services", "endpoints"]
+    verbs: ["get", "list", "watch"]
+  
+  # Allow reading nodes for node-level metrics
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  
+  # Allow reading namespaces
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch"]
+
+---
+# ClusterRole Binding for Prometheus Monitoring
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: secure-captcha-monitoring-rolebinding
+  labels:
+    app.kubernetes.io/name: secure-captcha
+    app.kubernetes.io/component: monitoring-rolebinding
+subjects:
+  - kind: ServiceAccount
+    name: prometheus-sa
+    namespace: secure-captcha
+roleRef:
+  kind: ClusterRole
+  name: secure-captcha-monitoring-role
+  apiGroup: rbac.authorization.k8s.io

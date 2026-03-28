@@ -1,0 +1,54 @@
+{{- if .Values.app.autoscaling.enabled }}
+apiVersion: {{ include "secure-captcha.hpa.apiVersion" . }}
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "secure-captcha.hpaName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "secure-captcha.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: {{ include "secure-captcha.deployment.apiVersion" . }}
+    kind: Deployment
+    name: {{ include "secure-captcha.fullname" . }}
+  minReplicas: {{ .Values.app.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.app.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.app.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.app.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.app.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.app.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+    {{- range .Values.app.autoscaling.metrics }}
+    - {{- toYaml . | nindent 6 }}
+    {{- end }}
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 25
+          periodSeconds: 60
+      selectPolicy: Min
+{{- end }}

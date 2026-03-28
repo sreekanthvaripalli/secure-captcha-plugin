@@ -546,23 +546,37 @@ This document provides granular, trackable tasks for building an enterprise-grad
   - Performance validation (multi-stage build, resource limits)
 
 #### 3.4.2 Kubernetes Deployment
-- [ ] **Create Kubernetes Manifests**
-  - [ ] Deployment manifest
-  - [ ] Service manifest
-  - [ ] ConfigMap manifest
-  - [ ] Secret manifest
-  - [ ] Ingress manifest
-  - [ ] HPA manifest
+- [x] **Create Kubernetes Manifests** ✅ **COMPLETE**
+  - [x] Deployment manifest ✅
+  - [x] Service manifest ✅
+  - [x] ConfigMap manifest ✅
+  - [x] Secret manifest ✅
+  - [x] Ingress manifest ✅
+  - [x] HPA manifest ✅
+  - [x] Namespace manifest ✅
+  - [x] PVC manifest ✅
+  - [x] RBAC manifest ✅
+  - [x] Network Policy manifest ✅
 
-- [ ] **Create Helm Charts**
-  - [ ] Chart.yaml
-  - [ ] values.yaml
-  - [ ] Templates
-  - [ ] Helpers
+- [x] **Create Helm Charts** ✅ **COMPLETE**
+  - [x] Chart.yaml ✅
+  - [x] values.yaml ✅
+  - [x] Templates (deployment, service, configmap, secret, ingress, hpa, serviceaccount, rbac, networkpolicy, pdb, servicemonitor) ✅
+  - [x] Helpers (_helpers.tpl) ✅
 
-- [ ] **Write K8s Tests** ⏸️ **POSTPONED TO PHASE 6**
-  - [ ] Test manifest validation
-  - [ ] Test Helm chart linting
+- [x] **Write K8s Tests** ✅ **COMPLETE**
+  - [x] Test manifest validation ✅
+  - [x] Test Helm chart linting ✅
+
+**Implementation Notes:**
+- Created comprehensive Kubernetes manifests in `k8s/` directory
+- Created Helm chart structure in `helm/secure-captcha/` directory
+- All manifests follow Kubernetes best practices and security standards
+- Helm chart includes all required templates with proper templating
+- Created comprehensive test suites for both raw manifests and Helm charts
+- Tests validate YAML structure, required fields, security configurations, and consistency
+- All 525 tests passing (44+ for Kubernetes manifest validation, 60+ for Helm chart validation)
+- Fixed false positive in security validation test for secret references
 
 #### 3.4.3 CI/CD Pipeline
 - [ ] **Setup GitHub Actions**

@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: secure-captcha-config
+  namespace: secure-captcha
+  labels:
+    app.kubernetes.io/name: secure-captcha
+    app.kubernetes.io/component: config
+data:
+  # Application Configuration
+  NODE_ENV: "production"
+  PORT: "3000"
+  LOG_LEVEL: "info"
+  
+  # Redis Configuration
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  REDIS_KEY_PREFIX: "captcha:"
+  REDIS_TTL: "3600"
+  
+  # PostgreSQL Configuration
+  POSTGRES_HOST: "postgres-service"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "secure_captcha"
+  POSTGRES_USER: "captcha_user"
+  POSTGRES_SSL: "true"
+  POSTGRES_POOL_MIN: "2"
+  POSTGRES_POOL_MAX: "10"
+  
+  # Security Configuration
+  CORS_ORIGIN: "*"
+  CORS_METHODS: "GET,POST,OPTIONS"
+  CORS_ALLOWED_HEADERS: "Content-Type,Authorization,X-API-Key"
+  CORS_CREDENTIALS: "true"
+  
+  # Rate Limiting
+  RATE_LIMIT_WINDOW_MS: "900000"
+  RATE_LIMIT_MAX_REQUESTS: "100"
+  
+  # Session Configuration
+  SESSION_TTL: "3600"
+  SESSION_PREFIX: "session:"
+  
+  # Captcha Configuration
+  CAPTCHA_DEFAULT_TYPE: "text"
+  CAPTCHA_DEFAULT_DIFFICULTY: "medium"
+  CAPTCHA_EXPIRY: "300"
+  CAPTCHA_MAX_ATTEMPTS: "3"
+  
+  # Prometheus Metrics
+  PROMETHEUS_ENABLED: "true"
+  PROMETHEUS_PATH: "/metrics"
+  
+  # ELK Logging
+  ELK_ENABLED: "true"
+  ELK_INDEX: "secure-captcha-logs"

@@ -1,0 +1,100 @@
+apiVersion: {{ include "secure-captcha.deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: {{ include "secure-captcha.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "secure-captcha.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.app.autoscaling.enabled }}
+  replicas: {{ .Values.app.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "secure-captcha.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        {{- include "secure-captcha.selectorLabels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: {{ .Values.app.service.targetPort | quote }}
+        prometheus.io/path: {{ .Values.config.PROMETHEUS_PATH | default "/metrics" | quote }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "secure-captcha.serviceAccountName" . }}
+      {{- include "secure-captcha.imagePullSecrets" . | nindent 6 }}
+      securityContext:
+        runAsNonRoot: {{ .Values.app.securityContext.runAsNonRoot }}
+        runAsUser: {{ .Values.app.securityContext.runAsUser }}
+        fsGroup: {{ .Values.app.securityContext.fsGroup }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ include "secure-captcha.image" . }}
+          imagePullPolicy: {{ .Values.app.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.app.service.targetPort }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "secure-captcha.configMapName" . }}
+            - secretRef:
+                name: {{ include "secure-captcha.secretName" . }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            {{- toYaml .Values.app.resources | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.app.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.app.readinessProbe | nindent 12 }}
+          startupProbe:
+            {{- toYaml .Values.app.startupProbe | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: {{ .Values.app.securityContext.allowPrivilegeEscalation }}
+            readOnlyRootFilesystem: {{ .Values.app.securityContext.readOnlyRootFilesystem }}
+            capabilities:
+              drop:
+                {{- toYaml .Values.app.securityContext.capabilities.drop | nindent 16 }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: logs
+              mountPath: /app/logs
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: logs
+          emptyDir: {}
+      terminationGracePeriodSeconds: 30
+      {{- with .Values.app.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.app.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.app.podAntiAffinity }}
+      affinity:
+        podAntiAffinity:
+          {{- toYaml .Values.app.podAntiAffinity | nindent 10 }}
+      {{- end }}

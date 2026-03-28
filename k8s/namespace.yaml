@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: secure-captcha
+  labels:
+    app.kubernetes.io/name: secure-captcha
+    app.kubernetes.io/part-of: secure-captcha-plugin
+    environment: production

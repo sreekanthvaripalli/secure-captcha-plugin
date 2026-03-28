@@ -1,0 +1,30 @@
+apiVersion: v2
+name: secure-captcha
+description: A Helm chart for deploying Secure CAPTCHA Plugin on Kubernetes
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - captcha
+  - security
+  - authentication
+  - bot-detection
+home: https://github.com/sreekanthvaripalli/secure-captcha-plugin
+sources:
+  - https://github.com/sreekanthvaripalli/secure-captcha-plugin
+maintainers:
+  - name: Secure CAPTCHA Team
+    email: team@secure-captcha.com
+icon: https://secure-captcha.com/icon.png
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/category: security
+dependencies:
+  - name: redis
+    version: "~17.0.0"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled
+  - name: postgresql
+    version: "~12.0.0"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled

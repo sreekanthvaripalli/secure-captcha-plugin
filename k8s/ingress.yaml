@@ -1,0 +1,148 @@
+---
+# Ingress for Main Application
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: secure-captcha-ingress
+  namespace: secure-captcha
+  labels:
+    app.kubernetes.io/name: secure-captcha
+    app.kubernetes.io/component: ingress
+  annotations:
+    # NGINX Ingress Controller annotations
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+    
+    # CORS configuration
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization, X-API-Key"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';";
+    
+    # Certificate management (for cert-manager)
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    
+    # Prometheus metrics
+    nginx.ingress.kubernetes.io/enable-metrics: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - captcha.example.com
+        - api.captcha.example.com
+      secretName: secure-captcha-tls
+  rules:
+    - host: captcha.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: secure-captcha-service
+                port:
+                  name: http
+    - host: api.captcha.example.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: secure-captcha-service
+                port:
+                  name: http
+          - path: /metrics
+            pathType: Exact
+            backend:
+              service:
+                name: secure-captcha-service
+                port:
+                  name: http
+
+---
+# Ingress for Grafana (Monitoring Dashboard)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-ingress
+  namespace: secure-captcha
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/auth-type: "basic"
+    nginx.ingress.kubernetes.io/auth-secret: "grafana-basic-auth"
+    nginx.ingress.kubernetes.io/auth-realm: "Authentication Required"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - grafana.captcha.example.com
+      secretName: grafana-tls
+  rules:
+    - host: grafana.captcha.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana-service
+                port:
+                  name: grafana
+
+---
+# Ingress for Prometheus (Metrics Dashboard)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus-ingress
+  namespace: secure-captcha
+  labels:
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/component: ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/auth-type: "basic"
+    nginx.ingress.kubernetes.io/auth-secret: "prometheus-basic-auth"
+    nginx.ingress.kubernetes.io/auth-realm: "Authentication Required"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - prometheus.captcha.example.com
+      secretName: prometheus-tls
+  rules:
+    - host: prometheus.captcha.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus-service
+                port:
+                  name: prometheus

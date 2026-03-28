@@ -1,0 +1,46 @@
+{{- if .Values.rbac.create -}}
+apiVersion: {{ include "secure-captcha.rbac.apiVersion" . }}
+kind: Role
+metadata:
+  name: {{ include "secure-captcha.roleName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "secure-captcha.labels" . | nindent 4 }}
+rules:
+  # Allow reading ConfigMaps and Secrets in the namespace
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+  
+  # Allow reading Pods for service discovery
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  
+  # Allow reading Services for service discovery
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch"]
+  
+  # Allow creating and managing Events for logging
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+
+---
+apiVersion: {{ include "secure-captcha.rbac.apiVersion" . }}
+kind: RoleBinding
+metadata:
+  name: {{ include "secure-captcha.roleBindingName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "secure-captcha.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "secure-captcha.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: {{ include "secure-captcha.roleName" . }}
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

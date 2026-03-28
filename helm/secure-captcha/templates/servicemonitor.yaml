@@ -1,0 +1,21 @@
+{{- if .Values.monitoring.serviceMonitor.enabled -}}
+apiVersion: {{ include "secure-captcha.serviceMonitor.apiVersion" . }}
+kind: ServiceMonitor
+metadata:
+  name: {{ include "secure-captcha.serviceMonitorName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "secure-captcha.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "secure-captcha.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: http
+      path: {{ .Values.config.PROMETHEUS_PATH | default "/metrics" }}
+      interval: {{ .Values.monitoring.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.monitoring.serviceMonitor.scrapeTimeout }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+{{- end }}
