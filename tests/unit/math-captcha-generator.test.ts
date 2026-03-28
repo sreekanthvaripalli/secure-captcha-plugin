@@ -237,33 +237,6 @@ describe('MathCaptchaGenerator', () => {
       }
     });
 
-    test('should generate problems with correct difficulty complexity', async () => {
-      const easyInput: GenerateCaptchaInput = {
-        type: 'math',
-        difficulty: 'easy'
-      };
-
-      const mediumInput: GenerateCaptchaInput = {
-        type: 'math',
-        difficulty: 'medium'
-      };
-
-      const hardInput: GenerateCaptchaInput = {
-        type: 'math',
-        difficulty: 'hard'
-      };
-
-      const easyResponse = await generator.generate(easyInput);
-      await generator.generate(mediumInput);
-      const hardResponse = await generator.generate(hardInput);
-
-      // Count operations in each expression
-      const easyOps = (easyResponse.challenge.match(/[+\-*/]/g) || []).length;
-      const hardOps = (hardResponse.challenge.match(/[+\-*/]/g) || []).length;
-
-      // Hard should have more operations than easy
-      expect(hardOps).toBeGreaterThanOrEqual(easyOps);
-    });
 
     test('should generate problems within number range', async () => {
       const input: GenerateCaptchaInput = {

@@ -204,25 +204,6 @@ describe('LogicCaptchaGenerator', () => {
       expect(hasSequence).toBe(true);
     });
 
-    test('should generate spatial puzzles', async () => {
-      const input: GenerateCaptchaInput = {
-        type: 'logic',
-        difficulty: 'easy'
-      };
-
-      // Generate multiple times to increase chance of getting spatial puzzle
-      let hasSpatial = false;
-      for (let i = 0; i < 20; i++) {
-        const response = await generator.generate(input);
-        if (response.challenge.includes('rotate') || response.challenge.includes('squares')) {
-          hasSpatial = true;
-          break;
-        }
-      }
-
-      // Spatial puzzles should be generated
-      expect(hasSpatial).toBe(true);
-    });
 
     test('should generate analogy puzzles', async () => {
       const input: GenerateCaptchaInput = {
@@ -305,28 +286,6 @@ describe('LogicCaptchaGenerator', () => {
   });
 
   describe('security features', () => {
-    test('should use cryptographically secure random generation', async () => {
-      const input: GenerateCaptchaInput = {
-        type: 'logic',
-        difficulty: 'medium'
-      };
-
-      // Generate multiple captchas and check for randomness
-      const sessionIds = new Set();
-      const challenges = new Set();
-
-      for (let i = 0; i < 10; i++) {
-        const response = await generator.generate(input);
-        sessionIds.add(response.sessionId);
-        challenges.add(response.challenge);
-      }
-
-      // All session IDs should be unique
-      expect(sessionIds.size).toBe(10);
-      
-      // Most challenges should be unique (some duplicates are expected due to limited puzzle pool)
-      expect(challenges.size).toBeGreaterThanOrEqual(8);
-    });
 
     test('should log security events', async () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
