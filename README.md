@@ -865,6 +865,132 @@ The deployment includes:
 
 ---
 
+## 🔄 CI/CD Pipeline
+
+The Secure CAPTCHA Plugin includes a comprehensive CI/CD pipeline using GitHub Actions for automated testing, building, security scanning, and deployment.
+
+### GitHub Actions Workflows
+
+#### 1. Lint Workflow (`.github/workflows/lint.yml`)
+Runs on every push and pull request to ensure code quality:
+- ESLint for code linting
+- Prettier for code formatting
+- TypeScript compilation check
+- Runs on Node.js 18.x and 20.x
+
+```bash
+# Trigger manually
+gh workflow run lint.yml
+```
+
+#### 2. Test Workflow (`.github/workflows/test.yml`)
+Runs comprehensive tests with service dependencies:
+- Unit tests
+- Integration tests
+- Code coverage reporting to Codecov
+- Uses Redis and PostgreSQL services for realistic testing
+
+```bash
+# Trigger manually
+gh workflow run test.yml
+```
+
+#### 3. Build Workflow (`.github/workflows/build.yml`)
+Builds the application and Docker image:
+- TypeScript compilation
+- Docker image build and push to Docker Hub
+- Build artifact upload
+- Uses GitHub Actions cache for faster builds
+
+```bash
+# Trigger manually
+gh workflow run build.yml
+```
+
+#### 4. Security Scan Workflow (`.github/workflows/security.yml`)
+Performs comprehensive security analysis:
+- npm audit for dependency vulnerabilities
+- Snyk security scanning
+- OWASP Dependency Check
+- Trivy container scanning
+- Runs weekly on schedule
+- Uploads results to GitHub Security tab
+
+```bash
+# Trigger manually
+gh workflow run security.yml
+```
+
+#### 5. Deploy Workflow (`.github/workflows/deploy.yml`)
+Automated deployment to staging and production:
+- **Staging**: Deploys on push to `main` branch
+- **Production**: Deploys on version tags (`v*`)
+- **Manual**: Supports manual deployment via workflow dispatch
+- Runs smoke tests after deployment
+- Creates GitHub releases for production deployments
+
+```bash
+# Deploy to staging (automatic on main branch push)
+git push origin main
+
+# Deploy to production (create a version tag)
+git tag v1.0.0
+git push origin v1.0.0
+
+# Manual deployment
+gh workflow run deploy.yml -f environment=staging
+gh workflow run deploy.yml -f environment=production
+```
+
+### Required Secrets
+
+Configure these secrets in your GitHub repository settings:
+
+| Secret Name | Description |
+|-------------|-------------|
+| `DOCKERHUB_USERNAME` | Docker Hub username |
+| `DOCKERHUB_TOKEN` | Docker Hub access token |
+| `SNYK_TOKEN` | Snyk API token for security scanning |
+| `KUBE_CONFIG_STAGING` | Kubernetes config for staging environment |
+| `KUBE_CONFIG_PRODUCTION` | Kubernetes config for production environment |
+
+### Pipeline Status Badges
+
+Add these badges to your repository:
+
+```markdown
+[![Lint](https://github.com/your-org/secure-captcha-plugin/actions/workflows/lint.yml/badge.svg)](https://github.com/your-org/secure-captcha-plugin/actions/workflows/lint.yml)
+[![Test](https://github.com/your-org/secure-captcha-plugin/actions/workflows/test.yml/badge.svg)](https://github.com/your-org/secure-captcha-plugin/actions/workflows/test.yml)
+[![Build](https://github.com/your-org/secure-captcha-plugin/actions/workflows/build.yml/badge.svg)](https://github.com/your-org/secure-captcha-plugin/actions/workflows/build.yml)
+[![Security](https://github.com/your-org/secure-captcha-plugin/actions/workflows/security.yml/badge.svg)](https://github.com/your-org/secure-captcha-plugin/actions/workflows/security.yml)
+[![Deploy](https://github.com/your-org/secure-captcha-plugin/actions/workflows/deploy.yml/badge.svg)](https://github.com/your-org/secure-captcha-plugin/actions/workflows/deploy.yml)
+```
+
+### Branch Strategy
+
+- **main**: Production-ready code, triggers staging deployment
+- **develop**: Development branch, triggers lint and test workflows
+- **Feature branches**: Create pull requests to `develop`
+- **Release tags**: Create tags like `v1.0.0` to trigger production deployment
+
+### Monitoring Deployments
+
+```bash
+# View workflow runs
+gh run list
+
+# View specific workflow run
+gh run view <run-id>
+
+# Download build artifacts
+gh run download <run-id>
+
+# View deployment logs
+gh run view <run-id> --log
+```
+
+---
+
 ## 📚 Documentation
 
 - **[Functional Specification](tasks/FUNCTIONAL_SPECIFICATION.md)**: Complete functional requirements
