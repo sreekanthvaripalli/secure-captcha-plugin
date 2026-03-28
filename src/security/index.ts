@@ -8,3 +8,4 @@ export * from './crypto';
 export * from './input-validation';
 export * from './security-logger';
 export * from './mouse-movement-analyzer';
+export * from './keystroke-dynamics-analyzer';
