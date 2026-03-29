@@ -17,3 +17,4 @@ export * from './jwt';
 export * from './api-key';
 export * from './audit-logger';
 export * from './gdpr-compliance';
+export * from './soc2-compliance';
