@@ -1068,6 +1068,225 @@ console.log(`Lower bound: ${thresholds.lowerBound}`);
 
 ---
 
+## 🔐 OAuth 2.0 / OpenID Connect
+
+The Secure CAPTCHA Plugin includes a comprehensive OAuth 2.0 / OpenID Connect implementation for enterprise-grade authentication and authorization.
+
+### OAuth 2.0 Features
+
+- **Authorization Code Flow**: Full RFC 6749 compliance with PKCE support
+- **PKCE (Proof Key for Code Exchange)**: S256 and plain code challenge methods for enhanced security
+- **Token Refresh**: Automatic token refresh with configurable rotation
+- **Scope Management**: Fine-grained scope control for access tokens
+- **Provider Integration**: Pre-configured support for Google, GitHub, and Microsoft
+- **Client Management**: Registration, validation, and lifecycle management
+- **Token Introspection**: RFC 7662 compliant token introspection
+- **Token Revocation**: RFC 7009 compliant token revocation
+- **Discovery Document**: OpenID Connect discovery endpoint
+- **Security Logging**: Comprehensive audit trail for all OAuth operations
+
+### OAuth 2.0 Usage
+
+```typescript
+import { OAuth2Service } from 'secure-captcha-plugin';
+
+// Initialize OAuth 2.0 service
+const oauth2Service = new OAuth2Service({
+  issuer: 'https://secure-captcha.example.com',
+  authorizationEndpoint: '/oauth2/authorize',
+  tokenEndpoint: '/oauth2/token',
+  userInfoEndpoint: '/oauth2/userinfo',
+  jwksUri: '/oauth2/jwks',
+  revocationEndpoint: '/oauth2/revoke',
+  introspectionEndpoint: '/oauth2/introspect',
+  authorizationCodeLifetime: 600, // 10 minutes
+  accessTokenLifetime: 3600, // 1 hour
+  refreshTokenLifetime: 86400 * 30, // 30 days
+  idTokenLifetime: 3600, // 1 hour
+  requirePkce: true,
+  requireState: true,
+  rotateRefreshTokens: true,
+  supportedScopes: ['openid', 'profile', 'email', 'address', 'phone', 'offline_access'],
+  supportedGrantTypes: ['authorization_code', 'client_credentials', 'refresh_token'],
+  supportedResponseTypes: ['code', 'id_token', 'code id_token'],
+  supportedCodeChallengeMethods: ['plain', 'S256']
+}, securityLogger);
+
+// Register a new OAuth 2.0 client
+const client = oauth2Service.registerClient({
+  name: 'My Application',
+  redirectUris: ['https://myapp.example.com/callback'],
+  allowedScopes: ['openid', 'profile', 'email'],
+  grantTypes: ['authorization_code', 'refresh_token'],
+  responseTypes: ['code', 'id_token'],
+  tokenEndpointAuthMethod: 'client_secret_basic',
+  accessTokenLifetime: 3600,
+  refreshTokenLifetime: 86400 * 30,
+  requirePkce: true,
+  requireConsent: true,
+  isActive: true,
+  metadata: { type: 'web' }
+});
+
+console.log(`Client ID: ${client.id}`);
+console.log(`Client Secret: ${client.secret}`);
+
+// Generate authorization URL with PKCE
+const authUrl = oauth2Service.generateAuthorizationUrl({
+  responseType: 'code',
+  clientId: client.id,
+  redirectUri: 'https://your-app.com/callback',
+  scopes: ['openid', 'profile', 'email'],
+  state: 'random-state-value',
+  codeChallenge: 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
+  codeChallengeMethod: 'S256'
+});
+
+console.log(`Authorization URL: ${authUrl}`);
+
+// Create authorization code
+const authCode = oauth2Service.createAuthorizationCode(
+  client.id,
+  'user-123',
+  'https://your-app.com/callback',
+  ['openid', 'profile', 'email'],
+  'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
+  'S256'
+);
+
+// Exchange authorization code for tokens
+const tokens = await oauth2Service.exchangeCodeForTokens({
+  grantType: 'authorization_code',
+  code: authCode.code,
+  redirectUri: 'https://your-app.com/callback',
+  clientId: client.id,
+  codeVerifier: 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk'
+});
+
+console.log(`Access Token: ${tokens.access_token}`);
+console.log(`Refresh Token: ${tokens.refresh_token}`);
+console.log(`ID Token: ${tokens.id_token}`);
+
+// Refresh access token
+const refreshedTokens = await oauth2Service.refreshAccessToken({
+  grantType: 'refresh_token',
+  refreshToken: tokens.refresh_token,
+  clientId: client.id
+});
+
+// Validate access token
+const accessToken = oauth2Service.validateAccessToken(tokens.access_token);
+if (accessToken) {
+  console.log(`Token valid for user: ${accessToken.userId}`);
+}
+
+// Introspect token
+const introspection = oauth2Service.introspectToken(tokens.access_token);
+console.log(`Token active: ${introspection.active}`);
+console.log(`Token scope: ${introspection.scope}`);
+
+// Get user info from access token
+const userInfo = oauth2Service.getUserInfo(tokens.access_token);
+console.log(`User ID: ${userInfo?.sub}`);
+console.log(`User Name: ${userInfo?.name}`);
+
+// Revoke token
+const revoked = oauth2Service.revokeToken(tokens.access_token, 'access_token');
+console.log(`Token revoked: ${revoked}`);
+
+// Get OpenID Connect discovery document
+const discoveryDoc = oauth2Service.getDiscoveryDocument();
+console.log(`Issuer: ${discoveryDoc.issuer}`);
+console.log(`Authorization Endpoint: ${discoveryDoc.authorization_endpoint}`);
+
+// Get available providers
+const providers = oauth2Service.getProviders();
+providers.forEach(provider => {
+  console.log(`Provider: ${provider.name} (${provider.id})`);
+});
+
+// Get OAuth 2.0 statistics
+const stats = oauth2Service.getStats();
+console.log(`Total Clients: ${stats.totalClients}`);
+console.log(`Active Clients: ${stats.activeClients}`);
+console.log(`Total Access Tokens: ${stats.totalAccessTokens}`);
+console.log(`Token Requests: ${stats.tokenRequests}`);
+
+// Cleanup expired tokens and codes
+oauth2Service.cleanupExpired();
+```
+
+### OAuth 2.0 Configuration
+
+```typescript
+const oauth2Config = {
+  // Server configuration
+  issuer: 'https://secure-captcha.example.com',
+  authorizationEndpoint: '/oauth2/authorize',
+  tokenEndpoint: '/oauth2/token',
+  userInfoEndpoint: '/oauth2/userinfo',
+  jwksUri: '/oauth2/jwks',
+  revocationEndpoint: '/oauth2/revoke',
+  introspectionEndpoint: '/oauth2/introspect',
+  
+  // Token lifetimes
+  authorizationCodeLifetime: 600, // 10 minutes
+  accessTokenLifetime: 3600, // 1 hour
+  refreshTokenLifetime: 86400 * 30, // 30 days
+  idTokenLifetime: 3600, // 1 hour
+  
+  // Security settings
+  requirePkce: true,
+  requireState: true,
+  requireNonce: false,
+  allowRefreshTokenReuse: false,
+  rotateRefreshTokens: true,
+  
+  // Supported features
+  supportedScopes: ['openid', 'profile', 'email', 'address', 'phone', 'offline_access'],
+  supportedGrantTypes: ['authorization_code', 'client_credentials', 'refresh_token'],
+  supportedResponseTypes: ['code', 'id_token', 'code id_token'],
+  supportedCodeChallengeMethods: ['plain', 'S256'],
+  
+  // Logging
+  enableLogging: true,
+  logLevel: 'info'
+};
+```
+
+### Pre-configured OAuth 2.0 Providers
+
+The OAuth 2.0 module includes pre-configured support for popular identity providers:
+
+| Provider | Issuer | Authorization Endpoint | Token Endpoint |
+|----------|--------|----------------------|----------------|
+| **Google** | `https://accounts.google.com` | `https://accounts.google.com/o/oauth2/v2/auth` | `https://oauth2.googleapis.com/token` |
+| **GitHub** | `https://github.com` | `https://github.com/login/oauth/authorize` | `https://github.com/login/oauth/access_token` |
+| **Microsoft** | `https://login.microsoftonline.com/common/v2.0` | `https://login.microsoftonline.com/common/oauth2/v2.0/authorize` | `https://login.microsoftonline.com/common/oauth2/v2.0/token` |
+
+### Default OAuth 2.0 Clients
+
+The module initializes with three default clients:
+
+| Client Name | Type | Grant Types | PKCE Required |
+|-------------|------|-------------|---------------|
+| Secure CAPTCHA Web App | Web | authorization_code, refresh_token | Yes |
+| Secure CAPTCHA Mobile App | Native | authorization_code, refresh_token | Yes |
+| Secure CAPTCHA API Client | Service | client_credentials | No |
+
+### OAuth 2.0 Security Features
+
+- **PKCE Support**: Prevents authorization code interception attacks
+- **Token Rotation**: Automatic refresh token rotation for enhanced security
+- **Token Introspection**: RFC 7662 compliant token validation
+- **Token Revocation**: RFC 7009 compliant token invalidation
+- **Scope Validation**: Fine-grained access control with scope validation
+- **Client Authentication**: Multiple authentication methods (secret_basic, secret_post, none)
+- **State Parameter**: CSRF protection with state parameter validation
+- **Nonce Parameter**: Replay attack prevention with nonce validation
+
+---
+
 ## 📈 Monitoring & Observability
 
 ### Metrics (Prometheus)

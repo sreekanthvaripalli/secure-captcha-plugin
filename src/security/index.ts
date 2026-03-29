@@ -12,3 +12,4 @@ export * from './keystroke-dynamics-analyzer';
 export * from './device-fingerprint-analyzer';
 export * from './bot-detection-ml';
 export * from './threat-intelligence';
+export * from './oauth2';

@@ -17,6 +17,9 @@ export {
   CaptchaGeneratorRegistry 
 } from './core/captcha-generator';
 
+// Export security module
+export * from './security';
+
 // Export types
 export * from './types/captcha';
 export * from './types/security';
