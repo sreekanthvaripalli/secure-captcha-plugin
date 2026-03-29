@@ -1068,6 +1068,259 @@ console.log(`Lower bound: ${thresholds.lowerBound}`);
 
 ---
 
+## 📋 Audit Logging
+
+The Secure CAPTCHA Plugin includes a comprehensive Audit Logging system for tracking all security-relevant events with tamper-proof logs, compliance reporting, and advanced search capabilities.
+
+### Audit Logging Features
+
+- **Comprehensive Audit Trail**: Tracks 11 event types including authentication, authorization, data access, data modification, system configuration, security events, API access, captcha operations, session management, and compliance events
+- **Tamper-Proof Logs**: SHA-256 hash chain integrity verification to detect log tampering
+- **Log Retention Policies**: Configurable retention period with automatic cleanup and archiving
+- **Compliance Reporting**: Generates GDPR and SOC2 compliance reports with findings and recommendations
+- **Audit Log Search**: Full-text search with filtering by date range, event types, severities, actors, resources, and outcomes
+- **Data Sanitization**: Automatic redaction of sensitive fields (passwords, tokens, secrets, keys)
+- **Optional Encryption**: AES-256-GCM encryption for sensitive audit data
+- **Real-time Alerts**: Configurable thresholds for critical events, failed authentications, and suspicious activities
+- **Statistics Tracking**: Comprehensive statistics by event type, severity, and outcome
+- **ELK Stack Integration**: Logs to Elasticsearch via ELKLogger for centralized logging
+
+### Audit Logging Usage
+
+```typescript
+import { AuditLogger, ELKLogger, SecurityLogger } from 'secure-captcha-plugin';
+
+// Initialize Audit Logger
+const auditLogger = new AuditLogger({
+  enableIntegrityChain: true,
+  enableEncryption: false,
+  retentionPolicy: {
+    retentionDays: 365,
+    archiveBeforeDelete: true
+  },
+  complianceStandards: ['GDPR', 'SOC2'],
+  enableRealTimeAlerts: true,
+  alertThresholds: {
+    criticalEventsPerHour: 5,
+    failedAuthenticationsPerHour: 20,
+    suspiciousActivitiesPerHour: 10
+  }
+}, elkLogger, securityLogger);
+
+// Log authentication event
+await auditLogger.logAuthentication(
+  'login',
+  { userId: 'user-123', ip: '192.168.1.1' },
+  'success',
+  { method: 'password' }
+);
+
+// Log authorization event
+await auditLogger.logAuthorization(
+  'access_granted',
+  'api/captcha/generate',
+  { userId: 'user-123' },
+  'success',
+  { permission: 'write' }
+);
+
+// Log data access event
+await auditLogger.logDataAccess(
+  'read',
+  'database/captcha-sessions',
+  { userId: 'admin' },
+  'success',
+  { recordCount: 100 }
+);
+
+// Log security event
+await auditLogger.logSecurityEvent(
+  'suspicious_activity',
+  { ip: '192.168.1.100' },
+  'pending',
+  { reason: 'multiple_failed_logins' }
+);
+
+// Log API access
+await auditLogger.logApiAccess(
+  'POST',
+  '/api/v1/captcha/generate',
+  { userId: 'user-123', ip: '192.168.1.1' },
+  'success',
+  { responseTime: 150 }
+);
+
+// Log captcha operation
+await auditLogger.logCaptchaOperation(
+  'generate',
+  'image',
+  { sessionId: 'session-123' },
+  'success',
+  { difficulty: 'hard' }
+);
+
+// Log session management
+await auditLogger.logSessionManagement(
+  'create',
+  'session-123',
+  { userId: 'user-123' },
+  'success',
+  { expiresAt: new Date() }
+);
+
+// Log compliance event
+await auditLogger.logComplianceEvent(
+  'data_export',
+  'GDPR',
+  { userId: 'user-123' },
+  'success',
+  { dataTypes: ['profile', 'activity'] }
+);
+```
+
+### Audit Log Search
+
+```typescript
+// Search audit logs with filters
+const searchResult = await auditLogger.search({
+  startDate: new Date('2026-01-01'),
+  endDate: new Date('2026-12-31'),
+  eventTypes: ['authentication', 'security_event'],
+  severities: ['warning', 'error', 'critical'],
+  actors: { userId: 'user-123' },
+  outcomes: ['failure'],
+  searchText: 'login',
+  limit: 100,
+  offset: 0
+});
+
+console.log(`Found ${searchResult.total} events`);
+searchResult.events.forEach(event => {
+  console.log(`${event.timestamp}: ${event.action} - ${event.outcome}`);
+});
+```
+
+### Integrity Verification
+
+```typescript
+// Verify audit log integrity
+const integrity = auditLogger.verifyIntegrity();
+if (!integrity.valid) {
+  console.error(`Integrity violation detected at event: ${integrity.brokenAt}`);
+  console.error(`Expected hash: ${integrity.expectedHash}`);
+  console.error(`Actual hash: ${integrity.actualHash}`);
+} else {
+  console.log('Audit log integrity verified successfully');
+}
+```
+
+### Compliance Reporting
+
+```typescript
+// Generate GDPR compliance report
+const gdprReport = await auditLogger.generateComplianceReport(
+  'GDPR',
+  new Date('2026-01-01'),
+  new Date('2026-12-31')
+);
+
+console.log(`Total events: ${gdprReport.summary.totalEvents}`);
+console.log(`Security incidents: ${gdprReport.summary.securityIncidents}`);
+console.log(`Compliance violations: ${gdprReport.summary.complianceViolations}`);
+
+// Review findings
+gdprReport.findings.forEach(finding => {
+  console.log(`[${finding.severity}] ${finding.description}`);
+  console.log(`Recommendation: ${finding.recommendation}`);
+});
+
+// Generate SOC2 compliance report
+const soc2Report = await auditLogger.generateComplianceReport(
+  'SOC2',
+  new Date('2026-01-01'),
+  new Date('2026-12-31')
+);
+```
+
+### Retention Policy
+
+```typescript
+// Apply retention policy to clean up old events
+const result = await auditLogger.applyRetentionPolicy();
+console.log(`Deleted ${result.deleted} events`);
+console.log(`Archived ${result.archived} events`);
+```
+
+### Statistics
+
+```typescript
+// Get audit statistics
+const stats = auditLogger.getStatistics();
+console.log(`Total events: ${stats.totalEvents}`);
+console.log(`Events by type:`, stats.eventsByType);
+console.log(`Events by severity:`, stats.eventsBySeverity);
+console.log(`Events by outcome:`, stats.eventsByOutcome);
+console.log(`Integrity status:`, stats.integrityStatus);
+```
+
+### Audit Event Types
+
+| Event Type | Description | Example Actions |
+|------------|-------------|-----------------|
+| `authentication` | User authentication events | login, logout, login_failed, mfa_challenge |
+| `authorization` | Access control events | access_granted, access_denied, permission_changed |
+| `data_access` | Data read operations | read, export, query, download |
+| `data_modification` | Data write operations | create, update, delete, restore |
+| `system_configuration` | System config changes | config_updated, feature_toggled, setting_changed |
+| `security_event` | Security-related events | suspicious_activity, breach_detected, bot_detected |
+| `user_management` | User account events | user_created, user_deleted, role_assigned |
+| `api_access` | API request events | GET, POST, PUT, DELETE operations |
+| `captcha_operation` | CAPTCHA operations | generate, validate, invalidate |
+| `session_management` | Session events | create, refresh, revoke, expire |
+| `compliance_event` | Compliance events | data_export, consent_updated, audit_requested |
+
+### Audit Severity Levels
+
+| Severity | Description | Use Case |
+|----------|-------------|----------|
+| `info` | Normal operations | Successful logins, data reads |
+| `warning` | Potential issues | Failed logins, rate limit exceeded |
+| `error` | Error conditions | Authorization failures, system errors |
+| `critical` | Critical security events | Data breaches, unauthorized access |
+
+### Audit Log Configuration
+
+```typescript
+const auditConfig = {
+  // Integrity settings
+  enableIntegrityChain: true, // Enable tamper-proof hash chain
+  
+  // Encryption settings
+  enableEncryption: false, // Enable AES-256-GCM encryption
+  encryptionKey: process.env.AUDIT_ENCRYPTION_KEY, // 64-char hex key
+  
+  // Retention settings
+  retentionPolicy: {
+    retentionDays: 365, // Keep logs for 1 year
+    archiveBeforeDelete: true, // Archive before deletion
+    archiveLocation: './audit-archive' // Archive directory
+  },
+  
+  // Compliance settings
+  complianceStandards: ['GDPR', 'SOC2'], // Supported standards
+  
+  // Alert settings
+  enableRealTimeAlerts: true,
+  alertThresholds: {
+    criticalEventsPerHour: 5,
+    failedAuthenticationsPerHour: 20,
+    suspiciousActivitiesPerHour: 10
+  }
+};
+```
+
+---
+
 ## 🔑 API Key Management
 
 The Secure CAPTCHA Plugin includes a comprehensive API Key Management system for secure, scalable API authentication and authorization.
