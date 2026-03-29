@@ -876,17 +876,34 @@ This document provides granular, trackable tasks for building an enterprise-grad
 - Integrated with existing security system via SecurityLogger
 
 #### 4.3.3 API Key Management
-- [ ] **Implement API Keys**
-  - [ ] Key generation
-  - [ ] Key rotation
-  - [ ] Usage tracking
-  - [ ] Rate limit per key
-  - [ ] Key revocation
+- [x] **Implement API Keys** ✅ **COMPLETE**
+  - [x] Key generation ✅
+  - [x] Key rotation ✅
+  - [x] Usage tracking ✅
+  - [x] Rate limit per key ✅
+  - [x] Key revocation ✅
 
-- [ ] **Write API Key Tests** ⏸️ **POSTPONED TO PHASE 6**
-  - [ ] Test key generation
-  - [ ] Test key validation
-  - [ ] Test rate limiting
+- [x] **Write API Key Tests** ✅ **COMPLETE**
+  - [x] Test key generation ✅
+  - [x] Test key validation ✅
+  - [x] Test rate limiting ✅
+
+**Implementation Notes:**
+- Created comprehensive `APIKeyService` in `src/security/api-key.ts`
+- Features include:
+  - **Key Generation**: Cryptographically secure API key generation with configurable prefix and length, automatic secret generation, unique key ID generation, configurable lifetime and expiration
+  - **Key Rotation**: Seamless key rotation with grace period support, automatic old key revocation after grace period, rotation count tracking, metadata preservation during rotation
+  - **Usage Tracking**: Comprehensive usage history tracking per key, endpoint and method tracking, IP address and user agent tracking, configurable time range filtering, usage history limits
+  - **Rate Limiting**: Per-key rate limiting with minute/hour/day limits, burst rate limiting, configurable rate limit windows, automatic counter reset, rate limit state tracking
+  - **Key Revocation**: Individual key revocation, bulk user key revocation, revocation reason tracking, statistics updates on revocation
+  - **Key Management**: Key metadata management, key status tracking (active/revoked/expired/suspended), key update operations, key retrieval by ID or user
+  - **Security Features**: Key hashing for secure storage, configurable key hashing, wildcard permissions and scopes support, comprehensive security logging
+  - **Statistics Tracking**: Total keys generated, active/revoked/expired/suspended counts, validation statistics, rotation and revocation counts, usage record tracking
+  - **Cleanup**: Automatic expired key cleanup, configurable expiration checking
+- Updated `src/security/index.ts` to export the new APIKey module
+- Created 65 comprehensive unit tests in `tests/unit/api-key.test.ts`
+- All 65 tests passing
+- Integrated with existing security system via SecurityLogger
 
 ### Week 4: Compliance & Audit (May 12-16, 2026)
 

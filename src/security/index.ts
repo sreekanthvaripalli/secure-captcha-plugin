@@ -14,3 +14,4 @@ export * from './bot-detection-ml';
 export * from './threat-intelligence';
 export * from './oauth2';
 export * from './jwt';
+export * from './api-key';

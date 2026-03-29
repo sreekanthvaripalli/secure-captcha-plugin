@@ -1068,6 +1068,267 @@ console.log(`Lower bound: ${thresholds.lowerBound}`);
 
 ---
 
+## 🔑 API Key Management
+
+The Secure CAPTCHA Plugin includes a comprehensive API Key Management system for secure, scalable API authentication and authorization.
+
+### API Key Features
+
+- **Key Generation**: Cryptographically secure API key generation with configurable prefix and length
+- **Key Rotation**: Seamless key rotation with grace period support for zero-downtime updates
+- **Usage Tracking**: Comprehensive usage history tracking per key with endpoint and method tracking
+- **Rate Limiting**: Per-key rate limiting with minute/hour/day limits and burst rate limiting
+- **Key Revocation**: Individual and bulk key revocation with reason tracking
+- **Key Management**: Key metadata management, status tracking, and update operations
+- **Security Features**: Key hashing for secure storage, wildcard permissions and scopes support
+- **Statistics Tracking**: Comprehensive statistics for key operations and usage
+- **Cleanup**: Automatic expired key cleanup with configurable expiration checking
+- **Security Logging**: Integration with SecurityLogger for audit trail
+
+### API Key Usage
+
+```typescript
+import { APIKeyService } from 'secure-captcha-plugin';
+
+// Initialize API Key service
+const apiKeyService = new APIKeyService({
+  keyLength: 32,
+  keyPrefix: 'sk_',
+  secretLength: 48,
+  defaultLifetime: 86400 * 365, // 1 year
+  maxLifetime: 86400 * 365 * 5, // 5 years
+  enableExpiration: true,
+  defaultRateLimit: {
+    requestsPerMinute: 60,
+    requestsPerHour: 1000,
+    requestsPerDay: 10000,
+    burstLimit: 10
+  },
+  enableRateLimiting: true,
+  enableKeyHashing: true,
+  enableKeyRotation: true,
+  rotationGracePeriod: 86400, // 24 hours
+  maxKeysPerUser: 10,
+  enableUsageTracking: true,
+  trackIpAddresses: true,
+  trackUserAgents: true,
+  enableLogging: true
+}, securityLogger);
+
+// Generate a new API key
+const apiKeyResult = apiKeyService.generateAPIKey({
+  name: 'Production API Key',
+  userId: 'user-123',
+  clientId: 'client-456',
+  permissions: ['read', 'write'],
+  scopes: ['captcha:generate', 'captcha:validate'],
+  lifetime: 86400 * 30, // 30 days
+  rateLimit: {
+    requestsPerMinute: 120,
+    requestsPerHour: 2000
+  },
+  metadata: { environment: 'production' }
+});
+
+console.log(`API Key: ${apiKeyResult.apiKey}`);
+console.log(`API Secret: ${apiKeyResult.apiSecret}`);
+console.log(`Key ID: ${apiKeyResult.keyId}`);
+
+// Validate an API key
+const validation = apiKeyService.validateAPIKey(apiKeyResult.apiKey, {
+  requiredPermissions: ['read', 'write'],
+  requiredScopes: ['captcha:generate'],
+  endpoint: '/api/v1/captcha/generate',
+  method: 'POST',
+  ipAddress: '192.168.1.1',
+  userAgent: 'Mozilla/5.0'
+});
+
+if (validation.valid) {
+  console.log(`Validated for user: ${validation.userId}`);
+  console.log(`Permissions: ${validation.permissions}`);
+  console.log(`Scopes: ${validation.scopes}`);
+}
+
+// Rotate an API key
+const rotationResult = apiKeyService.rotateAPIKey(apiKeyResult.keyId, {
+  name: 'Rotated Production Key'
+});
+
+console.log(`New API Key: ${rotationResult.newApiKey}`);
+console.log(`New API Secret: ${rotationResult.newApiSecret}`);
+console.log(`Grace Period Ends: ${new Date(rotationResult.gracePeriodEnds * 1000)}`);
+
+// Revoke an API key
+const revoked = apiKeyService.revokeAPIKey(apiKeyResult.keyId, 'Security incident');
+console.log(`Key revoked: ${revoked}`);
+
+// Revoke all keys for a user
+const revokedCount = apiKeyService.revokeAllUserKeys('user-123', 'User account compromised');
+console.log(`Revoked ${revokedCount} keys`);
+
+// Get usage history for a key
+const usageHistory = apiKeyService.getUsageHistory(apiKeyResult.keyId, {
+  startTime: Date.now() - 86400000, // Last 24 hours
+  endTime: Date.now(),
+  limit: 100
+});
+
+console.log(`Usage records: ${usageHistory.length}`);
+usageHistory.forEach(usage => {
+  console.log(`Endpoint: ${usage.endpoint}, Method: ${usage.method}, Time: ${new Date(usage.timestamp)}`);
+});
+
+// Get rate limit state for a key
+const rateLimitState = apiKeyService.getRateLimitState(apiKeyResult.keyId);
+if (rateLimitState) {
+  console.log(`Minute count: ${rateLimitState.minuteCount}`);
+  console.log(`Hour count: ${rateLimitState.hourCount}`);
+  console.log(`Day count: ${rateLimitState.dayCount}`);
+}
+
+// Get all API keys for a user
+const userKeys = apiKeyService.getUserAPIKeys('user-123');
+console.log(`User has ${userKeys.length} API keys`);
+
+// Update an API key
+const updatedKey = apiKeyService.updateAPIKey(apiKeyResult.keyId, {
+  name: 'Updated Production Key',
+  permissions: ['read', 'write', 'admin'],
+  scopes: ['captcha:*'],
+  metadata: { environment: 'production', region: 'us-east-1' }
+});
+
+if (updatedKey) {
+  console.log(`Updated key name: ${updatedKey.name}`);
+  console.log(`Updated permissions: ${updatedKey.permissions}`);
+}
+
+// Get API key statistics
+const stats = apiKeyService.getStats();
+console.log(`Total keys generated: ${stats.totalKeysGenerated}`);
+console.log(`Active keys: ${stats.activeKeys}`);
+console.log(`Revoked keys: ${stats.revokedKeys}`);
+console.log(`Total validations: ${stats.totalValidations}`);
+console.log(`Successful validations: ${stats.successfulValidations}`);
+console.log(`Failed validations: ${stats.failedValidations}`);
+console.log(`Total rotations: ${stats.totalRotations}`);
+console.log(`Total revocations: ${stats.totalRevocations}`);
+
+// Cleanup expired keys
+const cleanedCount = apiKeyService.cleanupExpiredKeys();
+console.log(`Cleaned up ${cleanedCount} expired keys`);
+```
+
+### API Key Configuration
+
+```typescript
+const apiKeyConfig = {
+  // Key generation settings
+  keyLength: 32, // Length of the random part of the key
+  keyPrefix: 'sk_', // Prefix for generated keys
+  secretLength: 48, // Length of the API secret
+  
+  // Key lifetime settings
+  defaultLifetime: 86400 * 365, // 1 year in seconds
+  maxLifetime: 86400 * 365 * 5, // 5 years in seconds
+  enableExpiration: true, // Enable key expiration
+  
+  // Rate limiting settings
+  defaultRateLimit: {
+    requestsPerMinute: 60,
+    requestsPerHour: 1000,
+    requestsPerDay: 10000,
+    burstLimit: 10
+  },
+  enableRateLimiting: true, // Enable per-key rate limiting
+  
+  // Security settings
+  enableKeyHashing: true, // Hash keys for secure storage
+  enableKeyRotation: true, // Enable key rotation
+  rotationGracePeriod: 86400, // 24 hours grace period for rotation
+  maxKeysPerUser: 10, // Maximum keys per user
+  
+  // Usage tracking
+  enableUsageTracking: true, // Track key usage
+  trackIpAddresses: true, // Track IP addresses
+  trackUserAgents: true, // Track user agents
+  
+  // Logging
+  enableLogging: true, // Enable security logging
+  logLevel: 'info' // Log level
+};
+```
+
+### API Key Status Types
+
+| Status | Description |
+|--------|-------------|
+| `active` | Key is active and can be used for authentication |
+| `revoked` | Key has been revoked and cannot be used |
+| `expired` | Key has expired and cannot be used |
+| `suspended` | Key has been temporarily suspended |
+
+### API Key Rate Limiting
+
+The API Key Management system provides comprehensive rate limiting:
+
+| Limit Type | Description | Default |
+|------------|-------------|---------|
+| **Minute Limit** | Maximum requests per minute | 60 |
+| **Hour Limit** | Maximum requests per hour | 1,000 |
+| **Day Limit** | Maximum requests per day | 10,000 |
+| **Burst Limit** | Maximum requests in burst window | 10 |
+
+Rate limit counters automatically reset when their time window expires.
+
+### API Key Usage Tracking
+
+The system tracks comprehensive usage information for each API key:
+
+| Field | Description |
+|-------|-------------|
+| `keyId` | The API key ID |
+| `timestamp` | When the request was made |
+| `endpoint` | The API endpoint accessed |
+| `method` | HTTP method used (GET, POST, etc.) |
+| `statusCode` | HTTP response status code |
+| `responseTime` | Response time in milliseconds |
+| `ipAddress` | Client IP address (if tracking enabled) |
+| `userAgent` | Client user agent (if tracking enabled) |
+
+Usage history can be filtered by time range and limited to a specific number of records.
+
+### API Key Security Features
+
+- **Key Hashing**: API keys are hashed using SHA-256 before storage for enhanced security
+- **Wildcard Permissions**: Support for wildcard permissions (e.g., `*` for all permissions)
+- **Wildcard Scopes**: Support for wildcard scopes (e.g., `captcha:*` for all captcha operations)
+- **Grace Period**: Old keys remain active during rotation grace period for zero-downtime updates
+- **Comprehensive Logging**: All key operations are logged for audit trail
+- **Rate Limiting**: Per-key rate limiting prevents abuse
+- **Automatic Cleanup**: Expired keys are automatically cleaned up
+
+### API Key Statistics
+
+The system tracks comprehensive statistics:
+
+| Statistic | Description |
+|-----------|-------------|
+| `totalKeysGenerated` | Total number of API keys generated |
+| `activeKeys` | Number of currently active keys |
+| `revokedKeys` | Number of revoked keys |
+| `expiredKeys` | Number of expired keys |
+| `suspendedKeys` | Number of suspended keys |
+| `totalValidations` | Total number of key validations |
+| `successfulValidations` | Number of successful validations |
+| `failedValidations` | Number of failed validations |
+| `totalRotations` | Total number of key rotations |
+| `totalRevocations` | Total number of key revocations |
+| `totalUsageRecords` | Total number of usage records |
+| `rateLimitHits` | Number of rate limit violations |
+| `lastActivity` | Timestamp of last activity |
+
 ## 🔐 JWT Token System
 
 The Secure CAPTCHA Plugin includes a comprehensive JWT (JSON Web Token) implementation for secure, stateless authentication and authorization.
