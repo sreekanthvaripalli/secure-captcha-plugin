@@ -548,13 +548,11 @@ export class JWTService {
         // jwt.verify doesn't directly support string[] in the options
         // We'll verify without audience in options and check manually
         decoded = jwt.verify(token, this.config.secret, verifyOptions) as JWTPayload;
-        
+
         // Manual audience validation for array case
         if (decoded.aud) {
           const tokenAudience = Array.isArray(decoded.aud) ? decoded.aud : [decoded.aud];
-          const hasValidAudience = tokenAudience.some(aud => 
-            this.config.audience.includes(aud)
-          );
+          const hasValidAudience = tokenAudience.some(aud => this.config.audience.includes(aud));
           if (!hasValidAudience) {
             throw new jwt.JsonWebTokenError('Audience mismatch');
           }
@@ -783,11 +781,7 @@ export class JWTService {
   /**
    * Revoke token
    */
-  revokeToken(
-    jti: string,
-    tokenType?: TokenType,
-    reason: string = 'Manual revocation'
-  ): boolean {
+  revokeToken(jti: string, tokenType?: TokenType, reason: string = 'Manual revocation'): boolean {
     this.stats.tokenRevocations++;
     this.stats.lastActivity = Date.now();
 
@@ -1145,10 +1139,7 @@ export class JWTService {
    */
   private updateStats(): void {
     this.stats.activeTokens =
-      this.accessTokens.size +
-      this.refreshTokens.size +
-      this.idTokens.size +
-      this.apiTokens.size;
+      this.accessTokens.size + this.refreshTokens.size + this.idTokens.size + this.apiTokens.size;
   }
 
   /**

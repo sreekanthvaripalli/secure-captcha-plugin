@@ -589,9 +589,7 @@ describe('APIKeyService', () => {
       });
 
       it('should throw error when rotating non-existent key', () => {
-        expect(() => apiKeyService.rotateAPIKey('non_existent_key')).toThrow(
-          'API key not found'
-        );
+        expect(() => apiKeyService.rotateAPIKey('non_existent_key')).toThrow('API key not found');
       });
 
       it('should throw error when rotating revoked key', () => {
@@ -604,9 +602,7 @@ describe('APIKeyService', () => {
         const { keyId } = apiKeyService.generateAPIKey(params);
         apiKeyService.revokeAPIKey(keyId, 'Test');
 
-        expect(() => apiKeyService.rotateAPIKey(keyId)).toThrow(
-          'Cannot rotate revoked API key'
-        );
+        expect(() => apiKeyService.rotateAPIKey(keyId)).toThrow('Cannot rotate revoked API key');
       });
 
       it('should log key rotation event', () => {
@@ -908,7 +904,7 @@ describe('APIKeyService', () => {
         const keys = apiKeyService.getUserAPIKeys(params.userId);
 
         expect(keys.length).toBe(3);
-        expect(keys.every((k) => k.userId === params.userId)).toBe(true);
+        expect(keys.every(k => k.userId === params.userId)).toBe(true);
       });
 
       it('should return empty array for user with no keys', () => {
@@ -944,7 +940,7 @@ describe('APIKeyService', () => {
         expect(history.length).toBe(2);
         // History is sorted by timestamp descending, so most recent should be first
         // Since timestamps are very close, we just check both endpoints are present
-        const endpoints = history.map((h) => h.endpoint);
+        const endpoints = history.map(h => h.endpoint);
         expect(endpoints).toContain('/api/v1/captcha/validate');
         expect(endpoints).toContain('/api/v1/captcha/generate');
       });
@@ -961,14 +957,14 @@ describe('APIKeyService', () => {
 
         // First validation at time T
         apiKeyService.validateAPIKey(apiKey, { endpoint: '/api/v1/endpoint1' });
-        
+
         // Get the actual timestamp of the first usage from history
         const firstHistory = apiKeyService.getUsageHistory(keyId);
         const firstUsageTimestamp = firstHistory[0].timestamp;
-        
+
         // Advance time by 1 second to ensure different timestamp
         jest.advanceTimersByTime(1000);
-        
+
         // Second validation at time T+1000
         apiKeyService.validateAPIKey(apiKey, { endpoint: '/api/v1/endpoint2' });
 
@@ -981,7 +977,7 @@ describe('APIKeyService', () => {
 
         expect(history.length).toBe(1);
         expect(history[0].endpoint).toBe('/api/v1/endpoint2');
-        
+
         jest.useRealTimers();
       });
 
@@ -1197,8 +1193,7 @@ describe('APIKeyService', () => {
       const result = service.generateAPIKey(params);
 
       // Should have max lifetime instead of default lifetime
-      const expectedExpiresAt =
-        Math.floor(Date.now() / 1000) + 86400 * 365 * 5; // maxLifetime
+      const expectedExpiresAt = Math.floor(Date.now() / 1000) + 86400 * 365 * 5; // maxLifetime
       expect(result.metadata.expiresAt).toBeGreaterThanOrEqual(expectedExpiresAt - 1);
     });
 

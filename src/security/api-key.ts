@@ -221,7 +221,9 @@ export class APIKeyService {
         userId: params.userId,
         reason: 'Maximum keys per user exceeded',
       });
-      throw new Error(`Maximum number of API keys (${this.config.maxKeysPerUser}) reached for user`);
+      throw new Error(
+        `Maximum number of API keys (${this.config.maxKeysPerUser}) reached for user`
+      );
     }
 
     // Generate key and secret
@@ -399,7 +401,7 @@ export class APIKeyService {
     // Check permissions
     if (options?.requiredPermissions && options.requiredPermissions.length > 0) {
       const hasAllPermissions = options.requiredPermissions.every(
-        (perm) => metadata.permissions.includes(perm) || metadata.permissions.includes('*')
+        perm => metadata.permissions.includes(perm) || metadata.permissions.includes('*')
       );
       if (!hasAllPermissions) {
         this.stats.failedValidations++;
@@ -422,7 +424,7 @@ export class APIKeyService {
     // Check scopes
     if (options?.requiredScopes && options.requiredScopes.length > 0) {
       const hasAllScopes = options.requiredScopes.every(
-        (scope) => metadata.scopes.includes(scope) || metadata.scopes.includes('*')
+        scope => metadata.scopes.includes(scope) || metadata.scopes.includes('*')
       );
       if (!hasAllScopes) {
         this.stats.failedValidations++;
@@ -789,10 +791,10 @@ export class APIKeyService {
 
     let filtered = history;
     if (options?.startTime) {
-      filtered = filtered.filter((usage) => usage.timestamp >= options.startTime!);
+      filtered = filtered.filter(usage => usage.timestamp >= options.startTime!);
     }
     if (options?.endTime) {
-      filtered = filtered.filter((usage) => usage.timestamp <= options.endTime!);
+      filtered = filtered.filter(usage => usage.timestamp <= options.endTime!);
     }
 
     // Sort by timestamp descending
@@ -828,7 +830,11 @@ export class APIKeyService {
     let cleanedCount = 0;
 
     for (const [keyId, metadata] of this.keys.entries()) {
-      if (this.config.enableExpiration && metadata.expiresAt < now && metadata.status === 'active') {
+      if (
+        this.config.enableExpiration &&
+        metadata.expiresAt < now &&
+        metadata.status === 'active'
+      ) {
         metadata.status = 'expired';
         this.stats.activeKeys--;
         this.stats.expiredKeys++;

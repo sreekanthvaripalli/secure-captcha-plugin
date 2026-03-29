@@ -335,10 +335,7 @@ describe('JWTService', () => {
       });
 
       it('should reject a token with wrong secret', () => {
-        const otherService = new JWTService(
-          { secret: 'different-secret' },
-          mockSecurityLogger
-        );
+        const otherService = new JWTService({ secret: 'different-secret' }, mockSecurityLogger);
 
         const { token } = otherService.generateAccessToken({
           userId: 'user123',
@@ -439,9 +436,7 @@ describe('JWTService', () => {
 
         const { token } = jwtService.generateAccessToken(params);
 
-        expect(() => jwtService.refreshAccessToken(token)).toThrow(
-          'Token is not a refresh token'
-        );
+        expect(() => jwtService.refreshAccessToken(token)).toThrow('Token is not a refresh token');
       });
 
       it('should throw error when max generations exceeded', () => {
