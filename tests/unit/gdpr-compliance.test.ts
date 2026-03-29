@@ -954,7 +954,6 @@ describe('GDPRComplianceService', () => {
 
       it('should calculate data subject request statistics', async () => {
         const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        const endDate = new Date();
 
         // Record consent for user-1 before submitting access request
         await gdprService.recordConsent('user-1', 'authentication', 'granted', {
@@ -979,6 +978,9 @@ describe('GDPRComplianceService', () => {
         await gdprService.submitDataSubjectRequest('user-2', 'erasure', {}, {});
 
         await gdprService.submitDataSubjectRequest('user-3', 'portability', {}, {});
+
+        // Set endDate after all requests are submitted
+        const endDate = new Date();
 
         const report = await gdprService.generateComplianceReport(startDate, endDate);
 
