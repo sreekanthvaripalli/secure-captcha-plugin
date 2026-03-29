@@ -1085,6 +1085,287 @@ The Secure CAPTCHA Plugin includes a comprehensive Audit Logging system for trac
 - **Statistics Tracking**: Comprehensive statistics by event type, severity, and outcome
 - **ELK Stack Integration**: Logs to Elasticsearch via ELKLogger for centralized logging
 
+---
+
+## 🔐 GDPR Compliance
+
+The Secure CAPTCHA Plugin includes a comprehensive GDPR Compliance service for implementing data subject rights, consent management, data retention policies, and privacy-by-design features.
+
+### GDPR Compliance Features
+
+- **Data Subject Rights**: Full support for GDPR Articles 15-21 including right to access, rectification, erasure, restriction, portability, and objection
+- **Consent Management**: Record, withdraw, and validate consent with metadata tracking (IP, user agent, consent method, legal basis)
+- **Data Retention Policies**: Automatic deletion of expired records and consents with configurable retention periods
+- **Privacy by Design**: Privacy Impact Assessments (PIA), data minimization, pseudonymization, and anonymization
+- **Compliance Reporting**: Generate comprehensive GDPR compliance reports with consent statistics, data subject request statistics, and data retention statistics
+- **Audit Logging**: All GDPR operations are logged for compliance audit trails
+- **Data Export**: Export personal data in JSON, CSV, or XML formats for data portability
+
+### GDPR Compliance Usage
+
+```typescript
+import { GDPRComplianceService, AuditLogger, SecurityLogger } from 'secure-captcha-plugin';
+
+// Initialize GDPR Compliance service
+const gdprService = new GDPRComplianceService({
+  dataRetentionDays: 365,
+  consentExpirationDays: 365,
+  requestDeadlineDays: 30,
+  enableDataMinimization: true,
+  enablePseudonymization: true,
+  enableAnonymization: true,
+  exportFormats: ['json', 'csv', 'xml'],
+  requireExplicitConsent: true,
+  enablePrivacyByDesign: true,
+  dataSubjectVerificationRequired: true
+}, auditLogger, securityLogger);
+
+// Record consent
+const consent = await gdprService.recordConsent('user-123', 'analytics', 'granted', {
+  ipAddress: '192.168.1.1',
+  userAgent: 'Mozilla/5.0',
+  consentMethod: 'explicit',
+  legalBasis: 'consent'
+});
+
+console.log(`Consent ID: ${consent.id}`);
+console.log(`Expires At: ${consent.expiresAt}`);
+
+// Check valid consent
+const hasConsent = gdprService.hasValidConsent('user-123', 'analytics');
+console.log(`Has valid consent: ${hasConsent}`);
+
+// Withdraw consent
+await gdprService.withdrawConsent(consent.id, {
+  ipAddress: '192.168.1.1'
+});
+
+// Store personal data with GDPR compliance
+const record = await gdprService.storePersonalData(
+  'user-123',
+  'profile',
+  { name: 'John Doe', email: 'john@example.com' },
+  'authentication',
+  'consent',
+  { source: 'registration', retentionPeriod: 90 }
+);
+
+console.log(`Data Record ID: ${record.id}`);
+console.log(`Expires At: ${record.expiresAt}`);
+
+// Submit data subject request (Right to Access)
+const accessRequest = await gdprService.submitDataSubjectRequest(
+  'user-123',
+  'access',
+  { format: 'json' },
+  { ipAddress: '192.168.1.1' }
+);
+
+// Verify data subject identity
+await gdprService.verifyDataSubject(accessRequest.id, 'email_verification');
+
+// Process access request and export data
+const dataExport = await gdprService.processDataAccessRequest(accessRequest.id, 'json');
+console.log(`Exported ${dataExport.data.personalData.length} records`);
+
+// Submit erasure request (Right to be Forgotten)
+const erasureRequest = await gdprService.submitDataSubjectRequest(
+  'user-123',
+  'erasure',
+  {},
+  { ipAddress: '192.168.1.1' }
+);
+
+await gdprService.verifyDataSubject(erasureRequest.id, 'email');
+
+// Process erasure request
+const erasureResult = await gdprService.processDataErasureRequest(erasureRequest.id);
+console.log(`Deleted: ${erasureResult.deletedRecords}, Anonymized: ${erasureResult.anonymizedRecords}`);
+
+// Submit rectification request (Right to Rectification)
+const rectificationRequest = await gdprService.submitDataSubjectRequest(
+  'user-123',
+  'rectification',
+  {},
+  { ipAddress: '192.168.1.1' }
+);
+
+await gdprService.verifyDataSubject(rectificationRequest.id, 'email');
+
+// Process rectification request
+const updatedRecord = await gdprService.processDataRectificationRequest(
+  rectificationRequest.id,
+  'profile',
+  { name: 'Jane Doe', email: 'jane@example.com' }
+);
+
+console.log(`Updated record: ${updatedRecord.data.name}`);
+
+// Submit portability request (Right to Data Portability)
+const portabilityRequest = await gdprService.submitDataSubjectRequest(
+  'user-123',
+  'portability',
+  { format: 'csv' },
+  { ipAddress: '192.168.1.1' }
+);
+
+await gdprService.verifyDataSubject(portabilityRequest.id, 'email');
+
+// Process portability request
+const portableData = await gdprService.processDataPortabilityRequest(portabilityRequest.id, 'csv');
+console.log(`Exported data in CSV format`);
+
+// Create Privacy Impact Assessment
+const pia = await gdprService.createPrivacyImpactAssessment(
+  'User Analytics',
+  'Collect and analyze user behavior data',
+  ['clicks', 'page_views', 'session_duration'],
+  ['analytics', 'product_improvement'],
+  'legitimate_interest'
+);
+
+console.log(`PIA ID: ${pia.id}`);
+console.log(`Risk Assessment: ${pia.riskAssessment.overallRisk}`);
+
+// Pseudonymize data
+const pseudonymized = gdprService.pseudonymizeData(
+  { userId: 'user-123', email: 'john@example.com' },
+  'salt-123'
+);
+
+console.log(`Pseudonymized userId: ${pseudonymized.userId}`);
+
+// Apply data retention policy
+const retentionResult = await gdprService.applyRetentionPolicy();
+console.log(`Deleted ${retentionResult.deletedRecords} expired records`);
+console.log(`Expired ${retentionResult.expiredConsents} consents`);
+
+// Generate GDPR compliance report
+const report = await gdprService.generateComplianceReport(
+  new Date('2026-01-01'),
+  new Date('2026-12-31')
+);
+
+console.log(`Total Consents: ${report.consentStatistics.totalConsents}`);
+console.log(`Granted Consents: ${report.consentStatistics.grantedConsents}`);
+console.log(`Withdrawn Consents: ${report.consentStatistics.withdrawnConsents}`);
+console.log(`Data Subject Requests: ${report.dataSubjectRequests.total}`);
+console.log(`Completed Requests: ${report.dataSubjectRequests.completed}`);
+
+// Get GDPR statistics
+const stats = gdprService.getStatistics();
+console.log(`Total Consents: ${stats.totalConsents}`);
+console.log(`Active Consents: ${stats.activeConsents}`);
+console.log(`Total Data Records: ${stats.totalDataRecords}`);
+console.log(`Total Requests: ${stats.totalRequests}`);
+console.log(`Pending Requests: ${stats.pendingRequests}`);
+console.log(`Total Assessments: ${stats.totalAssessments}`);
+```
+
+### GDPR Configuration
+
+```typescript
+const gdprConfig = {
+  // Data retention settings
+  dataRetentionDays: 365, // Default retention period in days
+  consentExpirationDays: 365, // Consent expiration in days
+  requestDeadlineDays: 30, // Deadline for processing data subject requests
+  
+  // Privacy settings
+  enableDataMinimization: true, // Keep only required fields
+  enablePseudonymization: true, // Pseudonymize identifiers
+  enableAnonymization: true, // Anonymize data on erasure
+  
+  // Export settings
+  exportFormats: ['json', 'csv', 'xml'], // Supported export formats
+  
+  // Consent settings
+  requireExplicitConsent: true, // Require explicit consent for data processing
+  enablePrivacyByDesign: true, // Enable privacy-by-design features
+  
+  // Verification settings
+  dataSubjectVerificationRequired: true // Require identity verification for requests
+};
+```
+
+### GDPR Data Subject Rights
+
+| Right | GDPR Article | Description | Implementation |
+|-------|--------------|-------------|----------------|
+| **Right to Access** | Article 15 | Export personal data in machine-readable format | `processDataAccessRequest()` |
+| **Right to Rectification** | Article 16 | Update incorrect personal data | `processDataRectificationRequest()` |
+| **Right to Erasure** | Article 17 | Delete or anonymize personal data | `processDataErasureRequest()` |
+| **Right to Restriction** | Article 18 | Restrict processing of personal data | `submitDataSubjectRequest('restriction')` |
+| **Right to Data Portability** | Article 20 | Export data in portable format | `processDataPortabilityRequest()` |
+| **Right to Object** | Article 21 | Object to data processing | `submitDataSubjectRequest('objection')` |
+
+### GDPR Consent Management
+
+The GDPR Compliance service provides comprehensive consent management:
+
+| Feature | Description |
+|---------|-------------|
+| **Record Consent** | Record consent with metadata (IP, user agent, consent method, legal basis) |
+| **Withdraw Consent** | Withdraw consent with audit logging |
+| **Check Valid Consent** | Validate consent for specific purposes |
+| **Consent Expiration** | Automatic consent expiration based on configuration |
+| **Consent Statistics** | Track total, granted, withdrawn, and expired consents |
+
+### GDPR Data Retention
+
+The GDPR Compliance service provides automatic data retention:
+
+| Feature | Description |
+|---------|-------------|
+| **Automatic Deletion** | Delete expired personal data records |
+| **Consent Expiration** | Mark expired consents as denied |
+| **Configurable Retention** | Set retention period per data record |
+| **Retention Statistics** | Track total, expired, and anonymized records |
+
+### GDPR Privacy by Design
+
+The GDPR Compliance service implements privacy-by-design principles:
+
+| Feature | Description |
+|---------|-------------|
+| **Data Minimization** | Keep only required fields for each purpose |
+| **Pseudonymization** | Replace identifiers with pseudonyms using HMAC-SHA256 |
+| **Anonymization** | Hash or round data to remove identifying information |
+| **Privacy Impact Assessment** | Create and manage PIAs for processing activities |
+
+### GDPR Compliance Reporting
+
+The GDPR Compliance service generates comprehensive compliance reports:
+
+```typescript
+const report = await gdprService.generateComplianceReport(startDate, endDate);
+
+// Consent Statistics
+console.log(`Total Consents: ${report.consentStatistics.totalConsents}`);
+console.log(`Granted Consents: ${report.consentStatistics.grantedConsents}`);
+console.log(`Withdrawn Consents: ${report.consentStatistics.withdrawnConsents}`);
+console.log(`Expired Consents: ${report.consentStatistics.expiredConsents}`);
+
+// Data Subject Requests
+console.log(`Total Requests: ${report.dataSubjectRequests.total}`);
+console.log(`Access Requests: ${report.dataSubjectRequests.byType.access}`);
+console.log(`Erasure Requests: ${report.dataSubjectRequests.byType.erasure}`);
+console.log(`Portability Requests: ${report.dataSubjectRequests.byType.portability}`);
+console.log(`Completed: ${report.dataSubjectRequests.completed}`);
+console.log(`Pending: ${report.dataSubjectRequests.pending}`);
+
+// Data Retention
+console.log(`Total Records: ${report.dataRetention.totalRecords}`);
+console.log(`Expired Records: ${report.dataRetention.expiredRecords}`);
+console.log(`Anonymized Records: ${report.dataRetention.anonymizedRecords}`);
+
+// Compliance Status
+console.log(`Consent Compliance: ${report.complianceStatus.consentCompliance}`);
+console.log(`Data Minimization: ${report.complianceStatus.dataMinimization}`);
+console.log(`Right to Erasure: ${report.complianceStatus.rightToErasure}`);
+console.log(`Data Portability: ${report.complianceStatus.dataPortability}`);
+```
+
 ### Audit Logging Usage
 
 ```typescript

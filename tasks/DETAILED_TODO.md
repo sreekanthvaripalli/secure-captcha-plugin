@@ -940,17 +940,33 @@ This document provides granular, trackable tasks for building an enterprise-grad
 - Integrated with existing security system via SecurityLogger and ELKLogger
 
 #### 4.4.2 GDPR Compliance
-- [ ] **Implement GDPR Features**
-  - [ ] Data minimization
-  - [ ] Right to erasure
-  - [ ] Data portability
-  - [ ] Privacy by design
-  - [ ] Consent management
+- [x] **Implement GDPR Features** ✅ **COMPLETE**
+  - [x] Data minimization ✅
+  - [x] Right to erasure ✅
+  - [x] Data portability ✅
+  - [x] Privacy by design ✅
+  - [x] Consent management ✅
 
-- [ ] **Write GDPR Tests** ⏸️ **POSTPONED TO PHASE 6**
-  - [ ] Test data deletion
-  - [ ] Test data export
-  - [ ] Test consent handling
+- [x] **Write GDPR Tests** ✅ **COMPLETE**
+  - [x] Test data deletion ✅
+  - [x] Test data export ✅
+  - [x] Test consent handling ✅
+
+**Implementation Notes:**
+- Created comprehensive `GDPRComplianceService` in `src/security/gdpr-compliance.ts`
+- Features include:
+  - **Data Subject Rights**: Full support for GDPR Articles 15-21 including right to access, rectification, erasure, restriction, portability, and objection
+  - **Consent Management**: Record, withdraw, and validate consent with metadata tracking (IP, user agent, consent method, legal basis)
+  - **Data Retention Policies**: Automatic deletion of expired records and consents with configurable retention periods
+  - **Privacy by Design**: Privacy Impact Assessments (PIA), data minimization, pseudonymization, and anonymization
+  - **Compliance Reporting**: Generate comprehensive GDPR compliance reports with consent statistics, data subject request statistics, and data retention statistics
+  - **Audit Logging**: All GDPR operations are logged for compliance audit trails
+  - **Data Export**: Export personal data in JSON, CSV, or XML formats for data portability
+- Updated `src/security/index.ts` to export the new GDPR module
+- Created 50 comprehensive unit tests in `tests/unit/gdpr-compliance.test.ts`
+- All 50 tests passing
+- Format, build, and test all passing (npm run format && npm run build && npm test)
+- Updated README.md with comprehensive GDPR compliance documentation
 
 #### 4.4.3 SOC 2 Compliance
 - [ ] **Implement SOC 2 Controls**
