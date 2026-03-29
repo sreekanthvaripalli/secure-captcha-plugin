@@ -512,7 +512,7 @@ class CircuitBreaker {
 |-----------|-------------|------------------|--------|
 | **Express.js** | Middleware | < 5 minutes | ✅ Complete |
 | **Fastify** | Plugin | < 5 minutes | ✅ Complete |
-| **Koa.js** | Middleware | < 5 minutes | 🚧 In Progress |
+| **Koa.js** | Middleware | < 5 minutes | ✅ Complete |
 | **NestJS** | Module | < 5 minutes | 🚧 In Progress |
 | **React** | Component Library | < 5 minutes | 🚧 In Progress |
 | **Vue.js** | Plugin | < 5 minutes | 🚧 In Progress |

@@ -1061,16 +1061,32 @@ This document provides granular, trackable tasks for building an enterprise-grad
 - Updated README.md with Fastify plugin documentation and usage examples
 
 #### 5.1.3 Koa.js Middleware
-- [ ] **Create Koa Plugin**
-  - [ ] Middleware function
-  - [ ] Context extension
-  - [ ] Error handling
-  - [ ] TypeScript types
+- [x] **Create Koa Plugin** ✅ **COMPLETE**
+  - [x] Middleware function ✅
+  - [x] Context extension ✅
+  - [x] Error handling ✅
+  - [x] TypeScript types ✅
 
-- [ ] **Write Koa Tests** ⏸️ **POSTPONED TO PHASE 6**
-  - [ ] Test middleware
-  - [ ] Test context
-  - [ ] Test errors
+- [x] **Write Koa Tests** ✅ **COMPLETE**
+  - [x] Test middleware ✅
+  - [x] Test context ✅
+  - [x] Test errors ✅
+
+**Implementation Notes:**
+- Created comprehensive `KoaCaptchaMiddleware` class in `src/plugins/koa-captcha.ts`
+- Features include:
+  - **generate() middleware**: Generates CAPTCHA challenges with type and difficulty validation
+  - **validate() middleware**: Validates CAPTCHA responses with proper error codes (404, 410, 429)
+  - **protect() middleware**: Protects routes by requiring valid CAPTCHA validation
+  - **getTypes() endpoint**: Returns available CAPTCHA types and difficulties
+  - **Configuration options**: types, defaultDifficulty, sessionTimeout, maxAttempts, skip function, responseFormatter, errorMessages
+  - **Error handling**: Comprehensive error handling with custom error messages
+  - **TypeScript support**: Full TypeScript types for all interfaces and options
+- Added `@types/koa` to devDependencies
+- Updated `src/plugins/index.ts` to export Koa middleware
+- Created 23 comprehensive unit tests in `tests/unit/koa-captcha.test.ts`
+- All 23 tests passing
+- Tests cover: Constructor, generate() middleware, validate() middleware, protect() middleware, getTypes() endpoint, getService(), custom response formatter, custom error messages
 
 #### 5.1.4 NestJS Module
 - [ ] **Create NestJS Module**

@@ -21,6 +21,15 @@ export {
   createFastifyCaptcha,
 } from './fastify-captcha';
 
+// Koa.js Middleware Plugin
+export {
+  KoaCaptchaMiddleware,
+  KoaCaptchaOptions,
+  CaptchaContext,
+  createKoaCaptcha,
+} from './koa-captcha';
+
 // Default exports
 export { default as ExpressCaptcha } from './express-captcha';
 export { default as FastifyCaptcha } from './fastify-captcha';
+export { default as KoaCaptcha } from './koa-captcha';
