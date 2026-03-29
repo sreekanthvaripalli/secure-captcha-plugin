@@ -113,9 +113,17 @@ export class ExpressCaptchaMiddleware {
         invalidRequest: 'Invalid request',
         ...options.errorMessages,
       },
-      skip: options.skip || (() => false),
-      sessionIdGenerator: options.sessionIdGenerator || (() => require('uuid').v4()),
-      responseFormatter: options.responseFormatter || (data => data),
+      skip: options.skip || ((): boolean => false),
+      sessionIdGenerator:
+        options.sessionIdGenerator ||
+        ((): string => {
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          const { v4 } = require('uuid');
+          return v4();
+        }),
+      responseFormatter:
+        options.responseFormatter ||
+        ((data: CaptchaResponse | ValidationResponse): unknown => data),
     };
   }
 

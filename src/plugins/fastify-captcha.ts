@@ -111,9 +111,9 @@ declare module 'fastify' {
  * Fastify CAPTCHA Plugin Class
  */
 export class FastifyCaptchaPlugin {
-  private captchaService: CaptchaService;
-  private configService: SecurityConfigurationService;
-  private options: Required<Omit<FastifyCaptchaOptions, 'errorMessages'>> & {
+  private readonly captchaService: CaptchaService;
+  private readonly configService: SecurityConfigurationService;
+  private readonly options: Required<Omit<FastifyCaptchaOptions, 'errorMessages'>> & {
     errorMessages: CaptchaErrorMessages;
   };
 
@@ -138,9 +138,17 @@ export class FastifyCaptchaPlugin {
         invalidRequest: 'Invalid request',
         ...options.errorMessages,
       },
-      skip: options.skip || (() => false),
-      sessionIdGenerator: options.sessionIdGenerator || (() => require('uuid').v4()),
-      responseFormatter: options.responseFormatter || (data => data),
+      skip: options.skip || ((): boolean => false),
+      sessionIdGenerator:
+        options.sessionIdGenerator ||
+        ((): string => {
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          const { v4 } = require('uuid');
+          return v4();
+        }),
+      responseFormatter:
+        options.responseFormatter ||
+        ((data: CaptchaResponse | ValidationResponse): unknown => data),
     };
   }
 
@@ -402,21 +410,22 @@ export class FastifyCaptchaPlugin {
   ): void {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-    console.error(
-      JSON.stringify({
-        timestamp: new Date().toISOString(),
-        error: {
-          type: errorType,
-          message: errorMessage,
-          stack: error instanceof Error ? error.stack : undefined,
-        },
-        request: {
-          method: request.method,
-          url: request.url,
-          ip: request.ip,
-        },
-      })
-    );
+    // Log error for debugging
+    const errorLog = {
+      timestamp: new Date().toISOString(),
+      error: {
+        type: errorType,
+        message: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined,
+      },
+      request: {
+        method: request.method,
+        url: request.url,
+        ip: request.ip,
+      },
+    };
+    // eslint-disable-next-line no-console
+    console.error(JSON.stringify(errorLog));
 
     reply.status(500).send({
       success: false,

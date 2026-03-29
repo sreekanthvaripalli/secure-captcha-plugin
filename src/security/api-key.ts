@@ -993,7 +993,7 @@ export class APIKeyService {
       return this.config.defaultRateLimit;
     }
 
-    let maxRateLimit = this.config.defaultRateLimit;
+    const maxRateLimit = this.config.defaultRateLimit;
     for (const keyId of userKeySet) {
       const state = this.rateLimitStates.get(keyId);
       if (state) {
