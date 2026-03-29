@@ -13,3 +13,4 @@ export * from './device-fingerprint-analyzer';
 export * from './bot-detection-ml';
 export * from './threat-intelligence';
 export * from './oauth2';
+export * from './jwt';

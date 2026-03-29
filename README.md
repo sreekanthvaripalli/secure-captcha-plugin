@@ -1068,6 +1068,199 @@ console.log(`Lower bound: ${thresholds.lowerBound}`);
 
 ---
 
+## 🔐 JWT Token System
+
+The Secure CAPTCHA Plugin includes a comprehensive JWT (JSON Web Token) implementation for secure, stateless authentication and authorization.
+
+### JWT Features
+
+- **Access Token Generation**: JWT access tokens with configurable lifetime (default: 1 hour)
+- **Refresh Token Generation**: JWT refresh tokens with configurable lifetime (default: 30 days)
+- **Token Validation**: JWT token validation using configurable algorithm (HS256 default)
+- **Token Revocation**: Individual token revocation, user-wide revocation, and token family revocation
+- **Token Introspection**: RFC 7662 compliant token introspection
+- **Token Rotation**: Automatic refresh token rotation with configurable enable/disable
+- **Rate Limiting**: Configurable rate limits for token generation and refresh operations
+- **Token Cleanup**: Automatic cleanup of expired tokens
+- **Statistics Tracking**: Comprehensive statistics for token operations
+- **Security Logging**: Integration with SecurityLogger for audit trail
+- **ID Token Support**: OpenID Connect ID token generation
+- **API Token Support**: Long-lived API tokens with custom rate limits
+
+### JWT Usage
+
+```typescript
+import { JWTService } from 'secure-captcha-plugin';
+
+// Initialize JWT service
+const jwtService = new JWTService({
+  issuer: 'https://secure-captcha.example.com',
+  audience: 'https://secure-captcha.example.com',
+  accessTokenLifetime: 3600, // 1 hour
+  refreshTokenLifetime: 86400 * 30, // 30 days
+  algorithm: 'HS256',
+  secret: process.env.JWT_SECRET,
+  enableTokenRotation: true,
+  enableTokenBlacklisting: true,
+  enableTokenIntrospection: true,
+  maxRefreshTokenGenerations: 10,
+  enableRateLimiting: true,
+  tokenGenerationRateLimit: 100, // per minute
+  tokenRefreshRateLimit: 50 // per minute
+}, securityLogger);
+
+// Generate access token
+const accessToken = jwtService.generateAccessToken({
+  userId: 'user-123',
+  clientId: 'client-456',
+  sessionId: 'session-789',
+  scope: ['read', 'write'],
+  roles: ['user'],
+  permissions: ['captcha:generate']
+});
+
+console.log(`Access Token: ${accessToken.token}`);
+
+// Generate refresh token
+const refreshToken = jwtService.generateRefreshToken({
+  userId: 'user-123',
+  clientId: 'client-456',
+  sessionId: 'session-789',
+  accessTokenId: accessToken.payload.jti!
+});
+
+console.log(`Refresh Token: ${refreshToken.token}`);
+
+// Generate token pair (access + refresh)
+const tokenPair = jwtService.generateTokenPair({
+  userId: 'user-123',
+  clientId: 'client-456',
+  sessionId: 'session-789',
+  scope: ['openid', 'profile', 'email'],
+  roles: ['user'],
+  permissions: ['captcha:generate']
+});
+
+console.log(`Access Token: ${tokenPair.accessToken}`);
+console.log(`Refresh Token: ${tokenPair.refreshToken}`);
+console.log(`ID Token: ${tokenPair.idToken}`);
+
+// Validate token
+const validation = jwtService.validateToken(accessToken.token);
+if (validation.valid) {
+  console.log(`Token valid for user: ${validation.payload?.sub}`);
+}
+
+// Refresh access token
+const refreshedTokens = jwtService.refreshAccessToken(refreshToken.token);
+console.log(`New Access Token: ${refreshedTokens.accessToken}`);
+
+// Introspect token
+const introspection = jwtService.introspectToken(accessToken.token);
+console.log(`Token active: ${introspection.active}`);
+console.log(`Token scope: ${introspection.scope}`);
+
+// Revoke token
+const revoked = jwtService.revokeToken(accessToken.payload.jti!, 'access', 'User logout');
+console.log(`Token revoked: ${revoked}`);
+
+// Revoke all tokens for a user
+const revokedCount = jwtService.revokeAllUserTokens('user-123', 'User logout');
+console.log(`Revoked ${revokedCount} tokens`);
+
+// Get user tokens
+const userTokens = jwtService.getUserTokens('user-123');
+console.log(`Active access tokens: ${userTokens.accessTokens.length}`);
+console.log(`Active refresh tokens: ${userTokens.refreshTokens.length}`);
+
+// Get token statistics
+const stats = jwtService.getStats();
+console.log(`Total access tokens: ${stats.totalAccessTokens}`);
+console.log(`Total refresh tokens: ${stats.totalRefreshTokens}`);
+console.log(`Token generations: ${stats.tokenGenerations}`);
+console.log(`Token validations: ${stats.tokenValidations}`);
+
+// Cleanup expired tokens
+jwtService.cleanupExpiredTokens();
+```
+
+### JWT Configuration
+
+```typescript
+const jwtConfig = {
+  // Issuer configuration
+  issuer: 'https://secure-captcha.example.com',
+  audience: 'https://secure-captcha.example.com',
+  
+  // Token lifetimes (in seconds)
+  accessTokenLifetime: 3600, // 1 hour
+  refreshTokenLifetime: 86400 * 30, // 30 days
+  idTokenLifetime: 3600, // 1 hour
+  apiTokenLifetime: 86400 * 365, // 1 year
+  
+  // Signing configuration
+  algorithm: 'HS256', // HS256, HS384, HS512, RS256, RS384, RS512, ES256, ES384, ES512
+  secret: process.env.JWT_SECRET,
+  publicKey: process.env.JWT_PUBLIC_KEY, // For RSA/ECDSA algorithms
+  privateKey: process.env.JWT_PRIVATE_KEY, // For RSA/ECDSA algorithms
+  
+  // Security settings
+  enableTokenRotation: true,
+  enableTokenBlacklisting: true,
+  enableTokenIntrospection: true,
+  maxRefreshTokenGenerations: 10,
+  
+  // Rate limiting
+  enableRateLimiting: true,
+  tokenGenerationRateLimit: 100, // per minute
+  tokenRefreshRateLimit: 50, // per minute
+  
+  // Logging
+  enableLogging: true,
+  logLevel: 'info'
+};
+```
+
+### JWT Token Types
+
+| Token Type | Lifetime | Purpose | Features |
+|------------|----------|---------|----------|
+| **Access Token** | 1 hour (configurable) | API authentication | Short-lived, includes user claims |
+| **Refresh Token** | 30 days (configurable) | Token refresh | Long-lived, rotation support |
+| **ID Token** | 1 hour (configurable) | OpenID Connect | User identity information |
+| **API Token** | 1 year (configurable) | API key authentication | Long-lived, custom rate limits |
+
+### JWT Security Features
+
+- **Token Blacklisting**: Revoked tokens are blacklisted and cannot be used
+- **Token Rotation**: Refresh tokens are automatically rotated for enhanced security
+- **Rate Limiting**: Prevents token generation and refresh abuse
+- **Token Family Tracking**: Detects and prevents refresh token reuse attacks
+- **Automatic Cleanup**: Expired tokens are automatically cleaned up
+- **Comprehensive Logging**: All token operations are logged for audit trail
+
+### JWT Statistics
+
+The JWT service tracks comprehensive statistics:
+
+| Statistic | Description |
+|-----------|-------------|
+| `totalAccessTokens` | Total access tokens generated |
+| `totalRefreshTokens` | Total refresh tokens generated |
+| `totalIdTokens` | Total ID tokens generated |
+| `totalApiTokens` | Total API tokens generated |
+| `activeTokens` | Currently active tokens |
+| `blacklistedTokens` | Blacklisted tokens |
+| `tokenGenerations` | Total token generation operations |
+| `tokenValidations` | Total token validation operations |
+| `tokenRefreshes` | Total token refresh operations |
+| `tokenRevocations` | Total token revocation operations |
+| `failedValidations` | Failed token validation attempts |
+| `rateLimitHits` | Rate limit violations |
+| `lastActivity` | Last activity timestamp |
+
+---
+
 ## 🔐 OAuth 2.0 / OpenID Connect
 
 The Secure CAPTCHA Plugin includes a comprehensive OAuth 2.0 / OpenID Connect implementation for enterprise-grade authentication and authorization.
