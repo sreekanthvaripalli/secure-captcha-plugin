@@ -56,6 +56,8 @@
     "express": "^4.22.1",
     "express-rate-limit": "^7.5.1",
     "express-validator": "^7.0.1",
+    "fastify": "^4.25.0",
+    "fastify-plugin": "^4.5.1",
     "helmet": "^7.2.0",
     "ioredis": "^5.10.1",
     "joi": "^17.11.0",

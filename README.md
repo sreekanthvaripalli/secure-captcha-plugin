@@ -511,7 +511,7 @@ class CircuitBreaker {
 | Framework | Plugin Type | Integration Time | Status |
 |-----------|-------------|------------------|--------|
 | **Express.js** | Middleware | < 5 minutes | ✅ Complete |
-| **Fastify** | Plugin | < 5 minutes | 🚧 In Progress |
+| **Fastify** | Plugin | < 5 minutes | ✅ Complete |
 | **Koa.js** | Middleware | < 5 minutes | 🚧 In Progress |
 | **NestJS** | Module | < 5 minutes | 🚧 In Progress |
 | **React** | Component Library | < 5 minutes | 🚧 In Progress |
@@ -534,13 +534,76 @@ class CircuitBreaker {
 
 #### Express.js
 ```typescript
-import { captchaMiddleware } from 'secure-captcha-plugin';
+import { createExpressCaptcha } from 'secure-captcha-plugin';
 
-app.use('/api/protected', captchaMiddleware({
-  type: 'multi-layer',
-  difficulty: 'hard',
-  sessionTimeout: 300000
-}));
+const captcha = createExpressCaptcha({
+  types: ['text', 'math', 'logic', 'image'],
+  defaultDifficulty: 'medium',
+  sessionTimeout: 300000,
+  maxAttempts: 3
+});
+
+// Generate CAPTCHA
+app.post('/api/captcha/generate', captcha.generate());
+
+// Validate CAPTCHA
+app.post('/api/captcha/validate', captcha.validate());
+
+// Protect routes with CAPTCHA
+app.post('/api/protected', captcha.protect(), (req, res) => {
+  res.json({ success: true, message: 'Access granted' });
+});
+
+// Get available CAPTCHA types
+app.get('/api/captcha/types', captcha.getTypes());
+```
+
+#### Fastify
+```typescript
+import Fastify from 'fastify';
+import fastifyCaptcha, { createFastifyCaptcha } from 'secure-captcha-plugin/fastify';
+
+const fastify = Fastify();
+
+// Register the Fastify CAPTCHA plugin
+await fastify.register(fastifyCaptcha, {
+  types: ['text', 'math', 'logic', 'image'],
+  defaultDifficulty: 'medium',
+  sessionTimeout: 300000,
+  maxAttempts: 3
+});
+
+// Generate CAPTCHA using decorator
+fastify.post('/api/captcha/generate', async (request, reply) => {
+  await fastify.captcha.generate(request, reply);
+});
+
+// Validate CAPTCHA using decorator
+fastify.post('/api/captcha/validate', async (request, reply) => {
+  await fastify.captcha.validate(request, reply);
+});
+
+// Protect routes with CAPTCHA
+fastify.post('/api/protected', async (request, reply) => {
+  await fastify.captcha.protect(request, reply);
+  reply.send({ success: true, message: 'Access granted' });
+});
+
+// Get available CAPTCHA types
+fastify.get('/api/captcha/types', async (request, reply) => {
+  const types = fastify.captcha.getTypes();
+  reply.send({ success: true, data: { types } });
+});
+
+// Or use the plugin class directly
+const captchaPlugin = createFastifyCaptcha({
+  types: ['text', 'math'],
+  defaultDifficulty: 'hard'
+});
+
+fastify.post('/api/captcha/custom', async (request, reply) => {
+  await captchaPlugin.generate(request, reply);
+});
 ```
 
 #### React

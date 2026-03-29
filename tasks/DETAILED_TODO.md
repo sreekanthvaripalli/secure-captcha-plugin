@@ -1033,16 +1033,32 @@ This document provides granular, trackable tasks for building an enterprise-grad
 - Tests cover: Constructor, generate() middleware, validate() middleware, protect() middleware, getTypes() endpoint, getService(), custom response formatter, custom error messages
 
 #### 5.1.2 Fastify Plugin
-- [ ] **Create Fastify Plugin**
-  - [ ] Plugin registration
-  - [ ] Decorator methods
-  - [ ] Hooks integration
-  - [ ] TypeScript types
+- [x] **Create Fastify Plugin** ✅ **COMPLETE**
+  - [x] Plugin registration ✅
+  - [x] Decorator methods ✅
+  - [x] Hooks integration ✅
+  - [x] TypeScript types ✅
 
-- [ ] **Write Fastify Tests** ⏸️ **POSTPONED TO PHASE 6**
-  - [ ] Test plugin registration
-  - [ ] Test decorators
-  - [ ] Test hooks
+- [x] **Write Fastify Tests** ✅ **COMPLETE**
+  - [x] Test plugin registration ✅
+  - [x] Test decorators ✅
+  - [x] Test hooks ✅
+
+**Implementation Notes:**
+- Created comprehensive `FastifyCaptchaPlugin` class in `src/plugins/fastify-captcha.ts`
+- Features include:
+  - **Plugin Registration**: Uses `fastify-plugin` wrapper for proper encapsulation
+  - **Decorator Methods**: Decorates Fastify instance with `captcha` object containing `generate()`, `validate()`, `protect()`, `getTypes()`, and `getService()` methods
+  - **Hooks Integration**: Adds `preHandler` hook for route protection via `captchaProtect` config
+  - **TypeScript Support**: Full TypeScript types with module augmentation for Fastify
+  - **Configuration Options**: types, defaultDifficulty, sessionTimeout, maxAttempts, enableBehavioralAnalysis, enableDeviceFingerprinting, errorMessages, skip, sessionIdGenerator, responseFormatter
+  - **Error Handling**: Comprehensive error handling with custom error messages
+  - **Request Decoration**: Attaches CAPTCHA data to request object
+- Added `fastify` and `fastify-plugin` to dependencies in `package.json`
+- Updated `src/plugins/index.ts` to export Fastify plugin
+- Created 24 comprehensive unit tests in `tests/unit/fastify-captcha.test.ts`
+- All 1097 tests passing (24 new + 1073 existing)
+- Updated README.md with Fastify plugin documentation and usage examples
 
 #### 5.1.3 Koa.js Middleware
 - [ ] **Create Koa Plugin**

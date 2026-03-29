@@ -14,5 +14,13 @@ export {
   createExpressCaptcha,
 } from './express-captcha';
 
-// Default export
+// Fastify Plugin
+export {
+  FastifyCaptchaPlugin,
+  FastifyCaptchaOptions,
+  createFastifyCaptcha,
+} from './fastify-captcha';
+
+// Default exports
 export { default as ExpressCaptcha } from './express-captcha';
+export { default as FastifyCaptcha } from './fastify-captcha';
