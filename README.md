@@ -508,18 +508,18 @@ class CircuitBreaker {
 
 ### Framework Support
 
-| Framework | Plugin Type | Integration Time |
-|-----------|-------------|------------------|
-| **Express.js** | Middleware | < 5 minutes |
-| **Fastify** | Plugin | < 5 minutes |
-| **Koa.js** | Middleware | < 5 minutes |
-| **NestJS** | Module | < 5 minutes |
-| **React** | Component Library | < 5 minutes |
-| **Vue.js** | Plugin | < 5 minutes |
-| **Angular** | Component | < 5 minutes |
-| **Svelte** | Component | < 5 minutes |
-| **WordPress** | Plugin | < 5 minutes |
-| **Drupal** | Module | < 5 minutes |
+| Framework | Plugin Type | Integration Time | Status |
+|-----------|-------------|------------------|--------|
+| **Express.js** | Middleware | < 5 minutes | ✅ Complete |
+| **Fastify** | Plugin | < 5 minutes | 🚧 In Progress |
+| **Koa.js** | Middleware | < 5 minutes | 🚧 In Progress |
+| **NestJS** | Module | < 5 minutes | 🚧 In Progress |
+| **React** | Component Library | < 5 minutes | 🚧 In Progress |
+| **Vue.js** | Plugin | < 5 minutes | 🚧 In Progress |
+| **Angular** | Component | < 5 minutes | 🚧 In Progress |
+| **Svelte** | Component | < 5 minutes | 🚧 In Progress |
+| **WordPress** | Plugin | < 5 minutes | 🚧 In Progress |
+| **Drupal** | Module | < 5 minutes | 🚧 In Progress |
 
 ### API Support
 

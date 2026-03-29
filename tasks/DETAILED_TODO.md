@@ -1005,16 +1005,32 @@ This document provides granular, trackable tasks for building an enterprise-grad
 ### Week 1: Framework Plugins (May 19-23, 2026)
 
 #### 5.1.1 Express.js Middleware
-- [ ] **Create Express Plugin**
-  - [ ] Middleware function
-  - [ ] Configuration options
-  - [ ] Error handling
-  - [ ] TypeScript types
+- [x] **Create Express Plugin** ✅ **COMPLETE**
+  - [x] Middleware function ✅
+  - [x] Configuration options ✅
+  - [x] Error handling ✅
+  - [x] TypeScript types ✅
 
-- [ ] **Write Express Tests** ⏸️ **POSTPONED TO PHASE 6**
-  - [ ] Test middleware integration
-  - [ ] Test configuration
-  - [ ] Test error handling
+- [x] **Write Express Tests** ✅ **COMPLETE**
+  - [x] Test middleware integration ✅
+  - [x] Test configuration ✅
+  - [x] Test error handling ✅
+
+**Implementation Notes:**
+- Created comprehensive `ExpressCaptchaMiddleware` class in `src/plugins/express-captcha.ts`
+- Features include:
+  - **generate() middleware**: Generates CAPTCHA challenges with type and difficulty validation
+  - **validate() middleware**: Validates CAPTCHA responses with proper error codes (404, 410, 429)
+  - **protect() middleware**: Protects routes by requiring valid CAPTCHA validation
+  - **getTypes() endpoint**: Returns available CAPTCHA types and difficulties
+  - **Configuration options**: types, defaultDifficulty, sessionTimeout, maxAttempts, skip function, responseFormatter, errorMessages
+  - **Error handling**: Comprehensive error handling with custom error messages
+  - **TypeScript support**: Full TypeScript types for all interfaces and options
+- Created factory function `createExpressCaptcha()` for easy instantiation
+- Exported all types and interfaces from `src/plugins/index.ts`
+- Created 23 comprehensive unit tests in `tests/unit/express-captcha.test.ts`
+- All 23 tests passing
+- Tests cover: Constructor, generate() middleware, validate() middleware, protect() middleware, getTypes() endpoint, getService(), custom response formatter, custom error messages
 
 #### 5.1.2 Fastify Plugin
 - [ ] **Create Fastify Plugin**
