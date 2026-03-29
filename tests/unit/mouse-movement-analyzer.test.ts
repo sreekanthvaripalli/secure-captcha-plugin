@@ -7,10 +7,7 @@ import { MouseMovementAnalyzer } from '../../src/security/mouse-movement-analyze
 import { CryptoService } from '../../src/security/crypto';
 import { SecurityLogger } from '../../src/security/security-logger';
 import { MouseMovement } from '../../src/types/captcha';
-import {
-  MouseClick,
-  MouseScroll
-} from '../../src/types/behavioral';
+import { MouseClick, MouseScroll } from '../../src/types/behavioral';
 
 describe('MouseMovementAnalyzer', () => {
   let analyzer: MouseMovementAnalyzer;
@@ -24,7 +21,7 @@ describe('MouseMovementAnalyzer', () => {
       enableFileLogging: false,
       logFilePath: '/tmp/test.log',
       maxLogFileSize: 1024 * 1024,
-      maxLogFiles: 5
+      maxLogFiles: 5,
     });
 
     analyzer = new MouseMovementAnalyzer(
@@ -32,7 +29,7 @@ describe('MouseMovementAnalyzer', () => {
         botScoreThreshold: 0.7,
         humanScoreThreshold: 0.3,
         anomalyThreshold: 0.5,
-        cacheResults: false
+        cacheResults: false,
       },
       cryptoService,
       securityLogger
@@ -41,9 +38,7 @@ describe('MouseMovementAnalyzer', () => {
 
   describe('analyzeMouseMovements', () => {
     it('should return empty metrics for insufficient data', () => {
-      const movements: MouseMovement[] = [
-        { x: 0, y: 0, timestamp: 1000 }
-      ];
+      const movements: MouseMovement[] = [{ x: 0, y: 0, timestamp: 1000 }];
 
       const metrics = analyzer.analyzeMouseMovements(movements);
 
@@ -55,7 +50,7 @@ describe('MouseMovementAnalyzer', () => {
     it('should calculate velocity correctly', () => {
       const movements: MouseMovement[] = [
         { x: 0, y: 0, timestamp: 1000 },
-        { x: 100, y: 0, timestamp: 1100 } // 100px in 100ms = 1.0 px/ms
+        { x: 100, y: 0, timestamp: 1100 }, // 100px in 100ms = 1.0 px/ms
       ];
 
       const metrics = analyzer.analyzeMouseMovements(movements);
@@ -71,7 +66,7 @@ describe('MouseMovementAnalyzer', () => {
       const straightMovements: MouseMovement[] = [
         { x: 0, y: 0, timestamp: 1000 },
         { x: 100, y: 0, timestamp: 1100 },
-        { x: 200, y: 0, timestamp: 1200 }
+        { x: 200, y: 0, timestamp: 1200 },
       ];
 
       const straightMetrics = analyzer.analyzeMouseMovements(straightMovements);
@@ -81,7 +76,7 @@ describe('MouseMovementAnalyzer', () => {
       const curvedMovements: MouseMovement[] = [
         { x: 0, y: 0, timestamp: 1000 },
         { x: 50, y: 50, timestamp: 1100 },
-        { x: 100, y: 0, timestamp: 1200 }
+        { x: 100, y: 0, timestamp: 1200 },
       ];
 
       const curvedMetrics = analyzer.analyzeMouseMovements(curvedMovements);
@@ -93,7 +88,7 @@ describe('MouseMovementAnalyzer', () => {
         { x: 0, y: 0, timestamp: 1000 },
         { x: 10, y: 0, timestamp: 1100 },
         { x: 10, y: 0, timestamp: 2000 }, // Pause
-        { x: 20, y: 0, timestamp: 2100 }
+        { x: 20, y: 0, timestamp: 2100 },
       ];
 
       const metrics = analyzer.analyzeMouseMovements(movements);
@@ -106,7 +101,7 @@ describe('MouseMovementAnalyzer', () => {
         { x: 0, y: 0, timestamp: 1000 },
         { x: 100, y: 0, timestamp: 1100 }, // Right
         { x: 100, y: 100, timestamp: 1200 }, // Down (90 degree change)
-        { x: 0, y: 100, timestamp: 1300 } // Left (90 degree change)
+        { x: 0, y: 100, timestamp: 1300 }, // Left (90 degree change)
       ];
 
       const metrics = analyzer.analyzeMouseMovements(movements);
@@ -129,7 +124,7 @@ describe('MouseMovementAnalyzer', () => {
       const clicks: MouseClick[] = [
         { x: 100, y: 100, timestamp: 1000, button: 'left', duration: 80 },
         { x: 150, y: 150, timestamp: 1200, button: 'left', duration: 100 },
-        { x: 200, y: 200, timestamp: 1400, button: 'left', duration: 120 }
+        { x: 200, y: 200, timestamp: 1400, button: 'left', duration: 120 },
       ];
 
       const metrics = analyzer.analyzeClickPatterns(clicks);
@@ -142,7 +137,7 @@ describe('MouseMovementAnalyzer', () => {
       const clicks: MouseClick[] = [
         { x: 100, y: 100, timestamp: 1000, button: 'left', duration: 80 },
         { x: 100, y: 100, timestamp: 1200, button: 'left', duration: 80 }, // 200ms interval
-        { x: 100, y: 100, timestamp: 1400, button: 'left', duration: 80 }
+        { x: 100, y: 100, timestamp: 1400, button: 'left', duration: 80 },
       ];
 
       const metrics = analyzer.analyzeClickPatterns(clicks);
@@ -165,7 +160,7 @@ describe('MouseMovementAnalyzer', () => {
       const scrolls: MouseScroll[] = [
         { x: 100, y: 100, timestamp: 1000, deltaX: 0, deltaY: 100 },
         { x: 100, y: 100, timestamp: 1100, deltaX: 0, deltaY: 100 },
-        { x: 100, y: 100, timestamp: 1200, deltaX: 0, deltaY: 100 }
+        { x: 100, y: 100, timestamp: 1200, deltaX: 0, deltaY: 100 },
       ];
 
       const metrics = analyzer.analyzeScrollPatterns(scrolls);
@@ -183,7 +178,7 @@ describe('MouseMovementAnalyzer', () => {
         { x: 100, y: 0, timestamp: 1100 },
         { x: 200, y: 0, timestamp: 1200 },
         { x: 300, y: 0, timestamp: 1300 },
-        { x: 400, y: 0, timestamp: 1400 }
+        { x: 400, y: 0, timestamp: 1400 },
       ];
 
       const metrics = analyzer.analyzeMouseMovements(movements);
@@ -200,7 +195,7 @@ describe('MouseMovementAnalyzer', () => {
         movements.push({
           x: i * 10,
           y: 0,
-          timestamp: 1000 + i * 100
+          timestamp: 1000 + i * 100,
         });
       }
 
@@ -225,7 +220,7 @@ describe('MouseMovementAnalyzer', () => {
         { x: 90, y: 78, timestamp: 1850 },
         { x: 95, y: 85, timestamp: 2000 },
         { x: 98, y: 90, timestamp: 2150 },
-        { x: 100, y: 92, timestamp: 2300 }
+        { x: 100, y: 92, timestamp: 2300 },
       ];
 
       const metrics = analyzer.analyzeMouseMovements(movements);
@@ -248,7 +243,7 @@ describe('MouseMovementAnalyzer', () => {
         botMovements.push({
           x: i * 10,
           y: 0,
-          timestamp: 1000 + i * 100
+          timestamp: 1000 + i * 100,
         });
       }
 
@@ -277,7 +272,7 @@ describe('MouseMovementAnalyzer', () => {
         { x: 42, y: 45, timestamp: 2000 },
         { x: 43, y: 46, timestamp: 2150 },
         { x: 44, y: 47, timestamp: 2300 },
-        { x: 45, y: 48, timestamp: 2450 }
+        { x: 45, y: 48, timestamp: 2450 },
       ];
 
       analyzer.updateSession('test-session-2', humanMovements);
@@ -293,7 +288,7 @@ describe('MouseMovementAnalyzer', () => {
       const analyzerWithCache = new MouseMovementAnalyzer(
         {
           cacheResults: true,
-          cacheTTL: 300
+          cacheTTL: 300,
         },
         cryptoService,
         securityLogger
@@ -302,14 +297,14 @@ describe('MouseMovementAnalyzer', () => {
       analyzerWithCache.createSession('cached-session');
       const movements: MouseMovement[] = [
         { x: 0, y: 0, timestamp: 1000 },
-        { x: 100, y: 0, timestamp: 1100 }
+        { x: 100, y: 0, timestamp: 1100 },
       ];
 
       analyzerWithCache.updateSession('cached-session', movements);
-      
+
       // First call
       const result1 = await analyzerWithCache.endSession('cached-session');
-      
+
       // Second call should return cached result
       const result2 = await analyzerWithCache.endSession('cached-session');
 
@@ -332,7 +327,7 @@ describe('MouseMovementAnalyzer', () => {
 
       const movements: MouseMovement[] = [
         { x: 0, y: 0, timestamp: 1000 },
-        { x: 50, y: 50, timestamp: 1100 }
+        { x: 50, y: 50, timestamp: 1100 },
       ];
 
       analyzer.updateSession('test-session', movements);
@@ -382,7 +377,7 @@ describe('MouseMovementAnalyzer', () => {
       const movements: MouseMovement[] = [
         { x: 0, y: 0, timestamp: 1000 },
         { x: 10, y: 10, timestamp: 1000 }, // Same timestamp
-        { x: 20, y: 20, timestamp: 1100 }
+        { x: 20, y: 20, timestamp: 1100 },
       ];
 
       const metrics = analyzer.analyzeMouseMovements(movements);
@@ -394,7 +389,7 @@ describe('MouseMovementAnalyzer', () => {
     it('should handle very fast movements', () => {
       const movements: MouseMovement[] = [
         { x: 0, y: 0, timestamp: 1000 },
-        { x: 1000, y: 0, timestamp: 1001 } // 1000px in 1ms
+        { x: 1000, y: 0, timestamp: 1001 }, // 1000px in 1ms
       ];
 
       const metrics = analyzer.analyzeMouseMovements(movements);
@@ -405,7 +400,7 @@ describe('MouseMovementAnalyzer', () => {
     it('should handle zero distance movements', () => {
       const movements: MouseMovement[] = [
         { x: 100, y: 100, timestamp: 1000 },
-        { x: 100, y: 100, timestamp: 1100 }
+        { x: 100, y: 100, timestamp: 1100 },
       ];
 
       const metrics = analyzer.analyzeMouseMovements(movements);

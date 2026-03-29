@@ -40,27 +40,27 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
 
   constructor(configService: SecurityConfigurationService) {
     super(configService);
-    
+
     // Default configuration
     this.config = {
       operations: {
         easy: ['+', '-'],
         medium: ['+', '-', '*'],
-        hard: ['+', '-', '*', '/']
+        hard: ['+', '-', '*', '/'],
       },
       numberRange: {
         easy: { min: 1, max: 10 },
         medium: { min: 1, max: 20 },
-        hard: { min: 1, max: 50 }
+        hard: { min: 1, max: 50 },
       },
       complexity: {
         easy: 2, // 2 operations: a + b
         medium: 3, // 3 operations: a + b * c
-        hard: 4 // 4 operations: a + b * c - d
+        hard: 4, // 4 operations: a + b * c - d
       },
       allowFractions: false,
       allowDecimals: false,
-      allowNegatives: false
+      allowNegatives: false,
     };
   }
 
@@ -86,10 +86,10 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
 
     const difficulty = input.difficulty;
     const problem = this.generateProblem(difficulty);
-    
+
     // Generate session ID
     const sessionId = this.generateSecureRandom(32);
-    
+
     // Log security event
     this.logSecurityEvent('captcha_generated' as SecurityEventType, sessionId, {
       action: 'generate',
@@ -99,8 +99,8 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
         type: 'math',
         difficulty,
         expression: problem.expression,
-        answer: problem.answer
-      }
+        answer: problem.answer,
+      },
     });
 
     return {
@@ -116,16 +116,16 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
         behavioralData: {
           mouseMovements: [],
           keystrokeTimings: [],
-          interactionPatterns: []
+          interactionPatterns: [],
         },
         deviceInfo: {
           browser: 'unknown',
           os: 'unknown',
           screenResolution: 'unknown',
           timezone: 'unknown',
-          language: 'unknown'
-        }
-      }
+          language: 'unknown',
+        },
+      },
     };
   }
 
@@ -141,8 +141,8 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
       reason: 'Math captcha validation',
       metadata: {
         type: 'math',
-        responseLength: response.length
-      }
+        responseLength: response.length,
+      },
     });
 
     // Placeholder: In production, this would verify against the stored answer
@@ -166,7 +166,7 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
 
     // Generate operations
     const ops: string[] = [];
-    
+
     // For medium difficulty, guarantee at least one multiplication
     if (difficulty === 'medium') {
       // Ensure multiplication is included by forcing it at a random position
@@ -204,14 +204,18 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
     return {
       expression,
       answer,
-      steps
+      steps,
     };
   }
 
   /**
    * Build expression and calculate answer with PEMDAS
    */
-  private buildExpression(numbers: number[], operations: string[], difficulty: Difficulty): MathProblem {
+  private buildExpression(
+    numbers: number[],
+    operations: string[],
+    difficulty: Difficulty
+  ): MathProblem {
     let expression = '';
     let answer = 0;
     const steps: string[] = [];
@@ -220,11 +224,11 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
     if (difficulty === 'easy') {
       answer = numbers[0];
       expression = `${numbers[0]}`;
-      
+
       for (let i = 0; i < operations.length; i++) {
         const op = operations[i];
         const num = numbers[i + 1];
-        
+
         expression += ` ${op} ${num}`;
         answer = this.calculate(answer, op, num);
         steps.push(`${expression} = ${answer}`);
@@ -240,14 +244,17 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
     return {
       expression: `${expression} = ?`,
       answer: Math.round(answer * 100) / 100, // Round to 2 decimal places
-      steps
+      steps,
     };
   }
 
   /**
    * Evaluate expression with PEMDAS (Parentheses, Exponents, Multiplication/Division, Addition/Subtraction)
    */
-  private evaluateWithPEMDAS(numbers: number[], operations: string[]): { expression: string; answer: number; steps: string[] } {
+  private evaluateWithPEMDAS(
+    numbers: number[],
+    operations: string[]
+  ): { expression: string; answer: number; steps: string[] } {
     // Create tokens array
     const tokens: (number | string)[] = [numbers[0]];
     for (let i = 0; i < operations.length; i++) {
@@ -263,7 +270,7 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
         const left = tokens[i - 1] as number;
         const right = tokens[i + 1] as number;
         const result = this.calculate(left, token as string, right);
-        
+
         // Replace the operation with result
         tokens.splice(i - 1, 3, result);
         i = Math.max(1, i - 1);
@@ -280,7 +287,7 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
     for (let i = 1; i < tokens.length; i += 2) {
       const op = tokens[i] as string;
       const num = tokens[i + 1] as number;
-      
+
       expression += ` ${op} ${num}`;
       answer = this.calculate(answer, op, num);
       steps.push(`${expression} = ${answer}`);
@@ -338,7 +345,7 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
   getAnswerForExpression(expression: string): number {
     // Remove the "= ?" part
     const cleanExpression = expression.replace(/\s*=\s*\?$/, '');
-    
+
     // Parse and evaluate the expression
     return this.evaluateExpression(cleanExpression);
   }
@@ -349,18 +356,20 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
   private evaluateExpression(expression: string): number {
     // Simple expression parser for basic arithmetic
     const tokens = expression.match(/(\d+\.?\d*|\+|-|\*|\/)/g);
-    if (!tokens) {return 0;}
+    if (!tokens) {
+      return 0;
+    }
 
     const numbers: number[] = [];
     const operations: string[] = [];
 
-  for (const token of tokens) {
-    if (/^\d/.test(token)) {
-      numbers.push(parseFloat(token));
-    } else {
-      operations.push(token);
+    for (const token of tokens) {
+      if (/^\d/.test(token)) {
+        numbers.push(parseFloat(token));
+      } else {
+        operations.push(token);
+      }
     }
-  }
 
     // Evaluate with PEMDAS
     const result = this.evaluateWithPEMDAS(numbers, operations);

@@ -36,7 +36,7 @@ describe('TextCaptchaGenerator', () => {
     test('should generate captcha with easy difficulty', async () => {
       const input: GenerateCaptchaInput = {
         type: 'text',
-        difficulty: 'easy'
+        difficulty: 'easy',
       };
 
       const response = await generator.generate(input);
@@ -54,7 +54,7 @@ describe('TextCaptchaGenerator', () => {
     test('should generate captcha with medium difficulty', async () => {
       const input: GenerateCaptchaInput = {
         type: 'text',
-        difficulty: 'medium'
+        difficulty: 'medium',
       };
 
       const response = await generator.generate(input);
@@ -70,7 +70,7 @@ describe('TextCaptchaGenerator', () => {
     test('should generate captcha with hard difficulty', async () => {
       const input: GenerateCaptchaInput = {
         type: 'text',
-        difficulty: 'hard'
+        difficulty: 'hard',
       };
 
       const response = await generator.generate(input);
@@ -86,7 +86,7 @@ describe('TextCaptchaGenerator', () => {
     test('should generate unique session IDs', async () => {
       const input: GenerateCaptchaInput = {
         type: 'text',
-        difficulty: 'medium'
+        difficulty: 'medium',
       };
 
       const response1 = await generator.generate(input);
@@ -98,7 +98,7 @@ describe('TextCaptchaGenerator', () => {
     test('should generate different challenges', async () => {
       const input: GenerateCaptchaInput = {
         type: 'text',
-        difficulty: 'medium'
+        difficulty: 'medium',
       };
 
       const response1 = await generator.generate(input);
@@ -111,7 +111,7 @@ describe('TextCaptchaGenerator', () => {
     test('should throw error for invalid type', async () => {
       const input = {
         type: 'invalid',
-        difficulty: 'medium'
+        difficulty: 'medium',
       } as unknown as GenerateCaptchaInput;
 
       await expect(generator.generate(input)).rejects.toThrow('Unsupported captcha type: invalid');
@@ -120,15 +120,17 @@ describe('TextCaptchaGenerator', () => {
     test('should throw error for invalid difficulty', async () => {
       const input = {
         type: 'text',
-        difficulty: 'invalid'
+        difficulty: 'invalid',
       } as unknown as GenerateCaptchaInput;
 
-      await expect(generator.generate(input)).rejects.toThrow('Unsupported difficulty for text: invalid');
+      await expect(generator.generate(input)).rejects.toThrow(
+        'Unsupported difficulty for text: invalid'
+      );
     });
 
     test('should throw error for missing type', async () => {
       const input = {
-        difficulty: 'medium'
+        difficulty: 'medium',
       } as GenerateCaptchaInput;
 
       await expect(generator.generate(input)).rejects.toThrow('Captcha type is required');
@@ -136,7 +138,7 @@ describe('TextCaptchaGenerator', () => {
 
     test('should throw error for missing difficulty', async () => {
       const input = {
-        type: 'text'
+        type: 'text',
       } as GenerateCaptchaInput;
 
       await expect(generator.generate(input)).rejects.toThrow('Difficulty level is required');
@@ -151,14 +153,14 @@ describe('TextCaptchaGenerator', () => {
 
     test('should log security event on validation', async () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       await generator.validate('test-session-id', 'test-response');
-      
+
       expect(consoleSpy).toHaveBeenCalledWith(
         'Security Event:',
         expect.stringContaining('captcha_validated')
       );
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -183,8 +185,8 @@ describe('TextCaptchaGenerator', () => {
         length: {
           easy: 5,
           medium: 7,
-          hard: 9
-        }
+          hard: 9,
+        },
       };
 
       generator.updateConfig(newConfig);
@@ -203,8 +205,8 @@ describe('TextCaptchaGenerator', () => {
         length: {
           easy: 5,
           medium: 7,
-          hard: 9
-        }
+          hard: 9,
+        },
       });
 
       const updatedConfig = generator.getTextConfig();
@@ -216,7 +218,7 @@ describe('TextCaptchaGenerator', () => {
     test('should generate valid PNG image', async () => {
       const input: GenerateCaptchaInput = {
         type: 'text',
-        difficulty: 'easy'
+        difficulty: 'easy',
       };
 
       const response = await generator.generate(input);
@@ -226,7 +228,7 @@ describe('TextCaptchaGenerator', () => {
       // Check PNG signature
       expect(imageBuffer[0]).toBe(0x89);
       expect(imageBuffer[1]).toBe(0x50);
-      expect(imageBuffer[2]).toBe(0x4E);
+      expect(imageBuffer[2]).toBe(0x4e);
       expect(imageBuffer[3]).toBe(0x47);
     });
 
@@ -234,7 +236,7 @@ describe('TextCaptchaGenerator', () => {
       // This tests that noise and distortion are applied
       const input: GenerateCaptchaInput = {
         type: 'text',
-        difficulty: 'medium'
+        difficulty: 'medium',
       };
 
       const response1 = await generator.generate(input);
@@ -249,11 +251,11 @@ describe('TextCaptchaGenerator', () => {
     test('easy difficulty should have shorter text', async () => {
       const input: GenerateCaptchaInput = {
         type: 'text',
-        difficulty: 'easy'
+        difficulty: 'easy',
       };
 
       const response = await generator.generate(input);
-      
+
       // Extract text length from metadata (we can't directly check the text)
       // But we can verify the challenge is generated
       expect(response.challenge).toBeDefined();
@@ -262,11 +264,11 @@ describe('TextCaptchaGenerator', () => {
     test('hard difficulty should have longer text', async () => {
       const input: GenerateCaptchaInput = {
         type: 'text',
-        difficulty: 'hard'
+        difficulty: 'hard',
       };
 
       const response = await generator.generate(input);
-      
+
       // Extract text length from metadata (we can't directly check the text)
       // But we can verify the challenge is generated
       expect(response.challenge).toBeDefined();
@@ -277,7 +279,7 @@ describe('TextCaptchaGenerator', () => {
     test('should use cryptographically secure random generation', async () => {
       const input: GenerateCaptchaInput = {
         type: 'text',
-        difficulty: 'medium'
+        difficulty: 'medium',
       };
 
       // Generate multiple captchas and check for randomness
@@ -292,26 +294,26 @@ describe('TextCaptchaGenerator', () => {
 
       // All session IDs should be unique
       expect(sessionIds.size).toBe(10);
-      
+
       // All challenges should be unique (due to random text)
       expect(challenges.size).toBe(10);
     });
 
     test('should log security events', async () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       const input: GenerateCaptchaInput = {
         type: 'text',
-        difficulty: 'medium'
+        difficulty: 'medium',
       };
 
       await generator.generate(input);
-      
+
       expect(consoleSpy).toHaveBeenCalledWith(
         'Security Event:',
         expect.stringContaining('captcha_generated')
       );
-      
+
       consoleSpy.mockRestore();
     });
 
@@ -334,7 +336,7 @@ describe('TextCaptchaGenerator', () => {
       const mockSharp = jest.fn().mockImplementation(() => {
         throw new Error('Sharp error');
       });
-      
+
       jest.doMock('sharp', () => mockSharp);
 
       // This should still work because we have error handling
@@ -355,19 +357,19 @@ describe('TextCaptchaGenerator Integration', () => {
 
   test('should work with factory pattern', async () => {
     const { CaptchaGeneratorFactory } = await import('../../src/core/captcha-generator');
-    
+
     const factory = new CaptchaGeneratorFactory(configService);
     factory.registerGenerator(generator);
 
     expect(factory.isSupported('text')).toBe(true);
-    
+
     const retrievedGenerator = factory.getGenerator('text');
     expect(retrievedGenerator).toBe(generator);
   });
 
   test('should work with registry', async () => {
     const { CaptchaGeneratorRegistry } = await import('../../src/core/captcha-generator');
-    
+
     const registry = CaptchaGeneratorRegistry.getInstance(configService);
     registry.registerStandardGenerators();
 

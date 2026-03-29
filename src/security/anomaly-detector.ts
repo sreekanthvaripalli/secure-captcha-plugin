@@ -4,12 +4,7 @@
  */
 
 import { SecurityLogger } from './security-logger';
-import {
-  BehavioralSession,
-  Anomaly,
-  MovementMetrics,
-  KeystrokeMetrics
-} from '../types/behavioral';
+import { BehavioralSession, Anomaly, MovementMetrics, KeystrokeMetrics } from '../types/behavioral';
 
 export interface AnomalyDetectionConfig {
   statisticalThreshold: number;
@@ -81,10 +76,7 @@ export class AnomalyDetector {
   private readonly adaptiveThresholds: Map<string, AdaptiveThreshold> = new Map();
   private readonly timeSeriesData: Map<string, TimeSeriesPoint[]> = new Map();
 
-  constructor(
-    config: Partial<AnomalyDetectionConfig>,
-    securityLogger: SecurityLogger
-  ) {
+  constructor(config: Partial<AnomalyDetectionConfig>, securityLogger: SecurityLogger) {
     this.config = {
       statisticalThreshold: 2.0,
       timeSeriesWindowSize: 100,
@@ -92,7 +84,7 @@ export class AnomalyDetector {
       adaptiveThresholdLearningRate: 0.1,
       minSamplesForAdaptive: 50,
       anomalyScoreThreshold: 0.7,
-      ...config
+      ...config,
     };
 
     this.securityLogger = securityLogger;
@@ -118,27 +110,19 @@ export class AnomalyDetector {
     const adaptiveThresholds = this.updateAdaptiveThresholds(session);
 
     // Detect anomalies from statistical analysis
-    const statisticalAnomalies = this.detectStatisticalAnomalies(
-      statisticalAnalysis
-    );
+    const statisticalAnomalies = this.detectStatisticalAnomalies(statisticalAnalysis);
     anomalies.push(...statisticalAnomalies);
 
     // Detect anomalies from time series analysis
-    const timeSeriesAnomalies = this.detectTimeSeriesAnomalies(
-      timeSeriesAnalysis
-    );
+    const timeSeriesAnomalies = this.detectTimeSeriesAnomalies(timeSeriesAnalysis);
     anomalies.push(...timeSeriesAnomalies);
 
     // Detect anomalies from pattern deviations
-    const patternAnomalies = this.detectPatternAnomalies(
-      patternDeviations
-    );
+    const patternAnomalies = this.detectPatternAnomalies(patternDeviations);
     anomalies.push(...patternAnomalies);
 
     // Detect anomalies from adaptive thresholds
-    const thresholdAnomalies = this.detectThresholdAnomalies(
-      adaptiveThresholds
-    );
+    const thresholdAnomalies = this.detectThresholdAnomalies(adaptiveThresholds);
     anomalies.push(...thresholdAnomalies);
 
     // Calculate overall anomaly score
@@ -151,7 +135,7 @@ export class AnomalyDetector {
       timeSeriesAnalysis,
       patternDeviations,
       adaptiveThresholds,
-      processingTime: Date.now() - startTime
+      processingTime: Date.now() - startTime,
     };
 
     // Log anomaly detection results
@@ -163,8 +147,8 @@ export class AnomalyDetector {
         sessionId: session.sessionId,
         anomalyCount: anomalies.length,
         anomalyScore,
-        processingTime: result.processingTime
-      }
+        processingTime: result.processingTime,
+      },
     });
 
     return result;
@@ -173,9 +157,7 @@ export class AnomalyDetector {
   /**
    * Perform statistical analysis on session metrics
    */
-  private performStatisticalAnalysis(
-    session: BehavioralSession
-  ): Map<string, StatisticalAnalysis> {
+  private performStatisticalAnalysis(session: BehavioralSession): Map<string, StatisticalAnalysis> {
     const analysis = new Map<string, StatisticalAnalysis>();
 
     // Analyze movement metrics
@@ -211,7 +193,7 @@ export class AnomalyDetector {
         q3: 0,
         iqr: 0,
         outliers: [],
-        zScores: []
+        zScores: [],
       };
     }
 
@@ -226,9 +208,8 @@ export class AnomalyDetector {
     const standardDeviation = Math.sqrt(variance);
 
     // Calculate median
-    const median = n % 2 === 0
-      ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2
-      : sorted[Math.floor(n / 2)];
+    const median =
+      n % 2 === 0 ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2 : sorted[Math.floor(n / 2)];
 
     // Calculate quartiles
     const q1Index = Math.floor(n * 0.25);
@@ -238,7 +219,9 @@ export class AnomalyDetector {
     const iqr = q3 - q1;
 
     // Calculate z-scores
-    const zScores = values.map(val => standardDeviation > 0 ? (val - mean) / standardDeviation : 0);
+    const zScores = values.map(val =>
+      standardDeviation > 0 ? (val - mean) / standardDeviation : 0
+    );
 
     // Detect outliers using IQR method
     const lowerBound = q1 - 1.5 * iqr;
@@ -254,16 +237,14 @@ export class AnomalyDetector {
       q3,
       iqr,
       outliers,
-      zScores
+      zScores,
     };
   }
 
   /**
    * Perform time series analysis on session data
    */
-  private performTimeSeriesAnalysis(
-    session: BehavioralSession
-  ): Map<string, TimeSeriesAnalysis> {
+  private performTimeSeriesAnalysis(session: BehavioralSession): Map<string, TimeSeriesAnalysis> {
     const analysis = new Map<string, TimeSeriesAnalysis>();
 
     // Analyze movement time series
@@ -288,7 +269,7 @@ export class AnomalyDetector {
         residuals: [],
         movingAverage: [],
         exponentialSmoothing: [],
-        forecast: []
+        forecast: [],
       };
     }
 
@@ -323,7 +304,7 @@ export class AnomalyDetector {
       residuals,
       movingAverage,
       exponentialSmoothing,
-      forecast
+      forecast,
     };
   }
 
@@ -376,7 +357,9 @@ export class AnomalyDetector {
    * Calculate seasonality (simplified)
    */
   private calculateSeasonality(values: number[]): number {
-    if (values.length < 4) return 0;
+    if (values.length < 4) {
+      return 0;
+    }
 
     // Simple seasonality detection using autocorrelation
     const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
@@ -390,7 +373,7 @@ export class AnomalyDetector {
       for (let i = lag; i < centered.length; i++) {
         correlation += centered[i] * centered[i - lag];
       }
-      correlation /= (centered.length - lag);
+      correlation /= centered.length - lag;
       maxCorrelation = Math.max(maxCorrelation, Math.abs(correlation));
     }
 
@@ -415,26 +398,24 @@ export class AnomalyDetector {
   /**
    * Detect pattern deviations
    */
-  private detectPatternDeviations(
-    session: BehavioralSession
-  ): Map<string, PatternDeviation> {
+  private detectPatternDeviations(session: BehavioralSession): Map<string, PatternDeviation> {
     const deviations = new Map<string, PatternDeviation>();
 
     // Detect movement pattern deviations
     const movementPattern = this.extractMovementPattern(session);
     const expectedMovementPattern = this.getExpectedPattern('movement');
-    deviations.set('movement', this.calculatePatternDeviation(
-      expectedMovementPattern,
-      movementPattern
-    ));
+    deviations.set(
+      'movement',
+      this.calculatePatternDeviation(expectedMovementPattern, movementPattern)
+    );
 
     // Detect keystroke pattern deviations
     const keystrokePattern = this.extractKeystrokePattern(session);
     const expectedKeystrokePattern = this.getExpectedPattern('keystroke');
-    deviations.set('keystroke', this.calculatePatternDeviation(
-      expectedKeystrokePattern,
-      keystrokePattern
-    ));
+    deviations.set(
+      'keystroke',
+      this.calculatePatternDeviation(expectedKeystrokePattern, keystrokePattern)
+    );
 
     return deviations;
   }
@@ -442,17 +423,14 @@ export class AnomalyDetector {
   /**
    * Calculate pattern deviation
    */
-  private calculatePatternDeviation(
-    expected: number[],
-    actual: number[]
-  ): PatternDeviation {
+  private calculatePatternDeviation(expected: number[], actual: number[]): PatternDeviation {
     if (expected.length === 0 || actual.length === 0) {
       return {
         expectedPattern: expected,
         actualPattern: actual,
         deviation: 0,
         deviationPercentage: 0,
-        significantDeviations: []
+        significantDeviations: [],
       };
     }
 
@@ -482,16 +460,14 @@ export class AnomalyDetector {
       actualPattern: normalizedActual,
       deviation: avgDeviation,
       deviationPercentage,
-      significantDeviations
+      significantDeviations,
     };
   }
 
   /**
    * Update adaptive thresholds based on new data
    */
-  private updateAdaptiveThresholds(
-    session: BehavioralSession
-  ): Map<string, AdaptiveThreshold> {
+  private updateAdaptiveThresholds(session: BehavioralSession): Map<string, AdaptiveThreshold> {
     const thresholds = new Map<string, AdaptiveThreshold>();
 
     // Update movement thresholds
@@ -529,7 +505,7 @@ export class AnomalyDetector {
         upperBound: value * 1.5,
         lowerBound: value * 0.5,
         confidence: 0.5,
-        sampleCount: 1
+        sampleCount: 1,
       });
     } else {
       // Update existing threshold using exponential moving average
@@ -553,7 +529,7 @@ export class AnomalyDetector {
         upperBound: newUpperBound,
         lowerBound: newLowerBound,
         confidence: newConfidence,
-        sampleCount: newSampleCount
+        sampleCount: newSampleCount,
       });
     }
   }
@@ -561,9 +537,7 @@ export class AnomalyDetector {
   /**
    * Detect anomalies from statistical analysis
    */
-  private detectStatisticalAnomalies(
-    analysis: Map<string, StatisticalAnalysis>
-  ): Anomaly[] {
+  private detectStatisticalAnomalies(analysis: Map<string, StatisticalAnalysis>): Anomaly[] {
     const anomalies: Anomaly[] = [];
 
     analysis.forEach((stats, category) => {
@@ -579,9 +553,9 @@ export class AnomalyDetector {
             outlierCount: stats.outliers.length,
             outliers: stats.outliers.slice(0, 5),
             mean: stats.mean,
-            standardDeviation: stats.standardDeviation
+            standardDeviation: stats.standardDeviation,
           },
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       }
 
@@ -596,9 +570,9 @@ export class AnomalyDetector {
           evidence: {
             category,
             highZScoreCount: highZScores.length,
-            threshold: this.config.statisticalThreshold
+            threshold: this.config.statisticalThreshold,
           },
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       }
     });
@@ -609,9 +583,7 @@ export class AnomalyDetector {
   /**
    * Detect anomalies from time series analysis
    */
-  private detectTimeSeriesAnomalies(
-    analysis: Map<string, TimeSeriesAnalysis>
-  ): Anomaly[] {
+  private detectTimeSeriesAnomalies(analysis: Map<string, TimeSeriesAnalysis>): Anomaly[] {
     const anomalies: Anomaly[] = [];
 
     analysis.forEach((tsAnalysis, category) => {
@@ -625,9 +597,9 @@ export class AnomalyDetector {
           evidence: {
             category,
             trend: tsAnalysis.trend,
-            direction: tsAnalysis.trend > 0 ? 'increasing' : 'decreasing'
+            direction: tsAnalysis.trend > 0 ? 'increasing' : 'decreasing',
           },
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       }
 
@@ -641,9 +613,9 @@ export class AnomalyDetector {
           description: `High residuals detected in ${category}`,
           evidence: {
             category,
-            highResidualCount: highResiduals.length
+            highResidualCount: highResiduals.length,
           },
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       }
     });
@@ -654,9 +626,7 @@ export class AnomalyDetector {
   /**
    * Detect anomalies from pattern deviations
    */
-  private detectPatternAnomalies(
-    deviations: Map<string, PatternDeviation>
-  ): Anomaly[] {
+  private detectPatternAnomalies(deviations: Map<string, PatternDeviation>): Anomaly[] {
     const anomalies: Anomaly[] = [];
 
     deviations.forEach((deviation, category) => {
@@ -669,9 +639,9 @@ export class AnomalyDetector {
           evidence: {
             category,
             deviationPercentage: deviation.deviationPercentage,
-            significantDeviations: deviation.significantDeviations.length
+            significantDeviations: deviation.significantDeviations.length,
           },
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       }
     });
@@ -682,9 +652,7 @@ export class AnomalyDetector {
   /**
    * Detect anomalies from adaptive thresholds
    */
-  private detectThresholdAnomalies(
-    thresholds: Map<string, AdaptiveThreshold>
-  ): Anomaly[] {
+  private detectThresholdAnomalies(thresholds: Map<string, AdaptiveThreshold>): Anomaly[] {
     const anomalies: Anomaly[] = [];
 
     thresholds.forEach((threshold, metric) => {
@@ -700,9 +668,9 @@ export class AnomalyDetector {
               metric,
               current: threshold.current,
               upperBound: threshold.upperBound,
-              baseline: threshold.baseline
+              baseline: threshold.baseline,
             },
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
         } else if (threshold.current < threshold.lowerBound) {
           anomalies.push({
@@ -714,9 +682,9 @@ export class AnomalyDetector {
               metric,
               current: threshold.current,
               lowerBound: threshold.lowerBound,
-              baseline: threshold.baseline
+              baseline: threshold.baseline,
             },
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
         }
       }
@@ -729,13 +697,15 @@ export class AnomalyDetector {
    * Calculate overall anomaly score
    */
   private calculateAnomalyScore(anomalies: Anomaly[]): number {
-    if (anomalies.length === 0) return 0;
+    if (anomalies.length === 0) {
+      return 0;
+    }
 
     const severityWeights: Record<string, number> = {
       low: 0.3,
       medium: 0.6,
       high: 1.0,
-      critical: 1.0
+      critical: 1.0,
     };
 
     let totalScore = 0;
@@ -758,7 +728,7 @@ export class AnomalyDetector {
       metrics.maxVelocity,
       metrics.averageAcceleration,
       metrics.pathEfficiency,
-      metrics.directionChanges
+      metrics.directionChanges,
     ];
   }
 
@@ -768,7 +738,7 @@ export class AnomalyDetector {
       metrics.averageFlightTime,
       metrics.typingSpeed,
       metrics.rhythmConsistency,
-      metrics.errorRate
+      metrics.errorRate,
     ];
   }
 
@@ -785,7 +755,7 @@ export class AnomalyDetector {
       metrics.averageClickDuration,
       metrics.clickDurationVariance,
       metrics.doubleClickRate,
-      metrics.clickAccuracy
+      metrics.clickAccuracy,
     ];
   }
 
@@ -801,27 +771,29 @@ export class AnomalyDetector {
       metrics.averageScrollSpeed,
       metrics.scrollSpeedVariance,
       metrics.scrollDirectionConsistency,
-      metrics.smoothScrollingScore
+      metrics.smoothScrollingScore,
     ];
   }
 
   private extractMovementTimeSeries(session: BehavioralSession): TimeSeriesPoint[] {
-    return session.mouseTrail.movements.map((m) => ({
+    return session.mouseTrail.movements.map(m => ({
       timestamp: m.timestamp,
-      value: Math.sqrt(Math.pow(m.x, 2) + Math.pow(m.y, 2))
+      value: Math.sqrt(Math.pow(m.x, 2) + Math.pow(m.y, 2)),
     }));
   }
 
   private extractKeystrokeTimeSeries(session: BehavioralSession): TimeSeriesPoint[] {
-    return session.keystrokePattern.events.map((e) => ({
+    return session.keystrokePattern.events.map(e => ({
       timestamp: e.timestamp,
-      value: e.duration || 0
+      value: e.duration || 0,
     }));
   }
 
   private extractMovementPattern(session: BehavioralSession): number[] {
     const movements = session.mouseTrail.movements;
-    if (movements.length < 2) return [];
+    if (movements.length < 2) {
+      return [];
+    }
 
     const pattern: number[] = [];
     for (let i = 1; i < movements.length; i++) {
@@ -835,7 +807,9 @@ export class AnomalyDetector {
 
   private extractKeystrokePattern(session: BehavioralSession): number[] {
     const events = session.keystrokePattern.events;
-    if (events.length < 2) return [];
+    if (events.length < 2) {
+      return [];
+    }
 
     const pattern: number[] = [];
     for (let i = 1; i < events.length; i++) {
@@ -850,7 +824,7 @@ export class AnomalyDetector {
     // These would typically be learned from historical data
     const patterns: Record<string, number[]> = {
       movement: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
-      keystroke: [100, 120, 110, 130, 115, 125, 105, 135, 140, 120]
+      keystroke: [100, 120, 110, 130, 115, 125, 105, 135, 140, 120],
     };
     return patterns[category] || [];
   }
@@ -882,7 +856,7 @@ export class AnomalyDetector {
     return {
       adaptiveThresholdCount: this.adaptiveThresholds.size,
       historicalDataSize: this.historicalData.size,
-      timeSeriesDataSize: this.timeSeriesData.size
+      timeSeriesDataSize: this.timeSeriesData.size,
     };
   }
 }

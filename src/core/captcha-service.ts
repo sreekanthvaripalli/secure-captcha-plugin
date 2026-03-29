@@ -11,7 +11,7 @@ import {
   CaptchaResponse,
   ValidationResponse,
   SessionMetadata,
-  GenerateCaptchaInput
+  GenerateCaptchaInput,
 } from '../types/captcha';
 import { CryptoService } from '../security/crypto';
 import { SecurityConfigurationService } from '../security/config';
@@ -31,7 +31,7 @@ export class CaptchaService {
     this.cryptoService = new CryptoService();
     this.configService = new SecurityConfigurationService();
     this.factory = new CaptchaGeneratorFactory(this.configService);
-    
+
     // Register all available generators
     this.registerGenerators();
   }
@@ -62,26 +62,26 @@ export class CaptchaService {
 
       const generator = this.factory.getGenerator(type);
       const input: GenerateCaptchaInput = { type, difficulty };
-      
+
       // Generate captcha using the appropriate generator
       const response = await generator.generate(input);
-      
+
       const metadata: SessionMetadata = {
-        ip: options.ip as string || '127.0.0.1',
-        userAgent: options.userAgent as string || 'Unknown',
-        fingerprint: options.fingerprint as string || '',
+        ip: (options.ip as string) || '127.0.0.1',
+        userAgent: (options.userAgent as string) || 'Unknown',
+        fingerprint: (options.fingerprint as string) || '',
         behavioralData: {
           mouseMovements: [],
           keystrokeTimings: [],
-          interactionPatterns: []
+          interactionPatterns: [],
         },
         deviceInfo: {
           browser: 'Unknown',
           os: 'Unknown',
           screenResolution: 'Unknown',
           timezone: 'UTC',
-          language: 'en'
-        }
+          language: 'en',
+        },
       };
 
       const session: CaptchaSession = {
@@ -96,7 +96,7 @@ export class CaptchaService {
         metadata,
         securityScore: 100,
         attempts: 0,
-        maxAttempts: 3
+        maxAttempts: 3,
       };
 
       this.sessions.set(response.sessionId, session);
@@ -114,9 +114,9 @@ export class CaptchaService {
           action: 'generate',
           resource: 'captcha',
           reason: 'User requested captcha',
-          metadata: { type, difficulty }
+          metadata: { type, difficulty },
         },
-        resolved: false
+        resolved: false,
       });
 
       return {
@@ -125,11 +125,12 @@ export class CaptchaService {
         type,
         difficulty,
         expiresIn: this.configService.getConfig().app.sessionTimeout,
-        metadata
+        metadata,
       };
-
     } catch (error) {
-      throw new Error(`Failed to generate captcha: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to generate captcha: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -150,9 +151,10 @@ export class CaptchaService {
       }
 
       return captchas;
-
     } catch (error) {
-      throw new Error(`Failed to generate multi-layer captcha: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to generate multi-layer captcha: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -171,7 +173,7 @@ export class CaptchaService {
         return {
           valid: false,
           securityScore: 0,
-          message: 'Session not found or expired'
+          message: 'Session not found or expired',
         };
       }
 
@@ -179,7 +181,7 @@ export class CaptchaService {
         return {
           valid: false,
           securityScore: 0,
-          message: 'Session is no longer active'
+          message: 'Session is no longer active',
         };
       }
 
@@ -188,7 +190,7 @@ export class CaptchaService {
         return {
           valid: false,
           securityScore: 0,
-          message: 'Captcha has expired'
+          message: 'Captcha has expired',
         };
       }
 
@@ -197,7 +199,7 @@ export class CaptchaService {
         return {
           valid: false,
           securityScore: 0,
-          message: 'Maximum attempts exceeded'
+          message: 'Maximum attempts exceeded',
         };
       }
 
@@ -208,7 +210,7 @@ export class CaptchaService {
 
       if (isValid) {
         session.status = 'validated';
-        
+
         // Log successful validation
         await this.cryptoService.logSecurityEvent({
           id: uuidv4(),
@@ -222,15 +224,15 @@ export class CaptchaService {
             action: 'validate',
             resource: 'captcha',
             reason: 'User validated captcha successfully',
-            metadata: { type, attempts: session.attempts }
+            metadata: { type, attempts: session.attempts },
           },
-          resolved: false
+          resolved: false,
         });
 
         return {
           valid: true,
           securityScore: session.securityScore,
-          message: 'Captcha validated successfully'
+          message: 'Captcha validated successfully',
         };
       } else {
         // Log failed validation
@@ -246,23 +248,22 @@ export class CaptchaService {
             action: 'validate',
             resource: 'captcha',
             reason: 'User failed captcha validation',
-            metadata: { type, attempts: session.attempts }
+            metadata: { type, attempts: session.attempts },
           },
-          resolved: false
+          resolved: false,
         });
 
         return {
           valid: false,
           securityScore: Math.max(0, session.securityScore - 20),
-          message: 'Incorrect answer'
+          message: 'Incorrect answer',
         };
       }
-
     } catch (error) {
       return {
         valid: false,
         securityScore: 0,
-        message: `Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`
+        message: `Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -323,7 +324,7 @@ export class CaptchaService {
     // Normalize answers for comparison
     const normalizedExpected = expected.toLowerCase().trim();
     const normalizedActual = actual.toLowerCase().trim();
-    
+
     return normalizedExpected === normalizedActual;
   }
 }

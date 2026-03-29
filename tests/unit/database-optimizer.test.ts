@@ -10,7 +10,7 @@ const mockOn = jest.fn();
 jest.mock('pg', () => {
   const mockReplicaQuery = jest.fn();
   const mockReplicaEnd = jest.fn();
-  
+
   return {
     Pool: jest.fn().mockImplementation((config?: any) => {
       // Check if this is a replica pool (has connectionString)
@@ -22,7 +22,7 @@ jest.mock('pg', () => {
           on: jest.fn(),
           totalCount: 5,
           idleCount: 2,
-          waitingCount: 0
+          waitingCount: 0,
         };
       }
       // Primary pool
@@ -33,24 +33,24 @@ jest.mock('pg', () => {
         on: mockOn,
         totalCount: 10,
         idleCount: 5,
-        waitingCount: 0
+        waitingCount: 0,
       };
     }),
     Client: jest.fn().mockImplementation(() => ({
       query: jest.fn(),
       release: jest.fn(),
       connect: jest.fn(),
-      end: jest.fn()
-    }))
+      end: jest.fn(),
+    })),
   };
 });
 
 jest.mock('../../src/security/config', () => ({
   SecurityConfigurationService: jest.fn().mockImplementation(() => ({
     securityLogger: {
-      logSecurityEvent: jest.fn()
-    }
-  }))
+      logSecurityEvent: jest.fn(),
+    },
+  })),
 }));
 
 describe('DatabaseOptimizer', () => {
@@ -62,12 +62,12 @@ describe('DatabaseOptimizer', () => {
   beforeEach(() => {
     // Setup mocks
     mockSecurityLogger = {
-      logSecurityEvent: jest.fn()
+      logSecurityEvent: jest.fn(),
     };
 
     mockConfig = new SecurityConfigurationService() as jest.Mocked<SecurityConfigurationService>;
     mockConfig.securityLogger = mockSecurityLogger;
-    
+
     // Create mock pool
     mockPool = {
       query: mockQuery,
@@ -76,9 +76,9 @@ describe('DatabaseOptimizer', () => {
       on: mockOn,
       totalCount: 10,
       idleCount: 5,
-      waitingCount: 0
+      waitingCount: 0,
     };
-    
+
     // Mock environment variables
     process.env.DB_HOST = 'localhost';
     process.env.DB_PORT = '5432';
@@ -87,12 +87,16 @@ describe('DatabaseOptimizer', () => {
     process.env.DB_NAME = 'test_db';
 
     // Create optimizer instance with injected mock pool
-    optimizer = new DatabaseOptimizer(mockConfig, {
-      max: 10,
-      min: 2,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000
-    }, mockPool);
+    optimizer = new DatabaseOptimizer(
+      mockConfig,
+      {
+        max: 10,
+        min: 2,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 5000,
+      },
+      mockPool
+    );
   });
 
   afterEach(() => {
@@ -116,13 +120,13 @@ describe('DatabaseOptimizer', () => {
     it('should execute query successfully', async () => {
       const mockResult = {
         rows: [{ id: 1, name: 'test' }],
-        rowCount: 1
+        rowCount: 1,
       };
 
       mockQuery.mockResolvedValue(mockResult);
 
       const result = await optimizer.query('SELECT * FROM test');
-      
+
       expect(result).toEqual(mockResult);
       expect(mockQuery).toHaveBeenCalledWith('SELECT * FROM test', undefined);
     });
@@ -130,7 +134,7 @@ describe('DatabaseOptimizer', () => {
     it('should track query statistics', async () => {
       const mockResult = {
         rows: [{ id: 1 }],
-        rowCount: 1
+        rowCount: 1,
       };
 
       mockQuery.mockResolvedValue(mockResult);
@@ -146,7 +150,7 @@ describe('DatabaseOptimizer', () => {
     it('should log slow queries', async () => {
       const mockResult = {
         rows: [{ id: 1 }],
-        rowCount: 1
+        rowCount: 1,
       };
 
       // Mock slow query (execution time > 1000ms)
@@ -163,8 +167,8 @@ describe('DatabaseOptimizer', () => {
           reason: expect.stringContaining('Query took'),
           metadata: expect.objectContaining({
             query: 'SELECT * FROM test',
-            rowsReturned: 1
-          })
+            rowsReturned: 1,
+          }),
         })
       );
     });
@@ -178,7 +182,7 @@ describe('DatabaseOptimizer', () => {
       expect(mockSecurityLogger.logSecurityEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'QUERY_FAILED',
-          reason: 'Query failed'
+          reason: 'Query failed',
         })
       );
     });
@@ -189,12 +193,14 @@ describe('DatabaseOptimizer', () => {
       const error = new Error('Index creation failed');
       mockQuery.mockRejectedValue(error);
 
-      await expect(optimizer.createIndex('test_table', ['column1'])).rejects.toThrow('Index creation failed');
+      await expect(optimizer.createIndex('test_table', ['column1'])).rejects.toThrow(
+        'Index creation failed'
+      );
 
       expect(mockSecurityLogger.logSecurityEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'INDEX_CREATION_FAILED',
-          reason: 'Index creation failed'
+          reason: 'Index creation failed',
         })
       );
     });
@@ -210,7 +216,7 @@ describe('DatabaseOptimizer', () => {
       expect(mockSecurityLogger.logSecurityEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'TABLE_ANALYSIS_FAILED',
-          reason: 'Analyze failed'
+          reason: 'Analyze failed',
         })
       );
     });
@@ -221,7 +227,9 @@ describe('DatabaseOptimizer', () => {
       const error = new Error('Optimization failed');
       mockQuery.mockRejectedValue(error);
 
-      await expect(optimizer.optimizeQuery('SELECT * FROM test_table')).rejects.toThrow('Optimization failed');
+      await expect(optimizer.optimizeQuery('SELECT * FROM test_table')).rejects.toThrow(
+        'Optimization failed'
+      );
     });
   });
 
@@ -241,29 +249,28 @@ describe('DatabaseOptimizer', () => {
           slowQueries: expect.any(Number),
           avgQueryTime: expect.any(Number),
           maxQueryTime: expect.any(Number),
-          queryTypes: expect.objectContaining({})
+          queryTypes: expect.objectContaining({}),
         },
         indexStats: {
           totalIndexes: expect.any(Number),
           unusedIndexes: expect.any(Array),
           duplicateIndexes: expect.any(Array),
-          missingIndexes: expect.any(Array)
+          missingIndexes: expect.any(Array),
         },
         cacheStats: {
           hitRate: expect.any(Number),
           bufferCacheSize: expect.any(Number),
-          sharedBuffers: expect.any(Number)
-        }
+          sharedBuffers: expect.any(Number),
+        },
       });
     });
   });
-
 
   describe('getConnection method', () => {
     it('should return a database connection', async () => {
       const mockClient = {
         query: jest.fn(),
-        release: jest.fn()
+        release: jest.fn(),
       };
 
       mockConnect.mockResolvedValue(mockClient);

@@ -19,7 +19,7 @@ describe('PrometheusMetricsService', () => {
   describe('Request Metrics', () => {
     it('should record HTTP request metrics', () => {
       metricsService.recordRequest('GET', '/api/v1/health', 200, 150);
-      
+
       // Verify metrics are recorded (we can't directly access private members,
       // but we can verify the method doesn't throw)
       expect(true).toBe(true);
@@ -144,9 +144,9 @@ describe('PrometheusMetricsService', () => {
       metricsService.recordRequest('GET', '/api/v1/health', 200, 100);
       metricsService.recordCaptchaGeneration('text', 'easy', 50, true);
       metricsService.recordCacheHit('L1');
-      
+
       const metrics = await metricsService.getMetrics();
-      
+
       expect(metrics).toBeDefined();
       expect(typeof metrics).toBe('string');
       expect(metrics).toContain('captcha_http_requests_total');
@@ -156,16 +156,16 @@ describe('PrometheusMetricsService', () => {
 
     it('should get metrics as JSON', async () => {
       metricsService.recordRequest('POST', '/api/v1/captcha/generate', 200, 75);
-      
+
       const metricsJson = await metricsService.getMetricsAsJSON();
-      
+
       expect(metricsJson).toBeDefined();
       expect(Array.isArray(metricsJson)).toBe(true);
     });
 
     it('should include default Node.js metrics', async () => {
       const metrics = await metricsService.getMetrics();
-      
+
       // Check for some default Node.js metrics
       expect(metrics).toContain('nodejs_');
     });
@@ -176,10 +176,10 @@ describe('PrometheusMetricsService', () => {
       // Record some metrics
       metricsService.recordRequest('GET', '/api/v1/health', 200, 100);
       metricsService.recordCaptchaGeneration('text', 'easy', 50, true);
-      
+
       // Reset metrics
       metricsService.resetMetrics();
-      
+
       // Verify reset doesn't throw
       expect(true).toBe(true);
     });
@@ -188,7 +188,7 @@ describe('PrometheusMetricsService', () => {
   describe('Registry Access', () => {
     it('should get registry instance', () => {
       const registry = metricsService.getRegistry();
-      
+
       expect(registry).toBeDefined();
       expect(typeof registry.metrics).toBe('function');
     });

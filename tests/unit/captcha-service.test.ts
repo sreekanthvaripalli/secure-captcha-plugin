@@ -17,7 +17,7 @@ describe('CaptchaService', () => {
   describe('getAvailableTypes', () => {
     test('should return all registered captcha types', () => {
       const types = service.getAvailableTypes();
-      
+
       expect(types).toContain('text');
       expect(types).toContain('math');
       expect(types).toContain('logic');
@@ -85,9 +85,9 @@ describe('CaptchaService', () => {
     });
 
     test('should throw error for unsupported type', async () => {
-      await expect(
-        service.generateCaptcha('audio' as CaptchaType, 'medium')
-      ).rejects.toThrow('Unsupported captcha type: audio');
+      await expect(service.generateCaptcha('audio' as CaptchaType, 'medium')).rejects.toThrow(
+        'Unsupported captcha type: audio'
+      );
     });
 
     test('should generate unique session IDs', async () => {
@@ -111,7 +111,7 @@ describe('CaptchaService', () => {
     test('should include metadata in response', async () => {
       const response = await service.generateCaptcha('text', 'medium', {
         ip: '192.168.1.1',
-        userAgent: 'Test Browser'
+        userAgent: 'Test Browser',
       });
 
       expect(response.metadata.ip).toBe('192.168.1.1');
@@ -139,21 +139,17 @@ describe('CaptchaService', () => {
 
     test('should throw error for unsupported layer type', async () => {
       const layers: CaptchaType[] = ['text', 'audio' as CaptchaType];
-      
-      await expect(
-        service.generateMultiLayerCaptcha(layers, 'medium')
-      ).rejects.toThrow('Unsupported captcha type: audio');
+
+      await expect(service.generateMultiLayerCaptcha(layers, 'medium')).rejects.toThrow(
+        'Unsupported captcha type: audio'
+      );
     });
   });
 
   describe('validateResponse', () => {
     test('should validate correct response', async () => {
       const response = await service.generateCaptcha('text', 'medium');
-      const result = await service.validateResponse(
-        response.sessionId,
-        response.challenge,
-        'text'
-      );
+      const result = await service.validateResponse(response.sessionId, response.challenge, 'text');
 
       expect(result.valid).toBe(true);
       expect(result.securityScore).toBe(100);
@@ -162,11 +158,7 @@ describe('CaptchaService', () => {
 
     test('should reject incorrect response', async () => {
       const response = await service.generateCaptcha('text', 'medium');
-      const result = await service.validateResponse(
-        response.sessionId,
-        'wrong-answer',
-        'text'
-      );
+      const result = await service.validateResponse(response.sessionId, 'wrong-answer', 'text');
 
       expect(result.valid).toBe(false);
       expect(result.securityScore).toBeLessThan(100);
@@ -176,27 +168,19 @@ describe('CaptchaService', () => {
     test('should reject expired session', async () => {
       const response = await service.generateCaptcha('text', 'medium');
       const session = service.getSession(response.sessionId);
-      
+
       if (session) {
         session.expiresAt = new Date(Date.now() - 1000); // Expired 1 second ago
       }
 
-      const result = await service.validateResponse(
-        response.sessionId,
-        response.challenge,
-        'text'
-      );
+      const result = await service.validateResponse(response.sessionId, response.challenge, 'text');
 
       expect(result.valid).toBe(false);
       expect(result.message).toBe('Captcha has expired');
     });
 
     test('should reject non-existent session', async () => {
-      const result = await service.validateResponse(
-        'non-existent-session',
-        'answer',
-        'text'
-      );
+      const result = await service.validateResponse('non-existent-session', 'answer', 'text');
 
       expect(result.valid).toBe(false);
       expect(result.message).toBe('Session not found or expired');
@@ -205,16 +189,12 @@ describe('CaptchaService', () => {
     test('should reject inactive session', async () => {
       const response = await service.generateCaptcha('text', 'medium');
       const session = service.getSession(response.sessionId);
-      
+
       if (session) {
         session.status = 'validated';
       }
 
-      const result = await service.validateResponse(
-        response.sessionId,
-        response.challenge,
-        'text'
-      );
+      const result = await service.validateResponse(response.sessionId, response.challenge, 'text');
 
       expect(result.valid).toBe(false);
       expect(result.message).toBe('Session is no longer active');
@@ -223,17 +203,13 @@ describe('CaptchaService', () => {
     test('should reject after max attempts exceeded', async () => {
       const response = await service.generateCaptcha('text', 'medium');
       const session = service.getSession(response.sessionId);
-      
+
       if (session) {
         session.attempts = 3;
         session.maxAttempts = 3;
       }
 
-      const result = await service.validateResponse(
-        response.sessionId,
-        response.challenge,
-        'text'
-      );
+      const result = await service.validateResponse(response.sessionId, response.challenge, 'text');
 
       expect(result.valid).toBe(false);
       expect(result.message).toBe('Maximum attempts exceeded');
@@ -244,11 +220,7 @@ describe('CaptchaService', () => {
       const sessionBefore = service.getSession(response.sessionId);
       const attemptsBefore = sessionBefore?.attempts || 0;
 
-      await service.validateResponse(
-        response.sessionId,
-        'wrong-answer',
-        'text'
-      );
+      await service.validateResponse(response.sessionId, 'wrong-answer', 'text');
 
       const sessionAfter = service.getSession(response.sessionId);
       expect(sessionAfter?.attempts).toBe(attemptsBefore + 1);
@@ -256,12 +228,8 @@ describe('CaptchaService', () => {
 
     test('should update session status on successful validation', async () => {
       const response = await service.generateCaptcha('text', 'medium');
-      
-      await service.validateResponse(
-        response.sessionId,
-        response.challenge,
-        'text'
-      );
+
+      await service.validateResponse(response.sessionId, response.challenge, 'text');
 
       const session = service.getSession(response.sessionId);
       expect(session?.status).toBe('validated');
@@ -272,11 +240,7 @@ describe('CaptchaService', () => {
       const sessionBefore = service.getSession(response.sessionId);
       const scoreBefore = sessionBefore?.securityScore || 100;
 
-      const result = await service.validateResponse(
-        response.sessionId,
-        'wrong-answer',
-        'text'
-      );
+      const result = await service.validateResponse(response.sessionId, 'wrong-answer', 'text');
 
       expect(result.securityScore).toBeLessThan(scoreBefore);
     });
@@ -326,11 +290,7 @@ describe('CaptchaService', () => {
     });
 
     test('should handle validation errors gracefully', async () => {
-      const result = await service.validateResponse(
-        'invalid-session',
-        'answer',
-        'text'
-      );
+      const result = await service.validateResponse('invalid-session', 'answer', 'text');
 
       expect(result.valid).toBe(false);
       expect(result.message).toBeDefined();
@@ -340,7 +300,7 @@ describe('CaptchaService', () => {
   describe('integration with generators', () => {
     test('should use TextCaptchaGenerator for text type', async () => {
       const response = await service.generateCaptcha('text', 'medium');
-      
+
       expect(response.type).toBe('text');
       expect(response.challenge).toBeDefined();
       // Text captcha should have image data
@@ -349,7 +309,7 @@ describe('CaptchaService', () => {
 
     test('should use MathCaptchaGenerator for math type', async () => {
       const response = await service.generateCaptcha('math', 'medium');
-      
+
       expect(response.type).toBe('math');
       expect(response.challenge).toBeDefined();
       // Math captcha should contain arithmetic operators
@@ -358,7 +318,7 @@ describe('CaptchaService', () => {
 
     test('should use LogicCaptchaGenerator for logic type', async () => {
       const response = await service.generateCaptcha('logic', 'medium');
-      
+
       expect(response.type).toBe('logic');
       expect(response.challenge).toBeDefined();
       // Logic captcha should have options
@@ -367,7 +327,7 @@ describe('CaptchaService', () => {
 
     test('should use ImageCaptchaGenerator for image type', async () => {
       const response = await service.generateCaptcha('image', 'medium');
-      
+
       expect(response.type).toBe('image');
       expect(response.challenge).toBeDefined();
       // Image captcha should contain image data

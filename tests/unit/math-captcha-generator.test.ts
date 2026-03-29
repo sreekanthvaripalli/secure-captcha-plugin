@@ -36,7 +36,7 @@ describe('MathCaptchaGenerator', () => {
     test('should generate captcha with easy difficulty', async () => {
       const input: GenerateCaptchaInput = {
         type: 'math',
-        difficulty: 'easy'
+        difficulty: 'easy',
       };
 
       const response = await generator.generate(input);
@@ -54,7 +54,7 @@ describe('MathCaptchaGenerator', () => {
     test('should generate captcha with medium difficulty', async () => {
       const input: GenerateCaptchaInput = {
         type: 'math',
-        difficulty: 'medium'
+        difficulty: 'medium',
       };
 
       const response = await generator.generate(input);
@@ -70,7 +70,7 @@ describe('MathCaptchaGenerator', () => {
     test('should generate captcha with hard difficulty', async () => {
       const input: GenerateCaptchaInput = {
         type: 'math',
-        difficulty: 'hard'
+        difficulty: 'hard',
       };
 
       const response = await generator.generate(input);
@@ -86,7 +86,7 @@ describe('MathCaptchaGenerator', () => {
     test('should generate unique session IDs', async () => {
       const input: GenerateCaptchaInput = {
         type: 'math',
-        difficulty: 'medium'
+        difficulty: 'medium',
       };
 
       const response1 = await generator.generate(input);
@@ -98,7 +98,7 @@ describe('MathCaptchaGenerator', () => {
     test('should generate different challenges', async () => {
       const input: GenerateCaptchaInput = {
         type: 'math',
-        difficulty: 'medium'
+        difficulty: 'medium',
       };
 
       const response1 = await generator.generate(input);
@@ -111,7 +111,7 @@ describe('MathCaptchaGenerator', () => {
     test('should throw error for invalid type', async () => {
       const input = {
         type: 'invalid',
-        difficulty: 'medium'
+        difficulty: 'medium',
       } as unknown as GenerateCaptchaInput;
 
       await expect(generator.generate(input)).rejects.toThrow('Unsupported captcha type: invalid');
@@ -120,15 +120,17 @@ describe('MathCaptchaGenerator', () => {
     test('should throw error for invalid difficulty', async () => {
       const input = {
         type: 'math',
-        difficulty: 'invalid'
+        difficulty: 'invalid',
       } as unknown as GenerateCaptchaInput;
 
-      await expect(generator.generate(input)).rejects.toThrow('Unsupported difficulty for math: invalid');
+      await expect(generator.generate(input)).rejects.toThrow(
+        'Unsupported difficulty for math: invalid'
+      );
     });
 
     test('should throw error for missing type', async () => {
       const input = {
-        difficulty: 'medium'
+        difficulty: 'medium',
       } as GenerateCaptchaInput;
 
       await expect(generator.generate(input)).rejects.toThrow('Captcha type is required');
@@ -136,7 +138,7 @@ describe('MathCaptchaGenerator', () => {
 
     test('should throw error for missing difficulty', async () => {
       const input = {
-        type: 'math'
+        type: 'math',
       } as GenerateCaptchaInput;
 
       await expect(generator.generate(input)).rejects.toThrow('Difficulty level is required');
@@ -151,14 +153,14 @@ describe('MathCaptchaGenerator', () => {
 
     test('should log security event on validation', async () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       await generator.validate('test-session-id', '42');
-      
+
       expect(consoleSpy).toHaveBeenCalledWith(
         'Security Event:',
         expect.stringContaining('captcha_validated')
       );
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -185,13 +187,13 @@ describe('MathCaptchaGenerator', () => {
         operations: {
           easy: ['+', '-', '*'],
           medium: ['+', '-', '*', '/'],
-          hard: ['+', '-', '*', '/', '^']
+          hard: ['+', '-', '*', '/', '^'],
         },
         complexity: {
           easy: 3,
           medium: 4,
-          hard: 5
-        }
+          hard: 5,
+        },
       };
 
       generator.updateConfig(newConfig);
@@ -211,8 +213,8 @@ describe('MathCaptchaGenerator', () => {
         complexity: {
           easy: 3,
           medium: 4,
-          hard: 5
-        }
+          hard: 5,
+        },
       });
 
       const updatedConfig = generator.getMathConfig();
@@ -224,12 +226,12 @@ describe('MathCaptchaGenerator', () => {
     test('should generate valid math expressions', async () => {
       const input: GenerateCaptchaInput = {
         type: 'math',
-        difficulty: 'easy'
+        difficulty: 'easy',
       };
 
       for (let i = 0; i < 10; i++) {
         const response = await generator.generate(input);
-        
+
         // Expression should contain numbers and operators
         expect(response.challenge).toMatch(/\d+/);
         expect(response.challenge).toMatch(/[+\-*/]/);
@@ -237,19 +239,18 @@ describe('MathCaptchaGenerator', () => {
       }
     });
 
-
     test('should generate problems within number range', async () => {
       const input: GenerateCaptchaInput = {
         type: 'math',
-        difficulty: 'easy'
+        difficulty: 'easy',
       };
 
       for (let i = 0; i < 10; i++) {
         const response = await generator.generate(input);
-        
+
         // Extract numbers from expression
         const numbers = response.challenge.match(/\d+/g) || [];
-        
+
         for (const num of numbers) {
           const value = parseInt(num, 10);
           expect(value).toBeGreaterThanOrEqual(1);
@@ -265,13 +266,13 @@ describe('MathCaptchaGenerator', () => {
         operations: {
           easy: ['+', '-'],
           medium: ['+', '-', '*'],
-          hard: ['+', '-', '*', '/']
+          hard: ['+', '-', '*', '/'],
         },
         complexity: {
           easy: 2,
           medium: 3,
-          hard: 4
-        }
+          hard: 4,
+        },
       });
 
       // Test that multiplication is handled correctly
@@ -302,31 +303,30 @@ describe('MathCaptchaGenerator', () => {
     test('easy difficulty should use only addition and subtraction', async () => {
       const input: GenerateCaptchaInput = {
         type: 'math',
-        difficulty: 'easy'
+        difficulty: 'easy',
       };
 
       for (let i = 0; i < 10; i++) {
         const response = await generator.generate(input);
-        
+
         // Should not contain multiplication or division
         expect(response.challenge).not.toContain('*');
         expect(response.challenge).not.toContain('/');
       }
     });
 
-
     test('hard difficulty should include division', async () => {
       const input: GenerateCaptchaInput = {
         type: 'math',
-        difficulty: 'hard'
+        difficulty: 'hard',
       };
 
       let hasDivision = false;
-      
+
       // Generate multiple captchas to increase probability of getting division
       for (let i = 0; i < 50; i++) {
         const response = await generator.generate(input);
-        
+
         if (response.challenge.includes('/')) {
           hasDivision = true;
           break;
@@ -342,7 +342,7 @@ describe('MathCaptchaGenerator', () => {
     test('should use cryptographically secure random generation', async () => {
       const input: GenerateCaptchaInput = {
         type: 'math',
-        difficulty: 'medium'
+        difficulty: 'medium',
       };
 
       // Generate multiple captchas and check for randomness
@@ -357,26 +357,26 @@ describe('MathCaptchaGenerator', () => {
 
       // All session IDs should be unique
       expect(sessionIds.size).toBe(10);
-      
+
       // All challenges should be unique (due to random numbers)
       expect(challenges.size).toBe(10);
     });
 
     test('should log security events', async () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       const input: GenerateCaptchaInput = {
         type: 'math',
-        difficulty: 'medium'
+        difficulty: 'medium',
       };
 
       await generator.generate(input);
-      
+
       expect(consoleSpy).toHaveBeenCalledWith(
         'Security Event:',
         expect.stringContaining('captcha_generated')
       );
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -410,19 +410,19 @@ describe('MathCaptchaGenerator Integration', () => {
 
   test('should work with factory pattern', async () => {
     const { CaptchaGeneratorFactory } = await import('../../src/core/captcha-generator');
-    
+
     const factory = new CaptchaGeneratorFactory(configService);
     factory.registerGenerator(generator);
 
     expect(factory.isSupported('math')).toBe(true);
-    
+
     const retrievedGenerator = factory.getGenerator('math');
     expect(retrievedGenerator).toBe(generator);
   });
 
   test('should work with registry', async () => {
     const { CaptchaGeneratorRegistry } = await import('../../src/core/captcha-generator');
-    
+
     const registry = CaptchaGeneratorRegistry.getInstance(configService);
     registry.registerStandardGenerators();
 
@@ -437,7 +437,7 @@ describe('MathCaptchaGenerator Integration', () => {
     for (const difficulty of difficulties) {
       const input: GenerateCaptchaInput = {
         type: 'math',
-        difficulty
+        difficulty,
       };
 
       const response = await generator.generate(input);

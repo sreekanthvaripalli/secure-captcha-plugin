@@ -45,26 +45,26 @@ export class LogicCaptchaGenerator extends BaseCaptchaGenerator {
 
   constructor(configService: SecurityConfigurationService) {
     super(configService);
-    
+
     this.config = {
       puzzleTypes: ['pattern', 'sequence', 'spatial', 'analogies'],
       difficulty: {
         easy: {
           patternLength: 4,
           sequenceLength: 4,
-          gridSize: 3
+          gridSize: 3,
         },
         medium: {
           patternLength: 5,
           sequenceLength: 5,
-          gridSize: 4
+          gridSize: 4,
         },
         hard: {
           patternLength: 6,
           sequenceLength: 6,
-          gridSize: 5
-        }
-      }
+          gridSize: 5,
+        },
+      },
     };
   }
 
@@ -91,9 +91,9 @@ export class LogicCaptchaGenerator extends BaseCaptchaGenerator {
     const difficulty = input.difficulty;
     const puzzleType = this.selectPuzzleType();
     const puzzle = this.generatePuzzle(puzzleType, difficulty);
-    
+
     const sessionId = this.generateSecureRandom(32);
-    
+
     this.logSecurityEvent('captcha_generated' as SecurityEventType, sessionId, {
       action: 'generate',
       resource: 'captcha',
@@ -101,8 +101,8 @@ export class LogicCaptchaGenerator extends BaseCaptchaGenerator {
       metadata: {
         type: 'logic',
         puzzleType,
-        difficulty
-      }
+        difficulty,
+      },
     });
 
     const challenge = this.formatChallenge(puzzle);
@@ -120,16 +120,16 @@ export class LogicCaptchaGenerator extends BaseCaptchaGenerator {
         behavioralData: {
           mouseMovements: [],
           keystrokeTimings: [],
-          interactionPatterns: []
+          interactionPatterns: [],
         },
         deviceInfo: {
           browser: 'unknown',
           os: 'unknown',
           screenResolution: 'unknown',
           timezone: 'unknown',
-          language: 'unknown'
-        }
-      }
+          language: 'unknown',
+        },
+      },
     };
   }
 
@@ -143,8 +143,8 @@ export class LogicCaptchaGenerator extends BaseCaptchaGenerator {
       reason: 'Logic captcha validation',
       metadata: {
         type: 'logic',
-        responseLength: response.length
-      }
+        responseLength: response.length,
+      },
     });
 
     return true;
@@ -191,7 +191,7 @@ export class LogicCaptchaGenerator extends BaseCaptchaGenerator {
       { sequence: ['1', '3', '5', '7'], answer: '9', rule: 'Odd numbers' },
       { sequence: ['2', '4', '6', '8'], answer: '10', rule: 'Even numbers' },
       { sequence: ['Z', 'Y', 'X', 'W'], answer: 'V', rule: 'Reverse alphabet' },
-      { sequence: ['🌑', '🌒', '🌓', '🌔'], answer: '🌕', rule: 'Moon phases' }
+      { sequence: ['🌑', '🌒', '🌓', '🌔'], answer: '🌕', rule: 'Moon phases' },
     ];
 
     const selectedPattern = patterns[Math.floor(Math.random() * patterns.length)];
@@ -205,7 +205,7 @@ export class LogicCaptchaGenerator extends BaseCaptchaGenerator {
       question: `What comes next in this pattern?\n${sequence.join(' ')}`,
       options: options.map(opt => `${opt}`),
       correctAnswer: options.indexOf(correctAnswer),
-      explanation: `The pattern follows: ${selectedPattern.rule}`
+      explanation: `The pattern follows: ${selectedPattern.rule}`,
     };
   }
 
@@ -214,18 +214,18 @@ export class LogicCaptchaGenerator extends BaseCaptchaGenerator {
    */
   private generateSequencePuzzle(difficulty: Difficulty): LogicPuzzle {
     const length = this.config.difficulty[difficulty].sequenceLength;
-    
+
     const sequences = [
       { start: 2, rule: (n: number) => n * 2, name: 'Doubling' },
       { start: 1, rule: (n: number) => n + 3, name: 'Add 3' },
       { start: 1, rule: (n: number) => n * n, name: 'Squares' },
       { start: 0, rule: (n: number) => n + n + 1, name: 'Fibonacci-like' },
-      { start: 1, rule: (n: number) => n * 3, name: 'Tripling' }
+      { start: 1, rule: (n: number) => n * 3, name: 'Tripling' },
     ];
 
     const selected = sequences[Math.floor(Math.random() * sequences.length)];
     const sequence: number[] = [];
-    
+
     let current = selected.start;
     for (let i = 0; i < length; i++) {
       sequence.push(current);
@@ -240,7 +240,7 @@ export class LogicCaptchaGenerator extends BaseCaptchaGenerator {
       question: `Complete the sequence:\n${sequence.join(', ')}, ?`,
       options: options.map(opt => opt.toString()),
       correctAnswer: options.indexOf(correctAnswer),
-      explanation: `The sequence follows the rule: ${selected.name}`
+      explanation: `The sequence follows the rule: ${selected.name}`,
     };
   }
 
@@ -249,38 +249,41 @@ export class LogicCaptchaGenerator extends BaseCaptchaGenerator {
    */
   private generateSpatialPuzzle(difficulty: Difficulty): LogicPuzzle {
     const gridSize = this.config.difficulty[difficulty].gridSize;
-    
+
     const puzzles = [
       {
         type: 'spatial' as LogicPuzzleType,
         question: `If you rotate the letter 'L' 90 degrees clockwise, what shape do you get?`,
         options: ['⌐', '¬', '└', 'L'],
         correctAnswer: 2,
-        explanation: 'Rotating L 90° clockwise gives └'
+        explanation: 'Rotating L 90° clockwise gives └',
       },
       {
         type: 'spatial' as LogicPuzzleType,
         question: `How many squares are in a ${gridSize}x${gridSize} grid?`,
-        options: [(gridSize * gridSize).toString(), ((gridSize - 1) * (gridSize - 1)).toString(), 
-                 (gridSize * gridSize + (gridSize - 1) * (gridSize - 1)).toString(),
-                 (gridSize * 2).toString()],
+        options: [
+          (gridSize * gridSize).toString(),
+          ((gridSize - 1) * (gridSize - 1)).toString(),
+          (gridSize * gridSize + (gridSize - 1) * (gridSize - 1)).toString(),
+          (gridSize * 2).toString(),
+        ],
         correctAnswer: 2,
-        explanation: `A ${gridSize}x${gridSize} grid contains ${gridSize * gridSize} 1x1 squares and ${(gridSize - 1) * (gridSize - 1)} 2x2 squares`
+        explanation: `A ${gridSize}x${gridSize} grid contains ${gridSize * gridSize} 1x1 squares and ${(gridSize - 1) * (gridSize - 1)} 2x2 squares`,
       },
       {
         type: 'spatial' as LogicPuzzleType,
         question: 'Which direction is opposite to Northeast?',
         options: ['Southwest', 'Southeast', 'Northwest', 'West'],
         correctAnswer: 0,
-        explanation: 'The opposite of Northeast is Southwest'
+        explanation: 'The opposite of Northeast is Southwest',
       },
       {
         type: 'spatial' as LogicPuzzleType,
         question: 'If you fold a square paper in half twice, how many layers do you have?',
         options: ['2', '3', '4', '8'],
         correctAnswer: 2,
-        explanation: 'Folding in half twice creates 4 layers'
-      }
+        explanation: 'Folding in half twice creates 4 layers',
+      },
     ];
 
     return puzzles[Math.floor(Math.random() * puzzles.length)];
@@ -296,36 +299,36 @@ export class LogicCaptchaGenerator extends BaseCaptchaGenerator {
         question: 'Hot is to Cold as Day is to ___?',
         options: ['Night', 'Sun', 'Light', 'Dark'],
         correctAnswer: 0,
-        explanation: 'Hot:Cold :: Day:Night (opposites)'
+        explanation: 'Hot:Cold :: Day:Night (opposites)',
       },
       {
         type: 'analogies' as LogicPuzzleType,
         question: 'Book is to Reading as Fork is to ___?',
         options: ['Kitchen', 'Eating', 'Metal', 'Spoon'],
         correctAnswer: 1,
-        explanation: 'Book:Reading :: Fork:Eating (tool:action)'
+        explanation: 'Book:Reading :: Fork:Eating (tool:action)',
       },
       {
         type: 'analogies' as LogicPuzzleType,
         question: 'Pen is to Writer as Brush is to ___?',
         options: ['Paint', 'Canvas', 'Artist', 'Color'],
         correctAnswer: 2,
-        explanation: 'Pen:Writer :: Brush:Artist (tool:person)'
+        explanation: 'Pen:Writer :: Brush:Artist (tool:person)',
       },
       {
         type: 'analogies' as LogicPuzzleType,
         question: 'Seed is to Plant as Egg is to ___?',
         options: ['Bird', 'Nest', 'Shell', 'Chicken'],
         correctAnswer: 0,
-        explanation: 'Seed:Plant :: Egg:Bird (beginning:development)'
+        explanation: 'Seed:Plant :: Egg:Bird (beginning:development)',
       },
       {
         type: 'analogies' as LogicPuzzleType,
         question: 'Smile is to Happy as Cry is to ___?',
         options: ['Tears', 'Sad', 'Face', 'Eye'],
         correctAnswer: 1,
-        explanation: 'Smile:Happy :: Cry:Sad (expression:emotion)'
-      }
+        explanation: 'Smile:Happy :: Cry:Sad (expression:emotion)',
+      },
     ];
 
     return analogies[Math.floor(Math.random() * analogies.length)];
@@ -337,7 +340,7 @@ export class LogicCaptchaGenerator extends BaseCaptchaGenerator {
   private generateOptions(correctAnswer: string, count: number): string[] {
     const options = [correctAnswer];
     const alternatives = ['⭐', '🔷', '🔶', '⬛', '⬜', '🔺', '💎', '🌟', '✨', '🎯'];
-    
+
     while (options.length < count) {
       const alt = alternatives[Math.floor(Math.random() * alternatives.length)];
       if (!options.includes(alt)) {
@@ -353,7 +356,7 @@ export class LogicCaptchaGenerator extends BaseCaptchaGenerator {
    */
   private generateNumericOptions(correctAnswer: number, count: number): number[] {
     const options = [correctAnswer];
-    
+
     while (options.length < count) {
       const offset = Math.floor(Math.random() * 10) - 5;
       const newOption = correctAnswer + offset;

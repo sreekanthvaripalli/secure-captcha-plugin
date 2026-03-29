@@ -3,7 +3,10 @@
  * Tests for IP reputation checking, bot signatures, attack patterns, and threat feeds
  */
 
-import { ThreatIntelligence, ThreatIntelligenceConfig } from '../../src/security/threat-intelligence';
+import {
+  ThreatIntelligence,
+  ThreatIntelligenceConfig,
+} from '../../src/security/threat-intelligence';
 import { SecurityLogger } from '../../src/security/security-logger';
 
 // Mock dependencies
@@ -27,7 +30,7 @@ describe('ThreatIntelligence', () => {
     enableRealTimeUpdates: true,
     enableLogging: true,
     confidenceThreshold: 0.7,
-    maxCacheSize: 100000
+    maxCacheSize: 100000,
   };
 
   beforeEach(() => {
@@ -36,7 +39,7 @@ describe('ThreatIntelligence', () => {
       enableFileLogging: false,
       logFilePath: '/tmp/test.log',
       maxLogFileSize: 1024,
-      maxLogFiles: 5
+      maxLogFiles: 5,
     }) as jest.Mocked<SecurityLogger>;
 
     threatIntelligence = new ThreatIntelligence(defaultConfig, mockSecurityLogger);
@@ -54,13 +57,13 @@ describe('ThreatIntelligence', () => {
     it('should initialize default bot signatures', () => {
       const signatures = threatIntelligence.getBotSignatures();
       expect(signatures.length).toBeGreaterThan(0);
-      
+
       // Check for known bot signatures
       const googlebot = signatures.find(s => s.name === 'Googlebot');
       expect(googlebot).toBeDefined();
       expect(googlebot?.category).toBe('bot');
       expect(googlebot?.threatLevel).toBe('low');
-      
+
       const headlessChrome = signatures.find(s => s.name === 'Headless Chrome');
       expect(headlessChrome).toBeDefined();
       expect(headlessChrome?.threatLevel).toBe('high');
@@ -69,13 +72,13 @@ describe('ThreatIntelligence', () => {
     it('should initialize default attack patterns', () => {
       const patterns = threatIntelligence.getAttackPatterns();
       expect(patterns.length).toBeGreaterThan(0);
-      
+
       // Check for SQL injection patterns
       const sqlInjection = patterns.find(p => p.name === 'SQL Injection - UNION');
       expect(sqlInjection).toBeDefined();
       expect(sqlInjection?.type).toBe('injection');
       expect(sqlInjection?.severity).toBe('critical');
-      
+
       // Check for XSS patterns
       const xss = patterns.find(p => p.name === 'XSS - Script Tag');
       expect(xss).toBeDefined();
@@ -85,7 +88,7 @@ describe('ThreatIntelligence', () => {
     it('should initialize default threat feeds', () => {
       const feeds = threatIntelligence.getThreatFeeds();
       expect(feeds.length).toBeGreaterThan(0);
-      
+
       const internalFeed = feeds.find(f => f.name === 'Internal Threat Feed');
       expect(internalFeed).toBeDefined();
       expect(internalFeed?.isActive).toBe(true);
@@ -110,11 +113,11 @@ describe('ThreatIntelligence', () => {
         description: 'Known malicious IP',
         tags: ['malicious', 'bot'],
         expiresAt: Date.now() + 86400000,
-        metadata: {}
+        metadata: {},
       });
 
       const reputation = await threatIntelligence.checkIPReputation('10.0.0.1');
-      
+
       expect(reputation).not.toBeNull();
       expect(reputation?.ip).toBe('10.0.0.1');
       expect(reputation?.reputation).toBeLessThan(50);
@@ -132,14 +135,14 @@ describe('ThreatIntelligence', () => {
         source: 'test',
         description: 'Scanner IP',
         tags: ['scanner'],
-        metadata: {}
+        metadata: {},
       });
 
       const reputation1 = await threatIntelligence.checkIPReputation('10.0.0.2');
       const reputation2 = await threatIntelligence.checkIPReputation('10.0.0.2');
-      
+
       expect(reputation1).toEqual(reputation2);
-      
+
       const stats = threatIntelligence.getStats();
       expect(stats.cacheHits).toBeGreaterThan(0);
     });
@@ -147,11 +150,11 @@ describe('ThreatIntelligence', () => {
     it('should return null when IP reputation is disabled', async () => {
       const disabledConfig: Partial<ThreatIntelligenceConfig> = {
         ...defaultConfig,
-        enableIPReputation: false
+        enableIPReputation: false,
       };
-      
+
       const disabledThreatIntel = new ThreatIntelligence(disabledConfig, mockSecurityLogger);
-      
+
       const reputation = await disabledThreatIntel.checkIPReputation('10.0.0.1');
       expect(reputation).toBeNull();
     });
@@ -166,15 +169,15 @@ describe('ThreatIntelligence', () => {
         source: 'test',
         description: 'Malware C2 server',
         tags: ['malware', 'c2'],
-        metadata: {}
+        metadata: {},
       });
 
       await threatIntelligence.checkIPReputation('10.0.0.3');
-      
+
       expect(mockSecurityLogger.logSecurityEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'ip_reputation_check',
-          resource: 'threat_intelligence'
+          resource: 'threat_intelligence',
         })
       );
     });
@@ -185,7 +188,7 @@ describe('ThreatIntelligence', () => {
       const matches = threatIntelligence.checkBotSignatures(
         'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
       );
-      
+
       expect(matches.length).toBeGreaterThan(0);
       const googlebot = matches.find(m => m.name === 'Googlebot');
       expect(googlebot).toBeDefined();
@@ -196,7 +199,7 @@ describe('ThreatIntelligence', () => {
       const matches = threatIntelligence.checkBotSignatures(
         'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/91.0.4472.114 Safari/537.36'
       );
-      
+
       expect(matches.length).toBeGreaterThan(0);
       const headless = matches.find(m => m.name === 'Headless Chrome');
       expect(headless).toBeDefined();
@@ -207,7 +210,7 @@ describe('ThreatIntelligence', () => {
       const matches = threatIntelligence.checkBotSignatures(
         'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36 selenium'
       );
-      
+
       expect(matches.length).toBeGreaterThan(0);
       const selenium = matches.find(m => m.name === 'Selenium');
       expect(selenium).toBeDefined();
@@ -215,10 +218,8 @@ describe('ThreatIntelligence', () => {
     });
 
     it('should detect Python requests', () => {
-      const matches = threatIntelligence.checkBotSignatures(
-        'python-requests/2.25.1'
-      );
-      
+      const matches = threatIntelligence.checkBotSignatures('python-requests/2.25.1');
+
       expect(matches.length).toBeGreaterThan(0);
       const python = matches.find(m => m.name === 'Python Requests');
       expect(python).toBeDefined();
@@ -226,10 +227,8 @@ describe('ThreatIntelligence', () => {
     });
 
     it('should detect curl', () => {
-      const matches = threatIntelligence.checkBotSignatures(
-        'curl/7.68.0'
-      );
-      
+      const matches = threatIntelligence.checkBotSignatures('curl/7.68.0');
+
       expect(matches.length).toBeGreaterThan(0);
       const curl = matches.find(m => m.name === 'curl');
       expect(curl).toBeDefined();
@@ -240,22 +239,22 @@ describe('ThreatIntelligence', () => {
       const matches = threatIntelligence.checkBotSignatures(
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       );
-      
+
       expect(matches.length).toBe(0);
     });
 
     it('should return empty array when bot signatures are disabled', () => {
       const disabledConfig: Partial<ThreatIntelligenceConfig> = {
         ...defaultConfig,
-        enableBotSignatures: false
+        enableBotSignatures: false,
       };
-      
+
       const disabledThreatIntel = new ThreatIntelligence(disabledConfig, mockSecurityLogger);
-      
+
       const matches = disabledThreatIntel.checkBotSignatures(
         'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
       );
-      
+
       expect(matches.length).toBe(0);
     });
 
@@ -263,11 +262,11 @@ describe('ThreatIntelligence', () => {
       threatIntelligence.checkBotSignatures(
         'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
       );
-      
+
       expect(mockSecurityLogger.logSecurityEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'bot_signature_match',
-          resource: 'threat_intelligence'
+          resource: 'threat_intelligence',
         })
       );
     });
@@ -275,10 +274,8 @@ describe('ThreatIntelligence', () => {
 
   describe('attack pattern checking', () => {
     it('should detect SQL injection - UNION', () => {
-      const matches = threatIntelligence.checkAttackPatterns(
-        "1 UNION SELECT * FROM users"
-      );
-      
+      const matches = threatIntelligence.checkAttackPatterns('1 UNION SELECT * FROM users');
+
       expect(matches.length).toBeGreaterThan(0);
       const sqlInjection = matches.find(m => m.name === 'SQL Injection - UNION');
       expect(sqlInjection).toBeDefined();
@@ -286,20 +283,16 @@ describe('ThreatIntelligence', () => {
     });
 
     it('should detect SQL injection - OR', () => {
-      const matches = threatIntelligence.checkAttackPatterns(
-        "admin' OR '1'='1"
-      );
-      
+      const matches = threatIntelligence.checkAttackPatterns("admin' OR '1'='1");
+
       expect(matches.length).toBeGreaterThan(0);
       const sqlInjection = matches.find(m => m.name === 'SQL Injection - OR/AND');
       expect(sqlInjection).toBeDefined();
     });
 
     it('should detect XSS - script tag', () => {
-      const matches = threatIntelligence.checkAttackPatterns(
-        '<script>alert("XSS")</script>'
-      );
-      
+      const matches = threatIntelligence.checkAttackPatterns('<script>alert("XSS")</script>');
+
       expect(matches.length).toBeGreaterThan(0);
       const xss = matches.find(m => m.name === 'XSS - Script Tag');
       expect(xss).toBeDefined();
@@ -307,20 +300,16 @@ describe('ThreatIntelligence', () => {
     });
 
     it('should detect XSS - event handler', () => {
-      const matches = threatIntelligence.checkAttackPatterns(
-        '<img src=x onerror=alert("XSS")>'
-      );
-      
+      const matches = threatIntelligence.checkAttackPatterns('<img src=x onerror=alert("XSS")>');
+
       expect(matches.length).toBeGreaterThan(0);
       const xss = matches.find(m => m.name === 'XSS - Event Handlers');
       expect(xss).toBeDefined();
     });
 
     it('should detect path traversal', () => {
-      const matches = threatIntelligence.checkAttackPatterns(
-        '../../../etc/passwd'
-      );
-      
+      const matches = threatIntelligence.checkAttackPatterns('../../../etc/passwd');
+
       expect(matches.length).toBeGreaterThan(0);
       const pathTraversal = matches.find(m => m.name === 'Path Traversal');
       expect(pathTraversal).toBeDefined();
@@ -328,10 +317,8 @@ describe('ThreatIntelligence', () => {
     });
 
     it('should detect command injection', () => {
-      const matches = threatIntelligence.checkAttackPatterns(
-        '; ls -la'
-      );
-      
+      const matches = threatIntelligence.checkAttackPatterns('; ls -la');
+
       expect(matches.length).toBeGreaterThan(0);
       const cmdInjection = matches.find(m => m.name === 'Command Injection');
       expect(cmdInjection).toBeDefined();
@@ -339,37 +326,31 @@ describe('ThreatIntelligence', () => {
     });
 
     it('should return empty array for safe input', () => {
-      const matches = threatIntelligence.checkAttackPatterns(
-        'Hello, this is a normal user input'
-      );
-      
+      const matches = threatIntelligence.checkAttackPatterns('Hello, this is a normal user input');
+
       expect(matches.length).toBe(0);
     });
 
     it('should return empty array when attack patterns are disabled', () => {
       const disabledConfig: Partial<ThreatIntelligenceConfig> = {
         ...defaultConfig,
-        enableAttackPatterns: false
+        enableAttackPatterns: false,
       };
-      
+
       const disabledThreatIntel = new ThreatIntelligence(disabledConfig, mockSecurityLogger);
-      
-      const matches = disabledThreatIntel.checkAttackPatterns(
-        "1 UNION SELECT * FROM users"
-      );
-      
+
+      const matches = disabledThreatIntel.checkAttackPatterns('1 UNION SELECT * FROM users');
+
       expect(matches.length).toBe(0);
     });
 
     it('should log attack pattern detection event', () => {
-      threatIntelligence.checkAttackPatterns(
-        "1 UNION SELECT * FROM users"
-      );
-      
+      threatIntelligence.checkAttackPatterns('1 UNION SELECT * FROM users');
+
       expect(mockSecurityLogger.logSecurityEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'attack_pattern_match',
-          resource: 'threat_intelligence'
+          resource: 'threat_intelligence',
         })
       );
     });
@@ -380,9 +361,9 @@ describe('ThreatIntelligence', () => {
       const result = await threatIntelligence.checkThreat({
         ip: '192.168.1.1',
         userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        input: 'Hello world'
+        input: 'Hello world',
       });
-      
+
       expect(result).toHaveProperty('isThreat');
       expect(result).toHaveProperty('threatLevel');
       expect(result).toHaveProperty('confidence');
@@ -392,7 +373,7 @@ describe('ThreatIntelligence', () => {
       expect(result).toHaveProperty('matchedPatterns');
       expect(result).toHaveProperty('recommendations');
       expect(result).toHaveProperty('metadata');
-      
+
       expect(typeof result.isThreat).toBe('boolean');
       expect(['low', 'medium', 'high', 'critical']).toContain(result.threatLevel);
       expect(result.confidence).toBeGreaterThanOrEqual(0);
@@ -409,15 +390,15 @@ describe('ThreatIntelligence', () => {
         source: 'test',
         description: 'Known bot IP',
         tags: ['bot'],
-        metadata: {}
+        metadata: {},
       });
 
       const result = await threatIntelligence.checkThreat({
         ip: '10.0.0.10',
         userAgent: 'Mozilla/5.0',
-        input: 'Hello'
+        input: 'Hello',
       });
-      
+
       expect(result.isThreat).toBe(true);
       expect(result.categories).toContain('bot');
       expect(result.recommendations.length).toBeGreaterThan(0);
@@ -427,9 +408,9 @@ describe('ThreatIntelligence', () => {
       const result = await threatIntelligence.checkThreat({
         ip: '192.168.1.1',
         userAgent: 'HeadlessChrome/91.0.4472.114',
-        input: 'Hello'
+        input: 'Hello',
       });
-      
+
       expect(result.isThreat).toBe(true);
       expect(result.matchedSignatures.length).toBeGreaterThan(0);
       expect(result.threatLevel).toBe('high');
@@ -439,9 +420,9 @@ describe('ThreatIntelligence', () => {
       const result = await threatIntelligence.checkThreat({
         ip: '192.168.1.1',
         userAgent: 'Mozilla/5.0',
-        input: "1 UNION SELECT * FROM users"
+        input: '1 UNION SELECT * FROM users',
       });
-      
+
       expect(result.isThreat).toBe(true);
       expect(result.matchedPatterns.length).toBeGreaterThan(0);
       expect(result.threatLevel).toBe('critical');
@@ -451,9 +432,9 @@ describe('ThreatIntelligence', () => {
       const result = await threatIntelligence.checkThreat({
         ip: '192.168.1.1',
         userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        input: 'Hello world'
+        input: 'Hello world',
       });
-      
+
       expect(result.isThreat).toBe(false);
       expect(result.threatLevel).toBe('low');
       expect(result.matchedSignatures.length).toBe(0);
@@ -472,9 +453,9 @@ describe('ThreatIntelligence', () => {
         source: 'test',
         description: 'Spam source',
         tags: ['spam'],
-        metadata: {}
+        metadata: {},
       });
-      
+
       expect(indicator).toHaveProperty('id');
       expect(indicator).toHaveProperty('firstSeen');
       expect(indicator).toHaveProperty('lastSeen');
@@ -492,9 +473,9 @@ describe('ThreatIntelligence', () => {
         description: 'Test bot signature',
         confidence: 0.8,
         source: 'test',
-        isActive: true
+        isActive: true,
       });
-      
+
       expect(signature).toHaveProperty('id');
       expect(signature).toHaveProperty('createdAt');
       expect(signature).toHaveProperty('updatedAt');
@@ -510,9 +491,9 @@ describe('ThreatIntelligence', () => {
         description: 'Test attack pattern',
         mitigation: 'Test mitigation',
         source: 'test',
-        isActive: true
+        isActive: true,
       });
-      
+
       expect(pattern).toHaveProperty('id');
       expect(pattern).toHaveProperty('createdAt');
       expect(pattern).toHaveProperty('updatedAt');
@@ -524,14 +505,14 @@ describe('ThreatIntelligence', () => {
     it('should update threat feed', async () => {
       const feeds = threatIntelligence.getThreatFeeds();
       const feedId = feeds[0].id;
-      
+
       const result = await threatIntelligence.updateThreatFeed(feedId);
-      
+
       expect(result).toBe(true);
       expect(mockSecurityLogger.logSecurityEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'threat_feed_updated',
-          resource: 'threat_intelligence'
+          resource: 'threat_intelligence',
         })
       );
     });
@@ -544,7 +525,7 @@ describe('ThreatIntelligence', () => {
     it('should return false for inactive feed', async () => {
       const feeds = threatIntelligence.getThreatFeeds();
       const inactiveFeed = feeds.find(f => !f.isActive);
-      
+
       if (inactiveFeed) {
         const result = await threatIntelligence.updateThreatFeed(inactiveFeed.id);
         expect(result).toBe(false);
@@ -555,7 +536,7 @@ describe('ThreatIntelligence', () => {
   describe('statistics', () => {
     it('should get threat intelligence statistics', () => {
       const stats = threatIntelligence.getStats();
-      
+
       expect(stats).toHaveProperty('totalIndicators');
       expect(stats).toHaveProperty('indicatorsByType');
       expect(stats).toHaveProperty('indicatorsByCategory');
@@ -566,7 +547,7 @@ describe('ThreatIntelligence', () => {
       expect(stats).toHaveProperty('cacheHits');
       expect(stats).toHaveProperty('cacheMisses');
       expect(stats).toHaveProperty('lastUpdate');
-      
+
       expect(stats.botSignatures).toBeGreaterThan(0);
       expect(stats.attackPatterns).toBeGreaterThan(0);
       expect(stats.threatFeeds).toBeGreaterThan(0);
@@ -574,7 +555,7 @@ describe('ThreatIntelligence', () => {
 
     it('should update statistics after adding indicators', () => {
       const initialStats = threatIntelligence.getStats();
-      
+
       threatIntelligence.addThreatIndicator({
         type: 'ip',
         value: '10.0.0.30',
@@ -584,9 +565,9 @@ describe('ThreatIntelligence', () => {
         source: 'test',
         description: 'Test indicator',
         tags: ['test'],
-        metadata: {}
+        metadata: {},
       });
-      
+
       const updatedStats = threatIntelligence.getStats();
       expect(updatedStats.totalIndicators).toBe(initialStats.totalIndicators + 1);
     });
@@ -604,13 +585,13 @@ describe('ThreatIntelligence', () => {
         source: 'test',
         description: 'Test',
         tags: ['test'],
-        metadata: {}
+        metadata: {},
       });
-      
+
       await threatIntelligence.checkIPReputation('10.0.0.40');
-      
+
       threatIntelligence.clearCaches();
-      
+
       // Caches should be cleared
       const stats = threatIntelligence.getStats();
       expect(stats.cacheHits).toBe(0);
@@ -630,9 +611,7 @@ describe('ThreatIntelligence', () => {
     });
 
     it('should handle special characters in input', () => {
-      const matches = threatIntelligence.checkAttackPatterns(
-        '!@#$%^&*()_+-=[]{}|;:,.<>?'
-      );
+      const matches = threatIntelligence.checkAttackPatterns('!@#$%^&*()_+-=[]{}|;:,.<>?');
       expect(matches.length).toBe(0);
     });
 
@@ -644,17 +623,17 @@ describe('ThreatIntelligence', () => {
 
     it('should handle concurrent threat checks', async () => {
       const promises = [];
-      
+
       for (let i = 0; i < 10; i++) {
         promises.push(
           threatIntelligence.checkThreat({
             ip: `192.168.1.${i}`,
             userAgent: 'Mozilla/5.0',
-            input: 'Hello'
+            input: 'Hello',
           })
         );
       }
-      
+
       const results = await Promise.all(promises);
       expect(results.length).toBe(10);
       results.forEach(result => {

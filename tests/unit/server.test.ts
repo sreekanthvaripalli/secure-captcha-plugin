@@ -17,9 +17,7 @@ describe('CaptchaServer', () => {
 
   describe('Health Check Endpoint', () => {
     test('should return healthy status', async () => {
-      const response = await request(app)
-        .get('/api/v1/health')
-        .expect(200);
+      const response = await request(app).get('/api/v1/health').expect(200);
 
       expect(response.body).toHaveProperty('status', 'healthy');
       expect(response.body).toHaveProperty('timestamp');
@@ -29,21 +27,18 @@ describe('CaptchaServer', () => {
     });
   });
 
-
   describe('Captcha Types Endpoint', () => {
     test('should return available captcha types', async () => {
-      const response = await request(app)
-        .get('/api/v1/captcha/types')
-        .expect(200);
+      const response = await request(app).get('/api/v1/captcha/types').expect(200);
 
       expect(response.body).toHaveProperty('success', true);
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('types');
       expect(Array.isArray(response.body.data.types)).toBe(true);
-      
+
       const types = response.body.data.types;
       expect(types.length).toBeGreaterThan(0);
-      
+
       types.forEach((type: any) => {
         expect(type).toHaveProperty('type');
         expect(type).toHaveProperty('name');
@@ -68,7 +63,7 @@ describe('CaptchaServer', () => {
 
       expect(response.body).toHaveProperty('success', true);
       expect(response.body).toHaveProperty('data');
-      
+
       const data = response.body.data;
       expect(data).toHaveProperty('sessionId');
       expect(data).toHaveProperty('challenge');
@@ -167,12 +162,10 @@ describe('CaptchaServer', () => {
   describe('Captcha Validation Endpoint', () => {
     test('should validate correct response', async () => {
       // First generate a captcha
-      const generateResponse = await request(app)
-        .post('/api/v1/captcha/generate')
-        .send({
-          type: 'text',
-          difficulty: 'medium',
-        });
+      const generateResponse = await request(app).post('/api/v1/captcha/generate').send({
+        type: 'text',
+        difficulty: 'medium',
+      });
 
       const { sessionId } = generateResponse.body.data;
 
@@ -201,12 +194,10 @@ describe('CaptchaServer', () => {
 
     test('should reject incorrect response', async () => {
       // First generate a captcha
-      const generateResponse = await request(app)
-        .post('/api/v1/captcha/generate')
-        .send({
-          type: 'text',
-          difficulty: 'medium',
-        });
+      const generateResponse = await request(app).post('/api/v1/captcha/generate').send({
+        type: 'text',
+        difficulty: 'medium',
+      });
 
       const { sessionId } = generateResponse.body.data;
 
@@ -273,9 +264,7 @@ describe('CaptchaServer', () => {
 
   describe('404 Handler', () => {
     test('should return 404 for unknown endpoint', async () => {
-      const response = await request(app)
-        .get('/api/v1/unknown')
-        .expect(404);
+      const response = await request(app).get('/api/v1/unknown').expect(404);
 
       expect(response.body).toHaveProperty('success', false);
       expect(response.body).toHaveProperty('error');
@@ -286,9 +275,7 @@ describe('CaptchaServer', () => {
 
   describe('Security Headers', () => {
     test('should include security headers', async () => {
-      const response = await request(app)
-        .get('/api/v1/health')
-        .expect(200);
+      const response = await request(app).get('/api/v1/health').expect(200);
 
       // Check for Helmet.js security headers
       expect(response.headers).toHaveProperty('x-content-type-options', 'nosniff');
@@ -300,9 +287,7 @@ describe('CaptchaServer', () => {
 
   describe('Rate Limiting', () => {
     test('should include rate limit headers', async () => {
-      const response = await request(app)
-        .get('/api/v1/health')
-        .expect(200);
+      const response = await request(app).get('/api/v1/health').expect(200);
 
       // Rate limiting is applied to /api/ routes
       // The health endpoint might not have rate limit headers
@@ -313,10 +298,7 @@ describe('CaptchaServer', () => {
 
   describe('Request ID', () => {
     test('should include request ID in error responses', async () => {
-      const response = await request(app)
-        .post('/api/v1/captcha/generate')
-        .send({})
-        .expect(400);
+      const response = await request(app).post('/api/v1/captcha/generate').send({}).expect(400);
 
       expect(response.body).toHaveProperty('error');
       expect(response.body.error).toHaveProperty('requestId');

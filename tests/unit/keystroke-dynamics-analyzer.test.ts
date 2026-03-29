@@ -20,7 +20,7 @@ describe('KeystrokeDynamicsAnalyzer', () => {
       enableFileLogging: false,
       logFilePath: '/tmp/test.log',
       maxLogFileSize: 1024 * 1024,
-      maxLogFiles: 5
+      maxLogFiles: 5,
     });
 
     analyzer = new KeystrokeDynamicsAnalyzer(
@@ -28,7 +28,7 @@ describe('KeystrokeDynamicsAnalyzer', () => {
         botScoreThreshold: 0.7,
         humanScoreThreshold: 0.3,
         anomalyThreshold: 0.5,
-        cacheResults: false
+        cacheResults: false,
       },
       cryptoService,
       securityLogger
@@ -38,7 +38,12 @@ describe('KeystrokeDynamicsAnalyzer', () => {
   describe('analyzeKeystrokeEvents', () => {
     it('should return empty metrics for insufficient data', () => {
       const events: KeystrokeEvent[] = [
-        { key: 'a', code: 'KeyA', timestamp: 1000, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+        {
+          key: 'a',
+          code: 'KeyA',
+          timestamp: 1000,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
       ];
 
       const metrics = analyzer.analyzeKeystrokeEvents(events);
@@ -50,9 +55,24 @@ describe('KeystrokeDynamicsAnalyzer', () => {
 
     it('should calculate typing speed correctly', () => {
       const events: KeystrokeEvent[] = [
-        { key: 'a', code: 'KeyA', timestamp: 1000, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'b', code: 'KeyB', timestamp: 1200, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'c', code: 'KeyC', timestamp: 1400, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+        {
+          key: 'a',
+          code: 'KeyA',
+          timestamp: 1000,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'b',
+          code: 'KeyB',
+          timestamp: 1200,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'c',
+          code: 'KeyC',
+          timestamp: 1400,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
       ];
 
       const metrics = analyzer.analyzeKeystrokeEvents(events);
@@ -63,9 +83,27 @@ describe('KeystrokeDynamicsAnalyzer', () => {
 
     it('should calculate hold times from duration', () => {
       const events: KeystrokeEvent[] = [
-        { key: 'a', code: 'KeyA', timestamp: 1000, duration: 80, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'b', code: 'KeyB', timestamp: 1200, duration: 100, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'c', code: 'KeyC', timestamp: 1400, duration: 120, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+        {
+          key: 'a',
+          code: 'KeyA',
+          timestamp: 1000,
+          duration: 80,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'b',
+          code: 'KeyB',
+          timestamp: 1200,
+          duration: 100,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'c',
+          code: 'KeyC',
+          timestamp: 1400,
+          duration: 120,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
       ];
 
       const metrics = analyzer.analyzeKeystrokeEvents(events);
@@ -76,10 +114,30 @@ describe('KeystrokeDynamicsAnalyzer', () => {
     it('should calculate rhythm consistency', () => {
       // Consistent rhythm (same intervals)
       const consistentEvents: KeystrokeEvent[] = [
-        { key: 'a', code: 'KeyA', timestamp: 1000, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'b', code: 'KeyB', timestamp: 1200, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'c', code: 'KeyC', timestamp: 1400, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'd', code: 'KeyD', timestamp: 1600, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+        {
+          key: 'a',
+          code: 'KeyA',
+          timestamp: 1000,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'b',
+          code: 'KeyB',
+          timestamp: 1200,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'c',
+          code: 'KeyC',
+          timestamp: 1400,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'd',
+          code: 'KeyD',
+          timestamp: 1600,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
       ];
 
       const consistentMetrics = analyzer.analyzeKeystrokeEvents(consistentEvents);
@@ -87,10 +145,30 @@ describe('KeystrokeDynamicsAnalyzer', () => {
 
       // Inconsistent rhythm (varying intervals)
       const inconsistentEvents: KeystrokeEvent[] = [
-        { key: 'a', code: 'KeyA', timestamp: 1000, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'b', code: 'KeyB', timestamp: 1100, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'c', code: 'KeyC', timestamp: 1400, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'd', code: 'KeyD', timestamp: 1500, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+        {
+          key: 'a',
+          code: 'KeyA',
+          timestamp: 1000,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'b',
+          code: 'KeyB',
+          timestamp: 1100,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'c',
+          code: 'KeyC',
+          timestamp: 1400,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'd',
+          code: 'KeyD',
+          timestamp: 1500,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
       ];
 
       const inconsistentMetrics = analyzer.analyzeKeystrokeEvents(inconsistentEvents);
@@ -99,10 +177,30 @@ describe('KeystrokeDynamicsAnalyzer', () => {
 
     it('should calculate error rate', () => {
       const events: KeystrokeEvent[] = [
-        { key: 'a', code: 'KeyA', timestamp: 1000, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'b', code: 'KeyB', timestamp: 1100, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'Backspace', code: 'Backspace', timestamp: 1200, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'c', code: 'KeyC', timestamp: 1300, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+        {
+          key: 'a',
+          code: 'KeyA',
+          timestamp: 1000,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'b',
+          code: 'KeyB',
+          timestamp: 1100,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'Backspace',
+          code: 'Backspace',
+          timestamp: 1200,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'c',
+          code: 'KeyC',
+          timestamp: 1300,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
       ];
 
       const metrics = analyzer.analyzeKeystrokeEvents(events);
@@ -120,7 +218,7 @@ describe('KeystrokeDynamicsAnalyzer', () => {
           code: 'KeyA',
           timestamp: 1000 + i * 100,
           duration: 80,
-          modifiers: { shift: false, ctrl: false, alt: false, meta: false }
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
         });
       }
 
@@ -138,7 +236,7 @@ describe('KeystrokeDynamicsAnalyzer', () => {
           key: String.fromCharCode(97 + (i % 26)),
           code: `Key${String.fromCharCode(65 + (i % 26))}`,
           timestamp: 1000 + i * 100,
-          modifiers: { shift: false, ctrl: false, alt: false, meta: false }
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
         });
       }
 
@@ -155,7 +253,7 @@ describe('KeystrokeDynamicsAnalyzer', () => {
           key: String.fromCharCode(97 + (i % 26)),
           code: `Key${String.fromCharCode(65 + (i % 26))}`,
           timestamp: 1000 + i * 10, // Very fast: 100 keys per second
-          modifiers: { shift: false, ctrl: false, alt: false, meta: false }
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
         });
       }
 
@@ -167,9 +265,24 @@ describe('KeystrokeDynamicsAnalyzer', () => {
 
     it('should detect suspiciously slow typing', () => {
       const events: KeystrokeEvent[] = [
-        { key: 'a', code: 'KeyA', timestamp: 1000, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'b', code: 'KeyB', timestamp: 10000, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }, // 9 second gap
-        { key: 'c', code: 'KeyC', timestamp: 20000, modifiers: { shift: false, ctrl: false, alt: false, meta: false } } // 10 second gap
+        {
+          key: 'a',
+          code: 'KeyA',
+          timestamp: 1000,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'b',
+          code: 'KeyB',
+          timestamp: 10000,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        }, // 9 second gap
+        {
+          key: 'c',
+          code: 'KeyC',
+          timestamp: 20000,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        }, // 10 second gap
       ];
 
       const metrics = analyzer.analyzeKeystrokeEvents(events);
@@ -187,7 +300,7 @@ describe('KeystrokeDynamicsAnalyzer', () => {
           key: 'a',
           code: 'KeyA',
           timestamp: 1000 + i * 100,
-          modifiers: { shift: false, ctrl: false, alt: false, meta: false }
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
         });
       }
 
@@ -200,17 +313,83 @@ describe('KeystrokeDynamicsAnalyzer', () => {
     it('should not detect anomalies for natural typing', () => {
       // Simulate natural human typing with variations
       const events: KeystrokeEvent[] = [
-        { key: 'h', code: 'KeyH', timestamp: 1000, duration: 85, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'e', code: 'KeyE', timestamp: 1150, duration: 90, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'l', code: 'KeyL', timestamp: 1320, duration: 75, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'l', code: 'KeyL', timestamp: 1480, duration: 95, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'o', code: 'KeyO', timestamp: 1650, duration: 80, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: ' ', code: 'Space', timestamp: 1850, duration: 120, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'w', code: 'KeyW', timestamp: 2050, duration: 88, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'o', code: 'KeyO', timestamp: 2220, duration: 82, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'r', code: 'KeyR', timestamp: 2380, duration: 78, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'l', code: 'KeyL', timestamp: 2540, duration: 92, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'd', code: 'KeyD', timestamp: 2700, duration: 85, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+        {
+          key: 'h',
+          code: 'KeyH',
+          timestamp: 1000,
+          duration: 85,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'e',
+          code: 'KeyE',
+          timestamp: 1150,
+          duration: 90,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'l',
+          code: 'KeyL',
+          timestamp: 1320,
+          duration: 75,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'l',
+          code: 'KeyL',
+          timestamp: 1480,
+          duration: 95,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'o',
+          code: 'KeyO',
+          timestamp: 1650,
+          duration: 80,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: ' ',
+          code: 'Space',
+          timestamp: 1850,
+          duration: 120,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'w',
+          code: 'KeyW',
+          timestamp: 2050,
+          duration: 88,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'o',
+          code: 'KeyO',
+          timestamp: 2220,
+          duration: 82,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'r',
+          code: 'KeyR',
+          timestamp: 2380,
+          duration: 78,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'l',
+          code: 'KeyL',
+          timestamp: 2540,
+          duration: 92,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'd',
+          code: 'KeyD',
+          timestamp: 2700,
+          duration: 85,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
       ];
 
       const metrics = analyzer.analyzeKeystrokeEvents(events);
@@ -234,7 +413,7 @@ describe('KeystrokeDynamicsAnalyzer', () => {
           code: `Key${String.fromCharCode(65 + (i % 26))}`,
           timestamp: 1000 + i * 100,
           duration: 80,
-          modifiers: { shift: false, ctrl: false, alt: false, meta: false }
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
         });
       }
 
@@ -252,17 +431,83 @@ describe('KeystrokeDynamicsAnalyzer', () => {
 
       // Simulate human-like typing with natural variations
       const humanEvents: KeystrokeEvent[] = [
-        { key: 'h', code: 'KeyH', timestamp: 1000, duration: 85, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'e', code: 'KeyE', timestamp: 1180, duration: 90, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'l', code: 'KeyL', timestamp: 1350, duration: 75, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'l', code: 'KeyL', timestamp: 1520, duration: 95, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'o', code: 'KeyO', timestamp: 1700, duration: 80, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: ' ', code: 'Space', timestamp: 1900, duration: 120, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'w', code: 'KeyW', timestamp: 2120, duration: 88, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'o', code: 'KeyO', timestamp: 2280, duration: 82, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'r', code: 'KeyR', timestamp: 2450, duration: 78, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'l', code: 'KeyL', timestamp: 2620, duration: 92, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'd', code: 'KeyD', timestamp: 2780, duration: 85, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+        {
+          key: 'h',
+          code: 'KeyH',
+          timestamp: 1000,
+          duration: 85,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'e',
+          code: 'KeyE',
+          timestamp: 1180,
+          duration: 90,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'l',
+          code: 'KeyL',
+          timestamp: 1350,
+          duration: 75,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'l',
+          code: 'KeyL',
+          timestamp: 1520,
+          duration: 95,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'o',
+          code: 'KeyO',
+          timestamp: 1700,
+          duration: 80,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: ' ',
+          code: 'Space',
+          timestamp: 1900,
+          duration: 120,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'w',
+          code: 'KeyW',
+          timestamp: 2120,
+          duration: 88,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'o',
+          code: 'KeyO',
+          timestamp: 2280,
+          duration: 82,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'r',
+          code: 'KeyR',
+          timestamp: 2450,
+          duration: 78,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'l',
+          code: 'KeyL',
+          timestamp: 2620,
+          duration: 92,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'd',
+          code: 'KeyD',
+          timestamp: 2780,
+          duration: 85,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
       ];
 
       analyzer.updateSession('test-session-2', humanEvents);
@@ -277,7 +522,7 @@ describe('KeystrokeDynamicsAnalyzer', () => {
       const analyzerWithCache = new KeystrokeDynamicsAnalyzer(
         {
           cacheResults: true,
-          cacheTTL: 300
+          cacheTTL: 300,
         },
         cryptoService,
         securityLogger
@@ -285,15 +530,25 @@ describe('KeystrokeDynamicsAnalyzer', () => {
 
       analyzerWithCache.createSession('cached-session');
       const events: KeystrokeEvent[] = [
-        { key: 'a', code: 'KeyA', timestamp: 1000, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'b', code: 'KeyB', timestamp: 1200, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+        {
+          key: 'a',
+          code: 'KeyA',
+          timestamp: 1000,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'b',
+          code: 'KeyB',
+          timestamp: 1200,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
       ];
 
       analyzerWithCache.updateSession('cached-session', events);
-      
+
       // First call
       const result1 = await analyzerWithCache.endSession('cached-session');
-      
+
       // Second call should return cached result
       const result2 = await analyzerWithCache.endSession('cached-session');
 
@@ -315,8 +570,18 @@ describe('KeystrokeDynamicsAnalyzer', () => {
       analyzer.createSession('test-session');
 
       const events: KeystrokeEvent[] = [
-        { key: 'a', code: 'KeyA', timestamp: 1000, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'b', code: 'KeyB', timestamp: 1200, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+        {
+          key: 'a',
+          code: 'KeyA',
+          timestamp: 1000,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'b',
+          code: 'KeyB',
+          timestamp: 1200,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
       ];
 
       analyzer.updateSession('test-session', events);
@@ -364,9 +629,24 @@ describe('KeystrokeDynamicsAnalyzer', () => {
   describe('edge cases', () => {
     it('should handle events with same timestamp', () => {
       const events: KeystrokeEvent[] = [
-        { key: 'a', code: 'KeyA', timestamp: 1000, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'b', code: 'KeyB', timestamp: 1000, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'c', code: 'KeyC', timestamp: 1100, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+        {
+          key: 'a',
+          code: 'KeyA',
+          timestamp: 1000,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'b',
+          code: 'KeyB',
+          timestamp: 1000,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'c',
+          code: 'KeyC',
+          timestamp: 1100,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
       ];
 
       const metrics = analyzer.analyzeKeystrokeEvents(events);
@@ -382,7 +662,7 @@ describe('KeystrokeDynamicsAnalyzer', () => {
           key: String.fromCharCode(97 + (i % 26)),
           code: `Key${String.fromCharCode(65 + (i % 26))}`,
           timestamp: 1000 + i * 5, // 200 keys per second
-          modifiers: { shift: false, ctrl: false, alt: false, meta: false }
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
         });
       }
 
@@ -395,8 +675,20 @@ describe('KeystrokeDynamicsAnalyzer', () => {
 
     it('should handle zero duration events', () => {
       const events: KeystrokeEvent[] = [
-        { key: 'a', code: 'KeyA', timestamp: 1000, duration: 0, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'b', code: 'KeyB', timestamp: 1100, duration: 0, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+        {
+          key: 'a',
+          code: 'KeyA',
+          timestamp: 1000,
+          duration: 0,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'b',
+          code: 'KeyB',
+          timestamp: 1100,
+          duration: 0,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
       ];
 
       const metrics = analyzer.analyzeKeystrokeEvents(events);
@@ -406,9 +698,24 @@ describe('KeystrokeDynamicsAnalyzer', () => {
 
     it('should handle modifier keys correctly', () => {
       const events: KeystrokeEvent[] = [
-        { key: 'Shift', code: 'ShiftLeft', timestamp: 1000, modifiers: { shift: true, ctrl: false, alt: false, meta: false } },
-        { key: 'A', code: 'KeyA', timestamp: 1100, modifiers: { shift: true, ctrl: false, alt: false, meta: false } },
-        { key: 'Shift', code: 'ShiftLeft', timestamp: 1200, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+        {
+          key: 'Shift',
+          code: 'ShiftLeft',
+          timestamp: 1000,
+          modifiers: { shift: true, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'A',
+          code: 'KeyA',
+          timestamp: 1100,
+          modifiers: { shift: true, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'Shift',
+          code: 'ShiftLeft',
+          timestamp: 1200,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
       ];
 
       const metrics = analyzer.analyzeKeystrokeEvents(events);
@@ -419,11 +726,36 @@ describe('KeystrokeDynamicsAnalyzer', () => {
 
     it('should handle backspace and delete keys', () => {
       const events: KeystrokeEvent[] = [
-        { key: 'a', code: 'KeyA', timestamp: 1000, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'b', code: 'KeyB', timestamp: 1100, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'Backspace', code: 'Backspace', timestamp: 1200, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'c', code: 'KeyC', timestamp: 1300, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-        { key: 'Delete', code: 'Delete', timestamp: 1400, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+        {
+          key: 'a',
+          code: 'KeyA',
+          timestamp: 1000,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'b',
+          code: 'KeyB',
+          timestamp: 1100,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'Backspace',
+          code: 'Backspace',
+          timestamp: 1200,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'c',
+          code: 'KeyC',
+          timestamp: 1300,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
+        {
+          key: 'Delete',
+          code: 'Delete',
+          timestamp: 1400,
+          modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+        },
       ];
 
       const metrics = analyzer.analyzeKeystrokeEvents(events);
@@ -437,15 +769,33 @@ describe('KeystrokeDynamicsAnalyzer', () => {
       const pattern = {
         sessionId: 'test-session',
         events: [
-          { key: 'a', code: 'KeyA', timestamp: 1000, duration: 80, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-          { key: 'b', code: 'KeyB', timestamp: 1200, duration: 90, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-          { key: 'c', code: 'KeyC', timestamp: 1400, duration: 100, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+          {
+            key: 'a',
+            code: 'KeyA',
+            timestamp: 1000,
+            duration: 80,
+            modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+          },
+          {
+            key: 'b',
+            code: 'KeyB',
+            timestamp: 1200,
+            duration: 90,
+            modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+          },
+          {
+            key: 'c',
+            code: 'KeyC',
+            timestamp: 1400,
+            duration: 100,
+            modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+          },
         ],
         averageHoldTime: 0,
         averageFlightTime: 0,
         typingSpeed: 0,
         errorRate: 0,
-        rhythm: []
+        rhythm: [],
       };
 
       const metrics = analyzer.analyzeKeystrokePattern(pattern);

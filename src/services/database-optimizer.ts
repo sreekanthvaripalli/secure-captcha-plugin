@@ -50,11 +50,11 @@ export interface ConnectionPoolConfig {
 }
 
 export class DatabaseOptimizer {
-  private pool: Pool;
-  private config: SecurityConfigurationService;
-  private poolConfig: ConnectionPoolConfig;
-  private stats: DatabaseStats;
-  private slowQueryThreshold: number;
+  private readonly pool: Pool;
+  private readonly config: SecurityConfigurationService;
+  private readonly poolConfig: ConnectionPoolConfig;
+  private readonly stats: DatabaseStats;
+  private readonly slowQueryThreshold: number;
   private cleanupTimer?: NodeJS.Timeout;
 
   constructor(
@@ -73,20 +73,22 @@ export class DatabaseOptimizer {
       destroyTimeoutMillis: 5000,
       reapIntervalMillis: 1000,
       createRetryIntervalMillis: 200,
-      ...poolConfig
+      ...poolConfig,
     };
 
-    this.pool = pool || new Pool({
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432', 10),
-      user: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'password',
-      database: process.env.DB_NAME || 'captcha_db',
-      max: this.poolConfig.max,
-      min: this.poolConfig.min,
-      idleTimeoutMillis: this.poolConfig.idleTimeoutMillis,
-      connectionTimeoutMillis: this.poolConfig.connectionTimeoutMillis,
-    });
+    this.pool =
+      pool ||
+      new Pool({
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT || '5432', 10),
+        user: process.env.DB_USER || 'postgres',
+        password: process.env.DB_PASSWORD || 'password',
+        database: process.env.DB_NAME || 'captcha_db',
+        max: this.poolConfig.max,
+        min: this.poolConfig.min,
+        idleTimeoutMillis: this.poolConfig.idleTimeoutMillis,
+        connectionTimeoutMillis: this.poolConfig.connectionTimeoutMillis,
+      });
 
     this.stats = {
       totalConnections: 0,
@@ -100,19 +102,19 @@ export class DatabaseOptimizer {
         slowQueries: 0,
         avgQueryTime: 0,
         maxQueryTime: 0,
-        queryTypes: {}
+        queryTypes: {},
       },
       indexStats: {
         totalIndexes: 0,
         unusedIndexes: [],
         duplicateIndexes: [],
-        missingIndexes: []
+        missingIndexes: [],
       },
       cacheStats: {
         hitRate: 0,
         bufferCacheSize: 0,
-        sharedBuffers: 0
-      }
+        sharedBuffers: 0,
+      },
     };
 
     this.slowQueryThreshold = 1000; // 1 second
@@ -123,17 +125,20 @@ export class DatabaseOptimizer {
   /**
    * Execute a query with optimization tracking
    */
-  async query<T extends Record<string, any> = Record<string, any>>(text: string, params?: any[]): Promise<QueryResult<T>> {
+  async query<T extends Record<string, any> = Record<string, any>>(
+    text: string,
+    params?: any[]
+  ): Promise<QueryResult<T>> {
     const startTime = Date.now();
     const queryType = this.getQueryType(text);
-    
+
     try {
       const result = await this.pool.query(text, params);
       const executionTime = Date.now() - startTime;
 
       // Update statistics
       this.updateQueryStats(queryType, executionTime, result.rowCount || 0);
-      
+
       // Log slow queries
       if (executionTime > this.slowQueryThreshold) {
         this.config.securityLogger.logSecurityEvent({
@@ -143,15 +148,15 @@ export class DatabaseOptimizer {
           metadata: {
             query: text.substring(0, 100),
             executionTime,
-            rowsReturned: result.rowCount
-          }
+            rowsReturned: result.rowCount,
+          },
         });
       }
 
       return result;
     } catch (error) {
       const executionTime = Date.now() - startTime;
-      
+
       this.config.securityLogger.logSecurityEvent({
         action: 'QUERY_FAILED',
         resource: 'DATABASE_OPTIMIZER',
@@ -159,8 +164,8 @@ export class DatabaseOptimizer {
         metadata: {
           query: text.substring(0, 100),
           executionTime,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        }
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
       });
 
       throw error;
@@ -178,8 +183,8 @@ export class DatabaseOptimizer {
    * Execute a query with read replica support
    */
   async queryWithReplica<T extends Record<string, any> = Record<string, any>>(
-    text: string, 
-    params?: any[], 
+    text: string,
+    params?: any[],
     useReplica: boolean = false
   ): Promise<QueryResult<T>> {
     if (useReplica && process.env.DB_REPLICA_URL) {
@@ -210,26 +215,28 @@ export class DatabaseOptimizer {
    */
   async optimizeQuery(query: string): Promise<QueryOptimizationResult> {
     const startTime = Date.now();
-    
+
     try {
       // Get query plan
       const planResult = await this.query('EXPLAIN (ANALYZE, BUFFERS) ' + query);
       const executionTime = Date.now() - startTime;
-      
+
       // Analyze query plan
       const recommendations = this.analyzeQueryPlan(planResult.rows);
       const indexSuggestions = this.suggestIndexes(query);
-      
+
       return {
         query,
         executionTime,
         rowsReturned: planResult.rowCount || 0,
         queryPlan: planResult.rows,
         recommendations,
-        indexSuggestions
+        indexSuggestions,
       };
     } catch (error) {
-      throw new Error(`Query optimization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Query optimization failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -239,12 +246,12 @@ export class DatabaseOptimizer {
   async createIndex(tableName: string, columns: string[], indexName?: string): Promise<void> {
     const idxName = indexName || `${tableName}_${columns.join('_')}_idx`;
     const columnsStr = columns.join(', ');
-    
+
     const query = `CREATE INDEX IF NOT EXISTS ${idxName} ON ${tableName} (${columnsStr})`;
-    
+
     try {
       await this.query(query);
-      
+
       this.config.securityLogger.logSecurityEvent({
         action: 'INDEX_CREATED',
         resource: 'DATABASE_OPTIMIZER',
@@ -252,8 +259,8 @@ export class DatabaseOptimizer {
         metadata: {
           tableName,
           indexName: idxName,
-          columns
-        }
+          columns,
+        },
       });
     } catch (error) {
       this.config.securityLogger.logSecurityEvent({
@@ -263,10 +270,10 @@ export class DatabaseOptimizer {
         metadata: {
           tableName,
           indexName: idxName,
-          columns
-        }
+          columns,
+        },
       });
-      
+
       throw error;
     }
   }
@@ -277,21 +284,21 @@ export class DatabaseOptimizer {
   async analyzeTable(tableName: string): Promise<void> {
     try {
       await this.query(`ANALYZE ${tableName}`);
-      
+
       this.config.securityLogger.logSecurityEvent({
         action: 'TABLE_ANALYZED',
         resource: 'DATABASE_OPTIMIZER',
         reason: `Statistics updated for ${tableName}`,
-        metadata: { tableName }
+        metadata: { tableName },
       });
     } catch (error) {
       this.config.securityLogger.logSecurityEvent({
         action: 'TABLE_ANALYSIS_FAILED',
         resource: 'DATABASE_OPTIMIZER',
         reason: error instanceof Error ? error.message : 'Table analysis failed',
-        metadata: { tableName }
+        metadata: { tableName },
       });
-      
+
       throw error;
     }
   }
@@ -303,25 +310,25 @@ export class DatabaseOptimizer {
     try {
       // Update connection stats
       this.updateConnectionStats();
-      
+
       // Get query statistics
       await this.updateQueryStatistics();
-      
+
       // Get index statistics
       await this.updateIndexStatistics();
-      
+
       // Get cache statistics
       await this.updateCacheStatistics();
-      
+
       return { ...this.stats };
     } catch (error) {
       this.config.securityLogger.logSecurityEvent({
         action: 'STATS_COLLECTION_FAILED',
         resource: 'DATABASE_OPTIMIZER',
         reason: error instanceof Error ? error.message : 'Failed to collect database statistics',
-        metadata: {}
+        metadata: {},
       });
-      
+
       return this.stats;
     }
   }
@@ -333,20 +340,20 @@ export class DatabaseOptimizer {
     try {
       // Update PostgreSQL configuration for better performance
       const optimizations = [
-        'ALTER SYSTEM SET shared_buffers = \'256MB\'',
-        'ALTER SYSTEM SET effective_cache_size = \'1GB\'',
-        'ALTER SYSTEM SET maintenance_work_mem = \'64MB\'',
+        "ALTER SYSTEM SET shared_buffers = '256MB'",
+        "ALTER SYSTEM SET effective_cache_size = '1GB'",
+        "ALTER SYSTEM SET maintenance_work_mem = '64MB'",
         'ALTER SYSTEM SET checkpoint_completion_target = 0.9',
-        'ALTER SYSTEM SET wal_buffers = \'16MB\'',
+        "ALTER SYSTEM SET wal_buffers = '16MB'",
         'ALTER SYSTEM SET default_statistics_target = 100',
         'ALTER SYSTEM SET random_page_cost = 1.1',
         'ALTER SYSTEM SET effective_io_concurrency = 200',
-        'ALTER SYSTEM SET work_mem = \'4MB\'',
-        'ALTER SYSTEM SET min_wal_size = \'1GB\'',
-        'ALTER SYSTEM SET max_wal_size = \'4GB\'',
+        "ALTER SYSTEM SET work_mem = '4MB'",
+        "ALTER SYSTEM SET min_wal_size = '1GB'",
+        "ALTER SYSTEM SET max_wal_size = '4GB'",
         'ALTER SYSTEM SET max_worker_processes = 8',
         'ALTER SYSTEM SET max_parallel_workers_per_gather = 4',
-        'ALTER SYSTEM SET max_parallel_workers = 8'
+        'ALTER SYSTEM SET max_parallel_workers = 8',
       ];
 
       for (const optimization of optimizations) {
@@ -362,15 +369,14 @@ export class DatabaseOptimizer {
         action: 'DATABASE_OPTIMIZED',
         resource: 'DATABASE_OPTIMIZER',
         reason: 'Database configuration optimized for performance',
-        metadata: { optimizationsApplied: optimizations.length }
+        metadata: { optimizationsApplied: optimizations.length },
       });
-
     } catch (error) {
       this.config.securityLogger.logSecurityEvent({
         action: 'DATABASE_OPTIMIZATION_FAILED',
         resource: 'DATABASE_OPTIMIZER',
         reason: error instanceof Error ? error.message : 'Database optimization failed',
-        metadata: {}
+        metadata: {},
       });
     }
   }
@@ -382,7 +388,7 @@ export class DatabaseOptimizer {
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);
     }
-    
+
     await this.pool.end();
   }
 
@@ -404,7 +410,7 @@ export class DatabaseOptimizer {
         action: 'DATABASE_CONNECTION_ERROR',
         resource: 'DATABASE_OPTIMIZER',
         reason: err.message,
-        metadata: { error: err.stack }
+        metadata: { error: err.stack },
       });
     });
   }
@@ -419,7 +425,7 @@ export class DatabaseOptimizer {
           action: 'MONITORING_ERROR',
           resource: 'DATABASE_OPTIMIZER',
           reason: error instanceof Error ? error.message : 'Monitoring failed',
-          metadata: {}
+          metadata: {},
         });
       }
     }, 60000); // Monitor every minute
@@ -427,30 +433,45 @@ export class DatabaseOptimizer {
 
   private getQueryType(query: string): string {
     const trimmed = query.trim().toUpperCase();
-    if (trimmed.startsWith('SELECT')) return 'SELECT';
-    if (trimmed.startsWith('INSERT')) return 'INSERT';
-    if (trimmed.startsWith('UPDATE')) return 'UPDATE';
-    if (trimmed.startsWith('DELETE')) return 'DELETE';
-    if (trimmed.startsWith('CREATE')) return 'DDL';
-    if (trimmed.startsWith('ALTER')) return 'DDL';
-    if (trimmed.startsWith('DROP')) return 'DDL';
+    if (trimmed.startsWith('SELECT')) {
+      return 'SELECT';
+    }
+    if (trimmed.startsWith('INSERT')) {
+      return 'INSERT';
+    }
+    if (trimmed.startsWith('UPDATE')) {
+      return 'UPDATE';
+    }
+    if (trimmed.startsWith('DELETE')) {
+      return 'DELETE';
+    }
+    if (trimmed.startsWith('CREATE')) {
+      return 'DDL';
+    }
+    if (trimmed.startsWith('ALTER')) {
+      return 'DDL';
+    }
+    if (trimmed.startsWith('DROP')) {
+      return 'DDL';
+    }
     return 'OTHER';
   }
 
   private updateQueryStats(queryType: string, executionTime: number, _rowsReturned: number): void {
     this.stats.queryStats.totalQueries++;
-    this.stats.queryStats.avgQueryTime = 
-      (this.stats.queryStats.avgQueryTime * (this.stats.queryStats.totalQueries - 1) + executionTime) / 
+    this.stats.queryStats.avgQueryTime =
+      (this.stats.queryStats.avgQueryTime * (this.stats.queryStats.totalQueries - 1) +
+        executionTime) /
       this.stats.queryStats.totalQueries;
-    
+
     if (executionTime > this.stats.queryStats.maxQueryTime) {
       this.stats.queryStats.maxQueryTime = executionTime;
     }
-    
+
     if (executionTime > this.slowQueryThreshold) {
       this.stats.queryStats.slowQueries++;
     }
-    
+
     if (!this.stats.queryStats.queryTypes[queryType]) {
       this.stats.queryStats.queryTypes[queryType] = 0;
     }
@@ -461,7 +482,8 @@ export class DatabaseOptimizer {
     this.stats.activeConnections = this.pool.totalCount - this.pool.idleCount;
     this.stats.idleConnections = this.pool.idleCount;
     this.stats.waitingConnections = this.pool.waitingCount;
-    this.stats.connectionUtilization = (this.stats.activeConnections / this.stats.maxConnections) * 100;
+    this.stats.connectionUtilization =
+      (this.stats.activeConnections / this.stats.maxConnections) * 100;
   }
 
   private async updateQueryStatistics(): Promise<void> {
@@ -477,11 +499,15 @@ export class DatabaseOptimizer {
         ORDER BY total_time DESC 
         LIMIT 10
       `);
-      
+
       // Update stats based on pg_stat_statements if available
       if (result.rows.length > 0) {
-        this.stats.queryStats.avgQueryTime = result.rows.reduce((sum: number, row: any) => sum + row.mean_time, 0) / result.rows.length;
-        this.stats.queryStats.maxQueryTime = Math.max(...result.rows.map((row: any) => row.mean_time));
+        this.stats.queryStats.avgQueryTime =
+          result.rows.reduce((sum: number, row: any) => sum + row.mean_time, 0) /
+          result.rows.length;
+        this.stats.queryStats.maxQueryTime = Math.max(
+          ...result.rows.map((row: any) => row.mean_time)
+        );
       }
     } catch (error) {
       // pg_stat_statements might not be installed
@@ -503,7 +529,7 @@ export class DatabaseOptimizer {
         JOIN pg_class i ON a.indexrelid = i.oid
         ORDER BY a.idx_scan DESC
       `);
-      
+
       this.stats.indexStats.totalIndexes = result.rows.length;
       this.stats.indexStats.unusedIndexes = result.rows
         .filter((row: any) => row.idx_scan === 0)
@@ -523,14 +549,12 @@ export class DatabaseOptimizer {
           sum(idx_blks_read) as idx_read
         FROM pg_statio_user_tables
       `);
-      
+
       if (result.rows.length > 0) {
         const stats = result.rows[0];
         const totalHeap = stats.heap_hit + stats.heap_read;
-        
-        this.stats.cacheStats.hitRate = totalHeap > 0 
-          ? (stats.heap_hit / totalHeap) * 100 
-          : 0;
+
+        this.stats.cacheStats.hitRate = totalHeap > 0 ? (stats.heap_hit / totalHeap) * 100 : 0;
       }
     } catch (error) {
       // Handle error
@@ -539,42 +563,42 @@ export class DatabaseOptimizer {
 
   private analyzeQueryPlan(planRows: any[]): string[] {
     const recommendations: string[] = [];
-    
+
     for (const row of planRows) {
       const planText = JSON.stringify(row);
-      
+
       if (planText.includes('Seq Scan')) {
         recommendations.push('Consider adding an index for better performance');
       }
-      
+
       if (planText.includes('Nested Loop')) {
         recommendations.push('Consider rewriting query to avoid nested loops');
       }
-      
+
       if (planText.includes('Sort')) {
         recommendations.push('Consider adding an index to avoid sorting');
       }
     }
-    
+
     return recommendations;
   }
 
   private suggestIndexes(query: string): string[] {
     const suggestions: string[] = [];
-    
+
     // Simple pattern matching for index suggestions
     if (query.includes('WHERE')) {
       suggestions.push('Consider adding indexes on WHERE clause columns');
     }
-    
+
     if (query.includes('ORDER BY')) {
       suggestions.push('Consider adding indexes on ORDER BY columns');
     }
-    
+
     if (query.includes('JOIN')) {
       suggestions.push('Consider adding indexes on JOIN columns');
     }
-    
+
     return suggestions;
   }
 }

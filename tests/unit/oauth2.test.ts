@@ -36,7 +36,7 @@ describe('OAuth2Service', () => {
     supportedCodeChallengeMethods: ['plain', 'S256'],
     providers: [],
     enableLogging: true,
-    logLevel: 'info'
+    logLevel: 'info',
   };
 
   beforeEach(() => {
@@ -45,7 +45,7 @@ describe('OAuth2Service', () => {
       enableFileLogging: false,
       logFilePath: '/tmp/test.log',
       maxLogFileSize: 1024,
-      maxLogFiles: 5
+      maxLogFiles: 5,
     }) as jest.Mocked<SecurityLogger>;
 
     oauth2Service = new OAuth2Service(defaultConfig, mockSecurityLogger);
@@ -68,15 +68,15 @@ describe('OAuth2Service', () => {
     it('should initialize default providers', () => {
       const providers = oauth2Service.getProviders();
       expect(providers.length).toBe(3);
-      
+
       const google = providers.find(p => p.id === 'google');
       expect(google).toBeDefined();
       expect(google?.name).toBe('Google');
-      
+
       const github = providers.find(p => p.id === 'github');
       expect(github).toBeDefined();
       expect(github?.name).toBe('GitHub');
-      
+
       const microsoft = providers.find(p => p.id === 'microsoft');
       expect(microsoft).toBeDefined();
       expect(microsoft?.name).toBe('Microsoft');
@@ -84,7 +84,7 @@ describe('OAuth2Service', () => {
 
     it('should get discovery document', () => {
       const doc = oauth2Service.getDiscoveryDocument();
-      
+
       expect(doc).toHaveProperty('issuer');
       expect(doc).toHaveProperty('authorization_endpoint');
       expect(doc).toHaveProperty('token_endpoint');
@@ -114,15 +114,15 @@ describe('OAuth2Service', () => {
         requirePkce: true,
         requireConsent: true,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       expect(client).toHaveProperty('id');
       expect(client).toHaveProperty('secret');
       expect(client.name).toBe('Test Client');
       expect(client.redirectUris).toContain('https://test.example.com/callback');
       expect(client.isActive).toBe(true);
-      
+
       const stats = oauth2Service.getStats();
       expect(stats.totalClients).toBe(4);
     });
@@ -140,9 +140,9 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const retrievedClient = oauth2Service.getClient(client.id);
       expect(retrievedClient).toBeDefined();
       expect(retrievedClient?.id).toBe(client.id);
@@ -162,12 +162,12 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const isValid = oauth2Service.validateClientCredentials(client.id, client.secret);
       expect(isValid).toBe(true);
-      
+
       const isInvalid = oauth2Service.validateClientCredentials(client.id, 'wrong-secret');
       expect(isInvalid).toBe(false);
     });
@@ -185,9 +185,9 @@ describe('OAuth2Service', () => {
         requirePkce: true,
         requireConsent: true,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const isValid = oauth2Service.validateClientCredentials(client.id);
       expect(isValid).toBe(true);
     });
@@ -205,9 +205,9 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: false,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const isValid = oauth2Service.validateClientCredentials(client.id, client.secret);
       expect(isValid).toBe(false);
     });
@@ -229,7 +229,7 @@ describe('OAuth2Service', () => {
         requirePkce: true,
         requireConsent: true,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
     });
 
@@ -241,9 +241,9 @@ describe('OAuth2Service', () => {
         scopes: ['openid', 'profile'],
         state: 'test-state',
         codeChallenge: 'test-challenge',
-        codeChallengeMethod: 'S256'
+        codeChallengeMethod: 'S256',
       });
-      
+
       expect(authUrl).toContain('/oauth2/authorize');
       expect(authUrl).toContain(`client_id=${testClient.id}`);
       expect(authUrl).toContain('response_type=code');
@@ -260,7 +260,7 @@ describe('OAuth2Service', () => {
           responseType: 'code',
           clientId: 'invalid-client',
           redirectUri: 'https://auth.example.com/callback',
-          scopes: ['openid']
+          scopes: ['openid'],
         });
       }).toThrow('Invalid or inactive client');
     });
@@ -271,7 +271,7 @@ describe('OAuth2Service', () => {
           responseType: 'code',
           clientId: testClient.id,
           redirectUri: 'https://invalid.example.com/callback',
-          scopes: ['openid']
+          scopes: ['openid'],
         });
       }).toThrow('Invalid redirect URI');
     });
@@ -282,7 +282,7 @@ describe('OAuth2Service', () => {
           responseType: 'token' as any,
           clientId: testClient.id,
           redirectUri: 'https://auth.example.com/callback',
-          scopes: ['openid']
+          scopes: ['openid'],
         });
       }).toThrow('Unsupported response type');
     });
@@ -293,7 +293,7 @@ describe('OAuth2Service', () => {
           responseType: 'code',
           clientId: testClient.id,
           redirectUri: 'https://auth.example.com/callback',
-          scopes: ['invalid-scope']
+          scopes: ['invalid-scope'],
         });
       }).toThrow('Invalid scopes: invalid-scope');
     });
@@ -309,7 +309,7 @@ describe('OAuth2Service', () => {
         'test-nonce',
         'test-state'
       );
-      
+
       expect(authCode).toHaveProperty('code');
       expect(authCode.clientId).toBe(testClient.id);
       expect(authCode.userId).toBe('user-123');
@@ -332,9 +332,9 @@ describe('OAuth2Service', () => {
         requirePkce: true,
         requireConsent: true,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       expect(() => {
         oauth2Service.createAuthorizationCode(
           pkceClient.id,
@@ -354,15 +354,15 @@ describe('OAuth2Service', () => {
         'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM',
         'S256'
       );
-      
+
       const tokenResponse = await oauth2Service.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: authCode.code,
         redirectUri: 'https://auth.example.com/callback',
         clientId: testClient.id,
-        codeVerifier: 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk'
+        codeVerifier: 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk',
       });
-      
+
       expect(tokenResponse).toHaveProperty('access_token');
       expect(tokenResponse).toHaveProperty('token_type');
       expect(tokenResponse.token_type).toBe('Bearer');
@@ -379,7 +379,7 @@ describe('OAuth2Service', () => {
           grantType: 'authorization_code',
           code: 'invalid-code',
           redirectUri: 'https://auth.example.com/callback',
-          clientId: testClient.id
+          clientId: testClient.id,
         })
       ).rejects.toThrow('Invalid authorization code');
     });
@@ -398,31 +398,31 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const authCode = oauth2Service.createAuthorizationCode(
         noPkceClient.id,
         'user-123',
         'https://auth.example.com/callback',
         ['openid']
       );
-      
+
       // Use the code once
       await oauth2Service.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: authCode.code,
         redirectUri: 'https://auth.example.com/callback',
-        clientId: noPkceClient.id
+        clientId: noPkceClient.id,
       });
-      
+
       // Try to use it again
       await expect(
         oauth2Service.exchangeCodeForTokens({
           grantType: 'authorization_code',
           code: authCode.code,
           redirectUri: 'https://auth.example.com/callback',
-          clientId: noPkceClient.id
+          clientId: noPkceClient.id,
         })
       ).rejects.toThrow('Authorization code has already been used');
     });
@@ -430,11 +430,11 @@ describe('OAuth2Service', () => {
     it('should reject expired authorization code', async () => {
       const shortLivedConfig: Partial<OAuth2Config> = {
         ...defaultConfig,
-        authorizationCodeLifetime: 0 // Immediate expiration
+        authorizationCodeLifetime: 0, // Immediate expiration
       };
-      
+
       const shortLivedService = new OAuth2Service(shortLivedConfig, mockSecurityLogger);
-      
+
       const client = shortLivedService.registerClient({
         name: 'Short Lived Client',
         redirectUris: ['https://short.example.com/callback'],
@@ -447,25 +447,25 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const authCode = shortLivedService.createAuthorizationCode(
         client.id,
         'user-123',
         'https://short.example.com/callback',
         ['openid']
       );
-      
+
       // Wait a bit to ensure expiration
       await new Promise(resolve => setTimeout(resolve, 10));
-      
+
       await expect(
         shortLivedService.exchangeCodeForTokens({
           grantType: 'authorization_code',
           code: authCode.code,
           redirectUri: 'https://short.example.com/callback',
-          clientId: client.id
+          clientId: client.id,
         })
       ).rejects.toThrow('Authorization code has expired');
     });
@@ -484,9 +484,9 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const otherClient = oauth2Service.registerClient({
         name: 'Other Client',
         redirectUris: ['https://other.example.com/callback'],
@@ -499,22 +499,22 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const authCode = oauth2Service.createAuthorizationCode(
         noPkceClient.id,
         'user-123',
         'https://auth.example.com/callback',
         ['openid']
       );
-      
+
       await expect(
         oauth2Service.exchangeCodeForTokens({
           grantType: 'authorization_code',
           code: authCode.code,
           redirectUri: 'https://auth.example.com/callback',
-          clientId: otherClient.id
+          clientId: otherClient.id,
         })
       ).rejects.toThrow('Client ID mismatch');
     });
@@ -533,22 +533,22 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const authCode = oauth2Service.createAuthorizationCode(
         noPkceClient.id,
         'user-123',
         'https://auth.example.com/callback',
         ['openid']
       );
-      
+
       await expect(
         oauth2Service.exchangeCodeForTokens({
           grantType: 'authorization_code',
           code: authCode.code,
           redirectUri: 'https://different.example.com/callback',
-          clientId: noPkceClient.id
+          clientId: noPkceClient.id,
         })
       ).rejects.toThrow('Redirect URI mismatch');
     });
@@ -556,7 +556,7 @@ describe('OAuth2Service', () => {
     it('should validate PKCE S256', async () => {
       const codeVerifier = 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk';
       const codeChallenge = 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM';
-      
+
       const authCode = oauth2Service.createAuthorizationCode(
         testClient.id,
         'user-123',
@@ -565,21 +565,21 @@ describe('OAuth2Service', () => {
         codeChallenge,
         'S256'
       );
-      
+
       const tokenResponse = await oauth2Service.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: authCode.code,
         redirectUri: 'https://auth.example.com/callback',
         clientId: testClient.id,
-        codeVerifier
+        codeVerifier,
       });
-      
+
       expect(tokenResponse).toHaveProperty('access_token');
     });
 
     it('should reject invalid PKCE verifier', async () => {
       const codeChallenge = 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM';
-      
+
       const authCode = oauth2Service.createAuthorizationCode(
         testClient.id,
         'user-123',
@@ -588,14 +588,14 @@ describe('OAuth2Service', () => {
         codeChallenge,
         'S256'
       );
-      
+
       await expect(
         oauth2Service.exchangeCodeForTokens({
           grantType: 'authorization_code',
           code: authCode.code,
           redirectUri: 'https://auth.example.com/callback',
           clientId: testClient.id,
-          codeVerifier: 'invalid-verifier'
+          codeVerifier: 'invalid-verifier',
         })
       ).rejects.toThrow('PKCE validation failed');
     });
@@ -617,7 +617,7 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
     });
 
@@ -628,20 +628,20 @@ describe('OAuth2Service', () => {
         'https://refresh.example.com/callback',
         ['openid', 'profile']
       );
-      
+
       const initialTokens = await oauth2Service.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: authCode.code,
         redirectUri: 'https://refresh.example.com/callback',
-        clientId: testClient.id
+        clientId: testClient.id,
       });
-      
+
       const refreshedTokens = await oauth2Service.refreshAccessToken({
         grantType: 'refresh_token',
         refreshToken: initialTokens.refresh_token,
-        clientId: testClient.id
+        clientId: testClient.id,
       });
-      
+
       expect(refreshedTokens).toHaveProperty('access_token');
       expect(refreshedTokens.access_token).not.toBe(initialTokens.access_token);
       expect(refreshedTokens).toHaveProperty('refresh_token');
@@ -655,21 +655,21 @@ describe('OAuth2Service', () => {
         'https://refresh.example.com/callback',
         ['openid', 'profile', 'email']
       );
-      
+
       const initialTokens = await oauth2Service.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: authCode.code,
         redirectUri: 'https://refresh.example.com/callback',
-        clientId: testClient.id
+        clientId: testClient.id,
       });
-      
+
       const refreshedTokens = await oauth2Service.refreshAccessToken({
         grantType: 'refresh_token',
         refreshToken: initialTokens.refresh_token,
         clientId: testClient.id,
-        scope: 'openid profile'
+        scope: 'openid profile',
       });
-      
+
       expect(refreshedTokens.scope).toBe('openid profile');
     });
 
@@ -678,7 +678,7 @@ describe('OAuth2Service', () => {
         oauth2Service.refreshAccessToken({
           grantType: 'refresh_token',
           refreshToken: 'invalid-refresh-token',
-          clientId: testClient.id
+          clientId: testClient.id,
         })
       ).rejects.toThrow('Invalid refresh token');
     });
@@ -686,11 +686,11 @@ describe('OAuth2Service', () => {
     it('should reject expired refresh token', async () => {
       const shortLivedConfig: Partial<OAuth2Config> = {
         ...defaultConfig,
-        refreshTokenLifetime: 0
+        refreshTokenLifetime: 0,
       };
-      
+
       const shortLivedService = new OAuth2Service(shortLivedConfig, mockSecurityLogger);
-      
+
       const client = shortLivedService.registerClient({
         name: 'Short Refresh Client',
         redirectUris: ['https://shortrefresh.example.com/callback'],
@@ -703,31 +703,31 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const authCode = shortLivedService.createAuthorizationCode(
         client.id,
         'user-123',
         'https://shortrefresh.example.com/callback',
         ['openid']
       );
-      
+
       const tokens = await shortLivedService.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: authCode.code,
         redirectUri: 'https://shortrefresh.example.com/callback',
-        clientId: client.id
+        clientId: client.id,
       });
-      
+
       // Wait a bit to ensure expiration
       await new Promise(resolve => setTimeout(resolve, 10));
-      
+
       await expect(
         shortLivedService.refreshAccessToken({
           grantType: 'refresh_token',
           refreshToken: tokens.refresh_token,
-          clientId: client.id
+          clientId: client.id,
         })
       ).rejects.toThrow('Refresh token has expired');
     });
@@ -745,28 +745,28 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const authCode = oauth2Service.createAuthorizationCode(
         testClient.id,
         'user-123',
         'https://refresh.example.com/callback',
         ['openid']
       );
-      
+
       const tokens = await oauth2Service.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: authCode.code,
         redirectUri: 'https://refresh.example.com/callback',
-        clientId: testClient.id
+        clientId: testClient.id,
       });
-      
+
       await expect(
         oauth2Service.refreshAccessToken({
           grantType: 'refresh_token',
           refreshToken: tokens.refresh_token,
-          clientId: otherClient.id
+          clientId: otherClient.id,
         })
       ).rejects.toThrow('Client ID mismatch');
     });
@@ -778,20 +778,20 @@ describe('OAuth2Service', () => {
         'https://refresh.example.com/callback',
         ['openid']
       );
-      
+
       const tokens = await oauth2Service.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: authCode.code,
         redirectUri: 'https://refresh.example.com/callback',
-        clientId: testClient.id
+        clientId: testClient.id,
       });
-      
+
       await expect(
         oauth2Service.refreshAccessToken({
           grantType: 'refresh_token',
           refreshToken: tokens.refresh_token,
           clientId: testClient.id,
-          scope: 'openid profile email'
+          scope: 'openid profile email',
         })
       ).rejects.toThrow('Cannot grant scopes not in original token');
     });
@@ -813,7 +813,7 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
     });
 
@@ -821,9 +821,9 @@ describe('OAuth2Service', () => {
       const tokenResponse = await oauth2Service.generateClientCredentialsToken({
         grantType: 'client_credentials',
         clientId: serviceClient.id,
-        clientSecret: serviceClient.secret
+        clientSecret: serviceClient.secret,
       });
-      
+
       expect(tokenResponse).toHaveProperty('access_token');
       expect(tokenResponse.token_type).toBe('Bearer');
       expect(tokenResponse).toHaveProperty('expires_in');
@@ -844,16 +844,16 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const tokenResponse = await oauth2Service.generateClientCredentialsToken({
         grantType: 'client_credentials',
         clientId: scopedClient.id,
         clientSecret: scopedClient.secret,
-        scope: 'openid'
+        scope: 'openid',
       });
-      
+
       expect(tokenResponse.scope).toBe('openid');
     });
 
@@ -862,7 +862,7 @@ describe('OAuth2Service', () => {
         oauth2Service.generateClientCredentialsToken({
           grantType: 'client_credentials',
           clientId: serviceClient.id,
-          clientSecret: 'wrong-secret'
+          clientSecret: 'wrong-secret',
         })
       ).rejects.toThrow('Invalid client credentials');
     });
@@ -873,7 +873,7 @@ describe('OAuth2Service', () => {
           grantType: 'client_credentials',
           clientId: serviceClient.id,
           clientSecret: serviceClient.secret,
-          scope: 'invalid-scope'
+          scope: 'invalid-scope',
         })
       ).rejects.toThrow('Invalid scopes: invalid-scope');
     });
@@ -895,7 +895,7 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
     });
 
@@ -906,16 +906,16 @@ describe('OAuth2Service', () => {
         'https://validation.example.com/callback',
         ['openid']
       );
-      
+
       const tokens = await oauth2Service.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: authCode.code,
         redirectUri: 'https://validation.example.com/callback',
-        clientId: testClient.id
+        clientId: testClient.id,
       });
-      
+
       const accessToken = oauth2Service.validateAccessToken(tokens.access_token);
-      
+
       expect(accessToken).not.toBeNull();
       expect(accessToken?.token).toBe(tokens.access_token);
       expect(accessToken?.clientId).toBe(testClient.id);
@@ -934,21 +934,21 @@ describe('OAuth2Service', () => {
         'https://validation.example.com/callback',
         ['openid']
       );
-      
+
       const tokens = await oauth2Service.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: authCode.code,
         redirectUri: 'https://validation.example.com/callback',
-        clientId: testClient.id
+        clientId: testClient.id,
       });
-      
+
       // First validation
       const accessToken1 = oauth2Service.validateAccessToken(tokens.access_token);
       // Second validation (should hit cache)
       const accessToken2 = oauth2Service.validateAccessToken(tokens.access_token);
-      
+
       expect(accessToken1).toEqual(accessToken2);
-      
+
       const stats = oauth2Service.getStats();
       expect(stats.cacheHits).toBeGreaterThan(0);
     });
@@ -960,16 +960,16 @@ describe('OAuth2Service', () => {
         'https://validation.example.com/callback',
         ['openid']
       );
-      
+
       const tokens = await oauth2Service.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: authCode.code,
         redirectUri: 'https://validation.example.com/callback',
-        clientId: testClient.id
+        clientId: testClient.id,
       });
-      
+
       const introspection = oauth2Service.introspectToken(tokens.access_token);
-      
+
       expect(introspection.active).toBe(true);
       expect(introspection.scope).toBe('openid');
       expect(introspection.clientId).toBe(testClient.id);
@@ -999,7 +999,7 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
     });
 
@@ -1010,17 +1010,17 @@ describe('OAuth2Service', () => {
         'https://revocation.example.com/callback',
         ['openid']
       );
-      
+
       const tokens = await oauth2Service.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: authCode.code,
         redirectUri: 'https://revocation.example.com/callback',
-        clientId: testClient.id
+        clientId: testClient.id,
       });
-      
+
       const revoked = oauth2Service.revokeToken(tokens.access_token, 'access_token');
       expect(revoked).toBe(true);
-      
+
       const accessToken = oauth2Service.validateAccessToken(tokens.access_token);
       expect(accessToken).toBeNull();
     });
@@ -1032,14 +1032,14 @@ describe('OAuth2Service', () => {
         'https://revocation.example.com/callback',
         ['openid']
       );
-      
+
       const tokens = await oauth2Service.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: authCode.code,
         redirectUri: 'https://revocation.example.com/callback',
-        clientId: testClient.id
+        clientId: testClient.id,
       });
-      
+
       const revoked = oauth2Service.revokeToken(tokens.refresh_token!, 'refresh_token');
       expect(revoked).toBe(true);
     });
@@ -1066,7 +1066,7 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
     });
 
@@ -1077,16 +1077,16 @@ describe('OAuth2Service', () => {
         'https://userinfo.example.com/callback',
         ['openid', 'profile', 'email']
       );
-      
+
       const tokens = await oauth2Service.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: authCode.code,
         redirectUri: 'https://userinfo.example.com/callback',
-        clientId: testClient.id
+        clientId: testClient.id,
       });
-      
+
       const userInfo = oauth2Service.getUserInfo(tokens.access_token);
-      
+
       expect(userInfo).not.toBeNull();
       expect(userInfo?.sub).toBe('user-123');
       expect(userInfo).toHaveProperty('name');
@@ -1121,7 +1121,7 @@ describe('OAuth2Service', () => {
   describe('statistics', () => {
     it('should get OAuth 2.0 statistics', () => {
       const stats = oauth2Service.getStats();
-      
+
       expect(stats).toHaveProperty('totalClients');
       expect(stats).toHaveProperty('activeClients');
       expect(stats).toHaveProperty('totalAuthorizationCodes');
@@ -1141,7 +1141,7 @@ describe('OAuth2Service', () => {
 
     it('should update statistics after operations', async () => {
       const initialStats = oauth2Service.getStats();
-      
+
       oauth2Service.registerClient({
         name: 'Stats Test Client',
         redirectUris: ['https://stats.example.com/callback'],
@@ -1154,9 +1154,9 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const updatedStats = oauth2Service.getStats();
       expect(updatedStats.totalClients).toBe(initialStats.totalClients + 1);
     });
@@ -1176,22 +1176,22 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       oauth2Service.createAuthorizationCode(
         cleanupClient.id,
         'user-123',
         'https://cleanup.example.com/callback',
         ['openid']
       );
-      
+
       oauth2Service.cleanupExpired();
-      
+
       expect(mockSecurityLogger.logSecurityEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'cleanup_completed',
-          resource: 'oauth2'
+          resource: 'oauth2',
         })
       );
     });
@@ -1211,20 +1211,20 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       oauth2Service.generateAuthorizationUrl({
         responseType: 'code',
         clientId: loggingClient.id,
         redirectUri: 'https://logging.example.com/callback',
-        scopes: ['openid']
+        scopes: ['openid'],
       });
-      
+
       expect(mockSecurityLogger.logSecurityEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'authorization_url_generated',
-          resource: 'oauth2'
+          resource: 'oauth2',
         })
       );
     });
@@ -1242,27 +1242,27 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const codeExchangeAuthCode = oauth2Service.createAuthorizationCode(
         codeExchangeClient.id,
         'user-123',
         'https://codeexchange.example.com/callback',
         ['openid']
       );
-      
+
       await oauth2Service.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: codeExchangeAuthCode.code,
         redirectUri: 'https://codeexchange.example.com/callback',
-        clientId: codeExchangeClient.id
+        clientId: codeExchangeClient.id,
       });
-      
+
       expect(mockSecurityLogger.logSecurityEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'code_exchanged',
-          resource: 'oauth2'
+          resource: 'oauth2',
         })
       );
     });
@@ -1280,33 +1280,33 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const refreshLogAuthCode = oauth2Service.createAuthorizationCode(
         refreshLogClient.id,
         'user-123',
         'https://refreshlog.example.com/callback',
         ['openid']
       );
-      
+
       const tokens = await oauth2Service.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: refreshLogAuthCode.code,
         redirectUri: 'https://refreshlog.example.com/callback',
-        clientId: refreshLogClient.id
+        clientId: refreshLogClient.id,
       });
-      
+
       await oauth2Service.refreshAccessToken({
         grantType: 'refresh_token',
         refreshToken: tokens.refresh_token!,
-        clientId: refreshLogClient.id
+        clientId: refreshLogClient.id,
       });
-      
+
       expect(mockSecurityLogger.logSecurityEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'token_refreshed',
-          resource: 'oauth2'
+          resource: 'oauth2',
         })
       );
     });
@@ -1324,29 +1324,29 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const revocationLogAuthCode = oauth2Service.createAuthorizationCode(
         revocationLogClient.id,
         'user-123',
         'https://revocationlog.example.com/callback',
         ['openid']
       );
-      
+
       const tokens = await oauth2Service.exchangeCodeForTokens({
         grantType: 'authorization_code',
         code: revocationLogAuthCode.code,
         redirectUri: 'https://revocationlog.example.com/callback',
-        clientId: revocationLogClient.id
+        clientId: revocationLogClient.id,
       });
-      
+
       oauth2Service.revokeToken(tokens.access_token, 'access_token');
-      
+
       expect(mockSecurityLogger.logSecurityEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'access_token_revoked',
-          resource: 'oauth2'
+          resource: 'oauth2',
         })
       );
     });
@@ -1366,11 +1366,11 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       const promises = [];
-      
+
       for (let i = 0; i < 10; i++) {
         const authCode = oauth2Service.createAuthorizationCode(
           client.id,
@@ -1378,17 +1378,17 @@ describe('OAuth2Service', () => {
           'https://concurrent.example.com/callback',
           ['openid']
         );
-        
+
         promises.push(
           oauth2Service.exchangeCodeForTokens({
             grantType: 'authorization_code',
             code: authCode.code,
             redirectUri: 'https://concurrent.example.com/callback',
-            clientId: client.id
+            clientId: client.id,
           })
         );
       }
-      
+
       const results = await Promise.all(promises);
       expect(results.length).toBe(10);
       results.forEach(result => {
@@ -1399,11 +1399,11 @@ describe('OAuth2Service', () => {
     it('should handle disabled logging', () => {
       const disabledConfig: Partial<OAuth2Config> = {
         ...defaultConfig,
-        enableLogging: false
+        enableLogging: false,
       };
-      
+
       const disabledService = new OAuth2Service(disabledConfig, mockSecurityLogger);
-      
+
       const client = disabledService.registerClient({
         name: 'No Log Client',
         redirectUris: ['https://nolog.example.com/callback'],
@@ -1416,16 +1416,16 @@ describe('OAuth2Service', () => {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: {}
+        metadata: {},
       });
-      
+
       disabledService.generateAuthorizationUrl({
         responseType: 'code',
         clientId: client.id,
         redirectUri: 'https://nolog.example.com/callback',
-        scopes: ['openid']
+        scopes: ['openid'],
       });
-      
+
       // Should not log when disabled
       expect(mockSecurityLogger.logSecurityEvent).not.toHaveBeenCalled();
     });

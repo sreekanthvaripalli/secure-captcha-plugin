@@ -33,17 +33,14 @@ export interface CacheOptions {
 }
 
 export class CacheService {
-  private redis: Redis;
-  private config: SecurityConfigurationService;
-  private options: Required<CacheOptions>;
-  private memoryCache: Map<string, CacheEntry>;
-  private stats: CacheStats;
+  private readonly redis: Redis;
+  private readonly config: SecurityConfigurationService;
+  private readonly options: Required<CacheOptions>;
+  private readonly memoryCache: Map<string, CacheEntry>;
+  private readonly stats: CacheStats;
   private cleanupTimer?: NodeJS.Timeout;
 
-  constructor(
-    config: SecurityConfigurationService,
-    options: CacheOptions = {}
-  ) {
+  constructor(config: SecurityConfigurationService, options: CacheOptions = {}) {
     this.config = config;
     this.options = {
       ttl: 300, // 5 minutes default
@@ -51,7 +48,7 @@ export class CacheService {
       redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
       enableCompression: true,
       compressionThreshold: 1024, // 1KB
-      ...options
+      ...options,
     };
 
     this.memoryCache = new Map();
@@ -66,14 +63,14 @@ export class CacheService {
         get: 0,
         set: 0,
         del: 0,
-        exists: 0
-      }
+        exists: 0,
+      },
     };
 
     this.redis = new Redis(this.options.redisUrl, {
       maxRetriesPerRequest: 3,
       lazyConnect: true,
-      connectionName: 'captcha-cache-service'
+      connectionName: 'captcha-cache-service',
     });
 
     this.startCleanupJob();
@@ -84,7 +81,7 @@ export class CacheService {
    */
   async get<T>(key: string): Promise<T | null> {
     this.stats.totalRequests++;
-    
+
     // L1: Check Memory Cache
     const memoryEntry = this.memoryCache.get(key);
     if (memoryEntry && this.isValid(memoryEntry)) {
@@ -97,8 +94,8 @@ export class CacheService {
         metadata: {
           key,
           cacheLevel: 'L1',
-          hits: memoryEntry.hits
-        }
+          hits: memoryEntry.hits,
+        },
       });
       return memoryEntry.data;
     }
@@ -108,10 +105,10 @@ export class CacheService {
       const redisData = await this.getFromRedis(key);
       if (redisData) {
         this.stats.redisOperations.get++;
-        
+
         // Promote to memory cache
         this.setInMemory(key, redisData.data, redisData.ttl);
-        
+
         this.config.securityLogger.logSecurityEvent({
           action: 'CACHE_HIT',
           resource: 'CACHE_SERVICE',
@@ -119,10 +116,10 @@ export class CacheService {
           metadata: {
             key,
             cacheLevel: 'L2',
-            ttl: redisData.ttl
-          }
+            ttl: redisData.ttl,
+          },
         });
-        
+
         return redisData.data as T;
       }
     } catch (error) {
@@ -130,19 +127,19 @@ export class CacheService {
         action: 'CACHE_REDIS_ERROR',
         resource: 'CACHE_SERVICE',
         reason: error instanceof Error ? error.message : 'Unknown Redis error',
-        metadata: { key }
+        metadata: { key },
       });
     }
 
     // Cache miss
     this.stats.misses++;
     this.updateStats();
-    
+
     this.config.securityLogger.logSecurityEvent({
       action: 'CACHE_MISS',
       resource: 'CACHE_SERVICE',
       reason: 'Data not found in cache',
-      metadata: { key }
+      metadata: { key },
     });
 
     return null;
@@ -153,15 +150,15 @@ export class CacheService {
    */
   async set<T>(key: string, data: T, ttl?: number): Promise<void> {
     const effectiveTTL = ttl || this.options.ttl;
-    
+
     // L1: Set in Memory Cache
     this.setInMemory(key, data, effectiveTTL);
-    
+
     // L2: Set in Redis
     try {
       await this.setInRedis(key, data, effectiveTTL);
       this.stats.redisOperations.set++;
-      
+
       this.config.securityLogger.logSecurityEvent({
         action: 'CACHE_SET',
         resource: 'CACHE_SERVICE',
@@ -169,15 +166,15 @@ export class CacheService {
         metadata: {
           key,
           ttl: effectiveTTL,
-          dataSize: JSON.stringify(data).length
-        }
+          dataSize: JSON.stringify(data).length,
+        },
       });
     } catch (error) {
       this.config.securityLogger.logSecurityEvent({
         action: 'CACHE_SET_FAILED',
         resource: 'CACHE_SERVICE',
         reason: error instanceof Error ? error.message : 'Failed to store in Redis',
-        metadata: { key }
+        metadata: { key },
       });
     }
   }
@@ -188,24 +185,24 @@ export class CacheService {
   async delete(key: string): Promise<void> {
     // L1: Delete from Memory Cache
     this.memoryCache.delete(key);
-    
+
     // L2: Delete from Redis
     try {
       await this.redis.del(`cache:${key}`);
       this.stats.redisOperations.del++;
-      
+
       this.config.securityLogger.logSecurityEvent({
         action: 'CACHE_DELETE',
         resource: 'CACHE_SERVICE',
         reason: 'Data deleted from cache',
-        metadata: { key }
+        metadata: { key },
       });
     } catch (error) {
       this.config.securityLogger.logSecurityEvent({
         action: 'CACHE_DELETE_FAILED',
         resource: 'CACHE_SERVICE',
         reason: error instanceof Error ? error.message : 'Failed to delete from Redis',
-        metadata: { key }
+        metadata: { key },
       });
     }
   }
@@ -223,13 +220,13 @@ export class CacheService {
     try {
       const exists = await this.redis.exists(`cache:${key}`);
       this.stats.redisOperations.exists++;
-      
+
       if (exists) {
         this.config.securityLogger.logSecurityEvent({
           action: 'CACHE_EXISTS',
           resource: 'CACHE_SERVICE',
           reason: 'Key exists in Redis cache',
-          metadata: { key }
+          metadata: { key },
         });
         return true;
       }
@@ -238,7 +235,7 @@ export class CacheService {
         action: 'CACHE_EXISTS_ERROR',
         resource: 'CACHE_SERVICE',
         reason: error instanceof Error ? error.message : 'Failed to check Redis',
-        metadata: { key }
+        metadata: { key },
       });
     }
 
@@ -262,15 +259,15 @@ export class CacheService {
       if (keys.length > 0) {
         await this.redis.del(...keys);
         this.stats.redisOperations.del += keys.length;
-        
+
         this.config.securityLogger.logSecurityEvent({
           action: 'CACHE_INVALIDATE',
           resource: 'CACHE_SERVICE',
           reason: 'Cache entries invalidated by pattern',
           metadata: {
             pattern,
-            invalidatedKeys: keys.length
-          }
+            invalidatedKeys: keys.length,
+          },
         });
       }
     } catch (error) {
@@ -278,7 +275,7 @@ export class CacheService {
         action: 'CACHE_INVALIDATE_FAILED',
         resource: 'CACHE_SERVICE',
         reason: error instanceof Error ? error.message : 'Failed to invalidate Redis cache',
-        metadata: { pattern }
+        metadata: { pattern },
       });
     }
   }
@@ -302,7 +299,7 @@ export class CacheService {
           action: 'CACHE_WARMUP_FAILED',
           resource: 'CACHE_SERVICE',
           reason: error instanceof Error ? error.message : 'Failed to warm cache entry',
-          metadata: { key }
+          metadata: { key },
         });
       }
     }
@@ -314,19 +311,19 @@ export class CacheService {
   async clear(): Promise<void> {
     // L1: Clear Memory Cache
     this.memoryCache.clear();
-    
+
     // L2: Clear Redis Cache
     try {
       const keys = await this.redis.keys('cache:*');
       if (keys.length > 0) {
         await this.redis.del(...keys);
         this.stats.redisOperations.del += keys.length;
-        
+
         this.config.securityLogger.logSecurityEvent({
           action: 'CACHE_CLEAR',
           resource: 'CACHE_SERVICE',
           reason: 'All cache entries cleared',
-          metadata: { clearedKeys: keys.length }
+          metadata: { clearedKeys: keys.length },
         });
       }
     } catch (error) {
@@ -334,7 +331,7 @@ export class CacheService {
         action: 'CACHE_CLEAR_FAILED',
         resource: 'CACHE_SERVICE',
         reason: error instanceof Error ? error.message : 'Failed to clear Redis cache',
-        metadata: {}
+        metadata: {},
       });
     }
   }
@@ -346,7 +343,7 @@ export class CacheService {
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);
     }
-    
+
     await this.redis.disconnect();
   }
 
@@ -364,7 +361,7 @@ export class CacheService {
       timestamp: Date.now(),
       ttl,
       hits: 0,
-      misses: 0
+      misses: 0,
     };
 
     this.memoryCache.set(key, entry);
@@ -390,7 +387,7 @@ export class CacheService {
         action: 'CACHE_REDIS_GET_FAILED',
         resource: 'CACHE_SERVICE',
         reason: error instanceof Error ? error.message : 'Failed to get from Redis',
-        metadata: { key }
+        metadata: { key },
       });
       return null;
     }
@@ -402,13 +399,16 @@ export class CacheService {
       timestamp: Date.now(),
       ttl,
       hits: 0,
-      misses: 0
+      misses: 0,
     };
 
     const serializedData = JSON.stringify(entry);
-    
+
     // Check compression
-    if (this.options.enableCompression && serializedData.length > this.options.compressionThreshold) {
+    if (
+      this.options.enableCompression &&
+      serializedData.length > this.options.compressionThreshold
+    ) {
       // For now, store as-is. In production, you'd use a compression library
     }
 
@@ -417,7 +417,7 @@ export class CacheService {
 
   private isValid<T>(entry: CacheEntry<T>): boolean {
     const now = Date.now();
-    return (now - entry.timestamp) < (entry.ttl * 1000);
+    return now - entry.timestamp < entry.ttl * 1000;
   }
 
   private evictLeastUsed(): void {
@@ -438,10 +438,12 @@ export class CacheService {
   }
 
   private updateStats(): void {
-    this.stats.hits = Array.from(this.memoryCache.values()).reduce((sum, entry) => sum + entry.hits, 0);
-    this.stats.hitRate = this.stats.totalRequests > 0 
-      ? (this.stats.hits / this.stats.totalRequests) * 100 
-      : 0;
+    this.stats.hits = Array.from(this.memoryCache.values()).reduce(
+      (sum, entry) => sum + entry.hits,
+      0
+    );
+    this.stats.hitRate =
+      this.stats.totalRequests > 0 ? (this.stats.hits / this.stats.totalRequests) * 100 : 0;
   }
 
   private updateMemoryUsage(): void {
@@ -473,7 +475,7 @@ export class CacheService {
         action: 'CACHE_CLEANUP',
         resource: 'CACHE_SERVICE',
         reason: 'Expired cache entries cleaned up',
-        metadata: { cleanedEntries: cleanedCount }
+        metadata: { cleanedEntries: cleanedCount },
       });
     }
   }

@@ -8,9 +8,14 @@ import {
   BaseCaptchaGenerator,
   CaptchaGeneratorFactory,
   CaptchaGeneratorRegistry,
-  MultiLayerCaptchaGenerator
+  MultiLayerCaptchaGenerator,
 } from '../../src/core/captcha-generator';
-import { CaptchaType, Difficulty, GenerateCaptchaInput, CaptchaResponse } from '../../src/types/captcha';
+import {
+  CaptchaType,
+  Difficulty,
+  GenerateCaptchaInput,
+  CaptchaResponse,
+} from '../../src/types/captcha';
 
 // Mock implementation of BaseCaptchaGenerator for testing
 class MockCaptchaGenerator extends BaseCaptchaGenerator {
@@ -37,16 +42,16 @@ class MockCaptchaGenerator extends BaseCaptchaGenerator {
         behavioralData: {
           mouseMovements: [],
           keystrokeTimings: [],
-          interactionPatterns: []
+          interactionPatterns: [],
         },
         deviceInfo: {
           browser: 'test',
           os: 'test',
           screenResolution: '1920x1080',
           timezone: 'UTC',
-          language: 'en'
-        }
-      }
+          language: 'en',
+        },
+      },
     };
   }
 
@@ -80,16 +85,16 @@ class MathCaptchaGenerator extends BaseCaptchaGenerator {
         behavioralData: {
           mouseMovements: [],
           keystrokeTimings: [],
-          interactionPatterns: []
+          interactionPatterns: [],
         },
         deviceInfo: {
           browser: 'test',
           os: 'test',
           screenResolution: '1920x1080',
           timezone: 'UTC',
-          language: 'en'
-        }
-      }
+          language: 'en',
+        },
+      },
     };
   }
 
@@ -121,7 +126,7 @@ describe('CaptchaGenerator Interface', () => {
   test('should implement generate method', async () => {
     const input: GenerateCaptchaInput = {
       type: 'text',
-      difficulty: 'medium'
+      difficulty: 'medium',
     };
     const response = await generator.generate(input);
     expect(response).toHaveProperty('sessionId');
@@ -157,7 +162,7 @@ describe('BaseCaptchaGenerator', () => {
   test('should generate secure random string', () => {
     const random1 = generator['generateSecureRandom'](10);
     const random2 = generator['generateSecureRandom'](10);
-    
+
     expect(random1).toHaveLength(10);
     expect(random2).toHaveLength(10);
     expect(random1).not.toBe(random2); // Should be different
@@ -166,7 +171,7 @@ describe('BaseCaptchaGenerator', () => {
   test('should generate secure random with custom charset', () => {
     const charset = '0123456789';
     const random = generator['generateSecureRandom'](5, charset);
-    
+
     expect(random).toHaveLength(5);
     for (const char of random) {
       expect(charset).toContain(char);
@@ -175,44 +180,48 @@ describe('BaseCaptchaGenerator', () => {
 
   test('should validate input - missing type', () => {
     const input = {
-      difficulty: 'medium' as Difficulty
+      difficulty: 'medium' as Difficulty,
     } as GenerateCaptchaInput;
-    
+
     expect(() => generator['validateInput'](input)).toThrow('Captcha type is required');
   });
 
   test('should validate input - missing difficulty', () => {
     const input = {
-      type: 'text' as CaptchaType
+      type: 'text' as CaptchaType,
     } as GenerateCaptchaInput;
-    
+
     expect(() => generator['validateInput'](input)).toThrow('Difficulty level is required');
   });
 
   test('should validate input - unsupported type', () => {
     const input: GenerateCaptchaInput = {
       type: 'unsupported' as CaptchaType,
-      difficulty: 'medium'
+      difficulty: 'medium',
     };
-    
-    expect(() => generator['validateInput'](input)).toThrow('Unsupported captcha type: unsupported');
+
+    expect(() => generator['validateInput'](input)).toThrow(
+      'Unsupported captcha type: unsupported'
+    );
   });
 
   test('should validate input - unsupported difficulty', () => {
     const input: GenerateCaptchaInput = {
       type: 'text',
-      difficulty: 'extreme' as Difficulty
+      difficulty: 'extreme' as Difficulty,
     };
-    
-    expect(() => generator['validateInput'](input)).toThrow('Unsupported difficulty for text: extreme');
+
+    expect(() => generator['validateInput'](input)).toThrow(
+      'Unsupported difficulty for text: extreme'
+    );
   });
 
   test('should validate input - valid input', () => {
     const input: GenerateCaptchaInput = {
       type: 'text',
-      difficulty: 'medium'
+      difficulty: 'medium',
     };
-    
+
     expect(() => generator['validateInput'](input)).not.toThrow();
   });
 
@@ -225,19 +234,19 @@ describe('BaseCaptchaGenerator', () => {
 
   test('should log security event', () => {
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-    
+
     generator['logSecurityEvent']('captcha_generated', 'test-session', {
       action: 'generate',
       resource: 'captcha',
       reason: 'Test generation',
-      metadata: { test: 'data' }
+      metadata: { test: 'data' },
     });
-    
+
     expect(consoleSpy).toHaveBeenCalledWith(
       'Security Event:',
       expect.stringContaining('captcha_generated')
     );
-    
+
     consoleSpy.mockRestore();
   });
 });
@@ -267,13 +276,15 @@ describe('CaptchaGeneratorFactory', () => {
   });
 
   test('should throw error for unregistered generator', () => {
-    expect(() => factory.getGenerator('logic')).toThrow('No generator registered for captcha type: logic');
+    expect(() => factory.getGenerator('logic')).toThrow(
+      'No generator registered for captcha type: logic'
+    );
   });
 
   test('should get all registered types', () => {
     factory.registerGenerator(textGenerator);
     factory.registerGenerator(mathGenerator);
-    
+
     const types = factory.getRegisteredTypes();
     expect(types).toContain('text');
     expect(types).toContain('math');
@@ -282,14 +293,14 @@ describe('CaptchaGeneratorFactory', () => {
 
   test('should check if type is supported', () => {
     factory.registerGenerator(textGenerator);
-    
+
     expect(factory.isSupported('text')).toBe(true);
     expect(factory.isSupported('math')).toBe(false);
   });
 
   test('should get supported difficulties for type', () => {
     factory.registerGenerator(textGenerator);
-    
+
     const difficulties = factory.getSupportedDifficulties('text');
     expect(difficulties).toContain('easy');
     expect(difficulties).toContain('medium');
@@ -297,14 +308,16 @@ describe('CaptchaGeneratorFactory', () => {
   });
 
   test('should throw error when getting difficulties for unregistered type', () => {
-    expect(() => factory.getSupportedDifficulties('image')).toThrow('No generator registered for captcha type: image');
+    expect(() => factory.getSupportedDifficulties('image')).toThrow(
+      'No generator registered for captcha type: image'
+    );
   });
 
   test('should overwrite generator when registering same type', () => {
     const anotherTextGenerator = new MockCaptchaGenerator(configService);
     factory.registerGenerator(textGenerator);
     factory.registerGenerator(anotherTextGenerator);
-    
+
     const generator = factory.getGenerator('text');
     expect(generator).toBe(anotherTextGenerator);
   });
@@ -322,15 +335,11 @@ describe('MultiLayerCaptchaGenerator', () => {
     factory = new CaptchaGeneratorFactory(configService);
     textGenerator = new MockCaptchaGenerator(configService);
     mathGenerator = new MathCaptchaGenerator(configService);
-    
+
     factory.registerGenerator(textGenerator);
     factory.registerGenerator(mathGenerator);
-    
-    multiLayerGenerator = new MultiLayerCaptchaGenerator(
-      configService,
-      factory,
-      ['text', 'math']
-    );
+
+    multiLayerGenerator = new MultiLayerCaptchaGenerator(configService, factory, ['text', 'math']);
   });
 
   test('should return multi-layer type', () => {
@@ -347,11 +356,11 @@ describe('MultiLayerCaptchaGenerator', () => {
   test('should generate multi-layer captcha', async () => {
     const input: GenerateCaptchaInput = {
       type: 'multi-layer',
-      difficulty: 'medium'
+      difficulty: 'medium',
     };
-    
+
     const response = await multiLayerGenerator.generate(input);
-    
+
     expect(response.type).toBe('multi-layer');
     expect(response.sessionId).toBe('test-session-id');
     expect(response.challenge).toBeDefined();
@@ -363,13 +372,15 @@ describe('MultiLayerCaptchaGenerator', () => {
       factory,
       ['text', 'logic'] // logic is not registered
     );
-    
+
     const input: GenerateCaptchaInput = {
       type: 'multi-layer',
-      difficulty: 'medium'
+      difficulty: 'medium',
     };
-    
-    await expect(invalidGenerator.generate(input)).rejects.toThrow('Layer type not supported: logic');
+
+    await expect(invalidGenerator.generate(input)).rejects.toThrow(
+      'Layer type not supported: logic'
+    );
   });
 
   test('should validate multi-layer captcha', async () => {
@@ -390,14 +401,14 @@ describe('CaptchaGeneratorRegistry', () => {
   test('should return singleton instance', () => {
     const instance1 = CaptchaGeneratorRegistry.getInstance(configService);
     const instance2 = CaptchaGeneratorRegistry.getInstance(configService);
-    
+
     expect(instance1).toBe(instance2);
   });
 
   test('should register standard generators', () => {
     const registry = CaptchaGeneratorRegistry.getInstance(configService);
     registry.registerStandardGenerators();
-    
+
     // Multi-layer should be registered
     expect(registry.isSupported('multi-layer')).toBe(true);
   });
@@ -405,7 +416,7 @@ describe('CaptchaGeneratorRegistry', () => {
   test('should get generator by type', () => {
     const registry = CaptchaGeneratorRegistry.getInstance(configService);
     registry.registerStandardGenerators();
-    
+
     const generator = registry.getGenerator('multi-layer');
     expect(generator).toBeDefined();
     expect(generator.getType()).toBe('multi-layer');
@@ -413,14 +424,16 @@ describe('CaptchaGeneratorRegistry', () => {
 
   test('should throw error for unregistered type', () => {
     const registry = CaptchaGeneratorRegistry.getInstance(configService);
-    
-    expect(() => registry.getGenerator('text')).toThrow('No generator registered for captcha type: text');
+
+    expect(() => registry.getGenerator('text')).toThrow(
+      'No generator registered for captcha type: text'
+    );
   });
 
   test('should get all registered types', () => {
     const registry = CaptchaGeneratorRegistry.getInstance(configService);
     registry.registerStandardGenerators();
-    
+
     const types = registry.getRegisteredTypes();
     expect(types).toContain('multi-layer');
   });
@@ -428,7 +441,7 @@ describe('CaptchaGeneratorRegistry', () => {
   test('should check if type is supported', () => {
     const registry = CaptchaGeneratorRegistry.getInstance(configService);
     registry.registerStandardGenerators();
-    
+
     expect(registry.isSupported('multi-layer')).toBe(true);
     expect(registry.isSupported('text')).toBe(false);
   });
@@ -436,7 +449,7 @@ describe('CaptchaGeneratorRegistry', () => {
   test('should get supported difficulties', () => {
     const registry = CaptchaGeneratorRegistry.getInstance(configService);
     registry.registerStandardGenerators();
-    
+
     const difficulties = registry.getSupportedDifficulties('multi-layer');
     expect(difficulties).toContain('easy');
     expect(difficulties).toContain('medium');
@@ -460,7 +473,7 @@ describe('Integration Tests', () => {
   test('should work with multiple generators', () => {
     factory.registerGenerator(textGenerator);
     factory.registerGenerator(mathGenerator);
-    
+
     expect(factory.getRegisteredTypes()).toHaveLength(2);
     expect(factory.isSupported('text')).toBe(true);
     expect(factory.isSupported('math')).toBe(true);
@@ -468,13 +481,13 @@ describe('Integration Tests', () => {
 
   test('should generate captcha through factory', async () => {
     factory.registerGenerator(textGenerator);
-    
+
     const generator = factory.getGenerator('text');
     const input: GenerateCaptchaInput = {
       type: 'text',
-      difficulty: 'easy'
+      difficulty: 'easy',
     };
-    
+
     const response = await generator.generate(input);
     expect(response.type).toBe('text');
     expect(response.difficulty).toBe('easy');
@@ -482,28 +495,24 @@ describe('Integration Tests', () => {
 
   test('should validate captcha through factory', async () => {
     factory.registerGenerator(textGenerator);
-    
+
     const generator = factory.getGenerator('text');
     const isValid = await generator.validate('session-id', 'correct-answer');
-    
+
     expect(isValid).toBe(true);
   });
 
   test('should handle multi-layer with factory', async () => {
     factory.registerGenerator(textGenerator);
     factory.registerGenerator(mathGenerator);
-    
-    const multiLayer = new MultiLayerCaptchaGenerator(
-      configService,
-      factory,
-      ['text', 'math']
-    );
-    
+
+    const multiLayer = new MultiLayerCaptchaGenerator(configService, factory, ['text', 'math']);
+
     const input: GenerateCaptchaInput = {
       type: 'multi-layer',
-      difficulty: 'medium'
+      difficulty: 'medium',
     };
-    
+
     const response = await multiLayer.generate(input);
     expect(response.type).toBe('multi-layer');
   });

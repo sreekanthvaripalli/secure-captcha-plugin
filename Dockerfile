@@ -1,6 +1,6 @@
 # Multi-stage build for production-ready secure-captcha-plugin
 # Stage 1: Build stage
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache python3 make g++
@@ -12,8 +12,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY tsconfig.json ./
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+# Install dependencies (skip prepare script to avoid husky install)
+RUN npm ci --ignore-scripts && npm cache clean --force
 
 # Copy source code
 COPY src/ ./src/
@@ -22,7 +22,7 @@ COPY src/ ./src/
 RUN npm run build
 
 # Stage 2: Production stage
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
 # Add labels for metadata
 LABEL maintainer="secure-captcha-team"
@@ -46,8 +46,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm ci --only=production && npm cache clean --force
+# Install only production dependencies (skip prepare script to avoid husky install)
+RUN npm ci --only=production --ignore-scripts && npm cache clean --force
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist

@@ -9,7 +9,11 @@ import { SecurityConfigurationService } from '../security/config';
 import { CaptchaType, Difficulty, GenerateCaptchaInput, CaptchaResponse } from '../types/captcha';
 import { SecurityEventType } from '../types/security';
 
-export type ImagePuzzleType = 'object-identification' | 'pattern-matching' | 'spatial-arrangement' | 'color-sequence';
+export type ImagePuzzleType =
+  | 'object-identification'
+  | 'pattern-matching'
+  | 'spatial-arrangement'
+  | 'color-sequence';
 
 export interface ImagePuzzle {
   type: ImagePuzzleType;
@@ -46,26 +50,31 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
 
   constructor(configService: SecurityConfigurationService) {
     super(configService);
-    
+
     this.config = {
-      puzzleTypes: ['object-identification', 'pattern-matching', 'spatial-arrangement', 'color-sequence'],
+      puzzleTypes: [
+        'object-identification',
+        'pattern-matching',
+        'spatial-arrangement',
+        'color-sequence',
+      ],
       difficulty: {
         easy: {
           gridSize: 3,
           objectCount: 3,
-          colorCount: 3
+          colorCount: 3,
         },
         medium: {
           gridSize: 4,
           objectCount: 5,
-          colorCount: 4
+          colorCount: 4,
         },
         hard: {
           gridSize: 5,
           objectCount: 7,
-          colorCount: 5
-        }
-      }
+          colorCount: 5,
+        },
+      },
     };
   }
 
@@ -92,9 +101,9 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
     const difficulty = input.difficulty;
     const puzzleType = this.selectPuzzleType();
     const puzzle = this.generatePuzzle(puzzleType, difficulty);
-    
+
     const sessionId = this.generateSecureRandom(32);
-    
+
     this.logSecurityEvent('captcha_generated' as SecurityEventType, sessionId, {
       action: 'generate',
       resource: 'captcha',
@@ -102,8 +111,8 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
       metadata: {
         type: 'image',
         puzzleType,
-        difficulty
-      }
+        difficulty,
+      },
     });
 
     const challenge = this.formatChallenge(puzzle);
@@ -121,16 +130,16 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
         behavioralData: {
           mouseMovements: [],
           keystrokeTimings: [],
-          interactionPatterns: []
+          interactionPatterns: [],
         },
         deviceInfo: {
           browser: 'unknown',
           os: 'unknown',
           screenResolution: 'unknown',
           timezone: 'unknown',
-          language: 'unknown'
-        }
-      }
+          language: 'unknown',
+        },
+      },
     };
   }
 
@@ -144,8 +153,8 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
       reason: 'Image captcha validation',
       metadata: {
         type: 'image',
-        responseLength: response.length
-      }
+        responseLength: response.length,
+      },
     });
 
     return true;
@@ -182,14 +191,14 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
    */
   private generateObjectIdentificationPuzzle(difficulty: Difficulty): ImagePuzzle {
     const { objectCount } = this.config.difficulty[difficulty];
-    
+
     const objects = ['🔴', '🔵', '🟢', '🟡', '🟣', '🟠', '⚫', '⚪'];
     const selectedObjects = this.shuffleArray([...objects]).slice(0, objectCount);
-    
+
     // Create a grid with objects
     const gridSize = this.config.difficulty[difficulty].gridSize;
     const grid: string[][] = [];
-    
+
     for (let i = 0; i < gridSize; i++) {
       grid[i] = [];
       for (let j = 0; j < gridSize; j++) {
@@ -221,7 +230,7 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
       imageUrl: svgImage,
       options: options.map(opt => opt.toString()),
       correctAnswer: options.indexOf(count),
-      explanation: `Count all ${targetObject} objects in the grid`
+      explanation: `Count all ${targetObject} objects in the grid`,
     };
   }
 
@@ -230,12 +239,12 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
    */
   private generatePatternMatchingPuzzle(difficulty: Difficulty): ImagePuzzle {
     const { gridSize } = this.config.difficulty[difficulty];
-    
+
     const patterns = [
       { sequence: ['🔴', '🔵', '🔴', '🔵'], answer: '🔴', rule: 'Alternating colors' },
       { sequence: ['▲', '●', '▲', '●'], answer: '▲', rule: 'Alternating shapes' },
       { sequence: ['■', '□', '■', '□'], answer: '■', rule: 'Alternating filled/empty' },
-      { sequence: ['↑', '→', '↓', '←'], answer: '↑', rule: 'Clockwise rotation' }
+      { sequence: ['↑', '→', '↓', '←'], answer: '↑', rule: 'Clockwise rotation' },
     ];
 
     const selectedPattern = patterns[Math.floor(Math.random() * patterns.length)];
@@ -251,7 +260,7 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
       imageUrl: svgImage,
       options: options.map(opt => `${opt}`),
       correctAnswer: options.indexOf(correctAnswer),
-      explanation: `The pattern follows: ${selectedPattern.rule}`
+      explanation: `The pattern follows: ${selectedPattern.rule}`,
     };
   }
 
@@ -260,11 +269,11 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
    */
   private generateSpatialArrangementPuzzle(difficulty: Difficulty): ImagePuzzle {
     const { gridSize } = this.config.difficulty[difficulty];
-    
+
     // Create a grid with one missing piece
     const grid: string[][] = [];
     const colors = ['🔴', '🔵', '🟢', '🟡', '🟣'];
-    
+
     for (let i = 0; i < gridSize; i++) {
       grid[i] = [];
       for (let j = 0; j < gridSize; j++) {
@@ -287,7 +296,7 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
       imageUrl: svgImage,
       options: options.map(opt => `${opt}`),
       correctAnswer: options.indexOf(missingPiece),
-      explanation: 'Identify the missing piece based on the pattern'
+      explanation: 'Identify the missing piece based on the pattern',
     };
   }
 
@@ -296,10 +305,10 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
    */
   private generateColorSequencePuzzle(difficulty: Difficulty): ImagePuzzle {
     const { colorCount } = this.config.difficulty[difficulty];
-    
+
     const colors = ['🔴', '🔵', '🟢', '🟡', '🟣', '🟠'];
     const selectedColors = this.shuffleArray([...colors]).slice(0, colorCount);
-    
+
     // Create a sequence with a pattern
     const sequence: string[] = [];
     for (let i = 0; i < colorCount + 1; i++) {
@@ -316,7 +325,7 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
       imageUrl: svgImage,
       options: options.map(opt => `${opt}`),
       correctAnswer: options.indexOf(correctAnswer),
-      explanation: 'The sequence follows a repeating color pattern'
+      explanation: 'The sequence follows a repeating color pattern',
     };
   }
 
@@ -343,9 +352,9 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
 
         // Draw object
         if (cell !== '⬜' && cell !== '❓') {
-          svg += `<text x="${x + cellSize/2}" y="${y + cellSize/2 + 8}" text-anchor="middle" font-size="24">${cell}</text>`;
+          svg += `<text x="${x + cellSize / 2}" y="${y + cellSize / 2 + 8}" text-anchor="middle" font-size="24">${cell}</text>`;
         } else if (cell === '❓') {
-          svg += `<text x="${x + cellSize/2}" y="${y + cellSize/2 + 8}" text-anchor="middle" font-size="24" fill="#999">?</text>`;
+          svg += `<text x="${x + cellSize / 2}" y="${y + cellSize / 2 + 8}" text-anchor="middle" font-size="24" fill="#999">?</text>`;
         }
       }
     }
@@ -374,12 +383,12 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
       svg += `<rect x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" fill="white" stroke="#ccc"/>`;
 
       // Draw object
-      svg += `<text x="${x + cellSize/2}" y="${y + cellSize/2 + 8}" text-anchor="middle" font-size="24">${sequence[i]}</text>`;
+      svg += `<text x="${x + cellSize / 2}" y="${y + cellSize / 2 + 8}" text-anchor="middle" font-size="24">${sequence[i]}</text>`;
     }
 
     // Add arrow pointing to next position
     const arrowX = padding + sequence.length * cellSize;
-    const arrowY = padding + cellSize/2;
+    const arrowY = padding + cellSize / 2;
     svg += `<text x="${arrowX}" y="${arrowY + 8}" text-anchor="middle" font-size="24" fill="#666">→</text>`;
 
     svg += '</svg>';
@@ -426,14 +435,14 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
   private generateOptions(correctAnswer: string, count: number): string[] {
     const options = [correctAnswer];
     const alternatives = ['🔴', '🔵', '🟢', '🟡', '🟣', '🟠', '⚫', '⚪'];
-    
+
     // Filter out the correct answer from alternatives
     const availableAlternatives = alternatives.filter(alt => alt !== correctAnswer);
-    
+
     // Add unique alternatives until we reach the desired count
     let attempts = 0;
     const maxAttempts = 100; // Safety limit to prevent infinite loop
-    
+
     while (options.length < count && attempts < maxAttempts) {
       const alt = availableAlternatives[Math.floor(Math.random() * availableAlternatives.length)];
       if (!options.includes(alt)) {
@@ -456,10 +465,10 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
    */
   private generateNumericOptions(correctAnswer: number, count: number): number[] {
     const options = [correctAnswer];
-    
+
     let attempts = 0;
     const maxAttempts = 100; // Safety limit to prevent infinite loop
-    
+
     while (options.length < count && attempts < maxAttempts) {
       const offset = Math.floor(Math.random() * 5) - 2;
       const newOption = correctAnswer + offset;

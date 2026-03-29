@@ -14,23 +14,23 @@ export class InputValidationService {
       /(')|(;)|(--)|(\|(%27)|(%3B)|(%2D%2D)|(%7C))/i,
       /(\bor\b|\band\b)\s+\w+\s*[=<>]/i,
       /(\b1=1\b|\b'1'='1'\b|\btrue\b)/i,
-      /(\bdrop\s+table\b|\bcreate\s+table\b|\balter\s+table\b)/i
+      /(\bdrop\s+table\b|\bcreate\s+table\b|\balter\s+table\b)/i,
     ];
 
-  // XSS patterns
-  this.xssPatterns = [
-    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-    /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
-    /javascript:/gi,
-    /onload\s*=/gi,
-    /onerror\s*=/gi,
-    /onclick\s*=/gi,
-    /onmouseover\s*=/gi,
-    /onfocus\s*=/gi,
-    /<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi,
-    /<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi
-  ];
-}
+    // XSS patterns
+    this.xssPatterns = [
+      /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+      /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
+      /javascript:/gi,
+      /onload\s*=/gi,
+      /onerror\s*=/gi,
+      /onclick\s*=/gi,
+      /onmouseover\s*=/gi,
+      /onfocus\s*=/gi,
+      /<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi,
+      /<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi,
+    ];
+  }
 
   /**
    * Validate input against SQL injection attacks
@@ -44,7 +44,7 @@ export class InputValidationService {
       if (pattern.test(input)) {
         return {
           isValid: false,
-          threat: 'SQL injection attempt detected'
+          threat: 'SQL injection attempt detected',
         };
       }
     }
@@ -66,7 +66,7 @@ export class InputValidationService {
         return {
           isValid: false,
           threat: 'XSS attack attempt detected',
-          sanitized: this.sanitizeXSS(input)
+          sanitized: this.sanitizeXSS(input),
         };
       }
     }
@@ -75,7 +75,7 @@ export class InputValidationService {
     const sanitized = this.sanitizeXSS(input);
     return {
       isValid: true,
-      sanitized
+      sanitized,
     };
   }
 
@@ -86,7 +86,7 @@ export class InputValidationService {
     if (!token || !expectedToken) {
       return {
         isValid: false,
-        threat: 'Missing CSRF token'
+        threat: 'Missing CSRF token',
       };
     }
 
@@ -94,7 +94,7 @@ export class InputValidationService {
     if (token.length !== expectedToken.length) {
       return {
         isValid: false,
-        threat: 'Invalid CSRF token length'
+        threat: 'Invalid CSRF token length',
       };
     }
 
@@ -106,7 +106,7 @@ export class InputValidationService {
     if (result !== 0) {
       return {
         isValid: false,
-        threat: 'CSRF token mismatch'
+        threat: 'CSRF token mismatch',
       };
     }
 
@@ -116,7 +116,11 @@ export class InputValidationService {
   /**
    * Validate against parameter pollution
    */
-  validateParameterPollution(params: Record<string, unknown>): { isValid: boolean; threat?: string; cleanParams?: Record<string, unknown> } {
+  validateParameterPollution(params: Record<string, unknown>): {
+    isValid: boolean;
+    threat?: string;
+    cleanParams?: Record<string, unknown>;
+  } {
     const cleanParams: Record<string, unknown> = {};
     const seenParams = new Set<string>();
 
@@ -125,7 +129,7 @@ export class InputValidationService {
       if (seenParams.has(key)) {
         return {
           isValid: false,
-          threat: `Parameter pollution detected: duplicate parameter '${key}'`
+          threat: `Parameter pollution detected: duplicate parameter '${key}'`,
         };
       }
       seenParams.add(key);
@@ -134,7 +138,7 @@ export class InputValidationService {
       if (!this.isValidParameterName(key)) {
         return {
           isValid: false,
-          threat: `Invalid parameter name: '${key}'`
+          threat: `Invalid parameter name: '${key}'`,
         };
       }
 
@@ -144,7 +148,7 @@ export class InputValidationService {
         if (!sqlValidation.isValid) {
           return {
             isValid: false,
-            threat: `SQL injection in parameter '${key}': ${sqlValidation.threat}`
+            threat: `SQL injection in parameter '${key}': ${sqlValidation.threat}`,
           };
         }
 
@@ -152,7 +156,7 @@ export class InputValidationService {
         if (!xssValidation.isValid) {
           return {
             isValid: false,
-            threat: `XSS in parameter '${key}': ${xssValidation.threat}`
+            threat: `XSS in parameter '${key}': ${xssValidation.threat}`,
           };
         }
 
@@ -171,26 +175,31 @@ export class InputValidationService {
 
     return {
       isValid: true,
-      cleanParams
+      cleanParams,
     };
   }
 
   /**
    * Validate JSON schema
    */
-  validateJSONSchema(data: unknown, schema: Record<string, unknown>): { isValid: boolean; errors?: string[] } {
+  validateJSONSchema(
+    data: unknown,
+    schema: Record<string, unknown>
+  ): { isValid: boolean; errors?: string[] } {
     const errors: string[] = [];
-    
+
     try {
       this.validateSchemaRecursive(data, schema, '', errors);
       return {
         isValid: errors.length === 0,
-        errors: errors.length > 0 ? errors : undefined
+        errors: errors.length > 0 ? errors : undefined,
       };
     } catch (error) {
       return {
         isValid: false,
-        errors: [`Schema validation error: ${error instanceof Error ? error.message : 'Unknown error'}`]
+        errors: [
+          `Schema validation error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        ],
       };
     }
   }
@@ -204,12 +213,15 @@ export class InputValidationService {
     }
 
     // Remove any characters not in whitelist
-    const filtered = input.split('').filter(char => whitelist.includes(char)).join('');
-    
+    const filtered = input
+      .split('')
+      .filter(char => whitelist.includes(char))
+      .join('');
+
     if (filtered !== input) {
       return {
         isValid: false,
-        filtered
+        filtered,
       };
     }
 
@@ -219,11 +231,14 @@ export class InputValidationService {
   /**
    * Comprehensive input sanitization
    */
-  sanitizeInput(input: string, options: {
-    allowHTML?: boolean;
-    maxLength?: number;
-    trimWhitespace?: boolean;
-  } = {}): string {
+  sanitizeInput(
+    input: string,
+    options: {
+      allowHTML?: boolean;
+      maxLength?: number;
+      trimWhitespace?: boolean;
+    } = {}
+  ): string {
     if (!input || typeof input !== 'string') {
       return '';
     }
@@ -257,15 +272,16 @@ export class InputValidationService {
     }
 
     // RFC 5322 compliant email regex
-    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-    
+    const emailRegex =
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
     if (!emailRegex.test(email)) {
       return { isValid: false };
     }
 
     return {
       isValid: true,
-      sanitized: email.toLowerCase().trim()
+      sanitized: email.toLowerCase().trim(),
     };
   }
 
@@ -279,7 +295,7 @@ export class InputValidationService {
 
     try {
       const urlObj = new URL(url);
-      
+
       // Only allow HTTP and HTTPS protocols
       if (!['http:', 'https:'].includes(urlObj.protocol)) {
         return { isValid: false };
@@ -287,7 +303,7 @@ export class InputValidationService {
 
       return {
         isValid: true,
-        sanitized: urlObj.toString()
+        sanitized: urlObj.toString(),
       };
     } catch {
       return { isValid: false };
@@ -297,16 +313,19 @@ export class InputValidationService {
   /**
    * Validate file upload
    */
-  validateFileUpload(file: {
-    originalname: string;
-    mimetype: string;
-    size: number;
-    buffer?: Buffer;
-  }, options: {
-    allowedTypes?: string[];
-    maxSize?: number;
-    allowedExtensions?: string[];
-  } = {}): { isValid: boolean; errors?: string[] } {
+  validateFileUpload(
+    file: {
+      originalname: string;
+      mimetype: string;
+      size: number;
+      buffer?: Buffer;
+    },
+    options: {
+      allowedTypes?: string[];
+      maxSize?: number;
+      allowedExtensions?: string[];
+    } = {}
+  ): { isValid: boolean; errors?: string[] } {
     const errors: string[] = [];
 
     // Validate file name
@@ -314,9 +333,22 @@ export class InputValidationService {
       errors.push('Invalid file name');
     } else {
       // Check for dangerous file extensions
-      const dangerousExtensions = ['.exe', '.bat', '.cmd', '.com', '.pif', '.scr', '.vbs', '.js', '.jar', '.sh'];
-      const fileExtension = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
-      
+      const dangerousExtensions = [
+        '.exe',
+        '.bat',
+        '.cmd',
+        '.com',
+        '.pif',
+        '.scr',
+        '.vbs',
+        '.js',
+        '.jar',
+        '.sh',
+      ];
+      const fileExtension = file.originalname
+        .toLowerCase()
+        .substring(file.originalname.lastIndexOf('.'));
+
       if (dangerousExtensions.includes(fileExtension)) {
         errors.push(`Dangerous file extension: ${fileExtension}`);
       }
@@ -354,7 +386,7 @@ export class InputValidationService {
 
     return {
       isValid: errors.length === 0,
-      errors: errors.length > 0 ? errors : undefined
+      errors: errors.length > 0 ? errors : undefined,
     };
   }
 
@@ -375,7 +407,12 @@ export class InputValidationService {
     return /^[a-zA-Z0-9_]+$/.test(name);
   }
 
-  private validateSchemaRecursive(data: unknown, schema: Record<string, unknown>, path: string, errors: string[]): void {
+  private validateSchemaRecursive(
+    data: unknown,
+    schema: Record<string, unknown>,
+    path: string,
+    errors: string[]
+  ): void {
     if (schema.type === 'string') {
       if (typeof data !== 'string') {
         errors.push(`${path}: Expected string, got ${typeof data}`);
@@ -403,7 +440,12 @@ export class InputValidationService {
         for (const [key, value] of Object.entries(schema.properties || {})) {
           const propertyPath = path ? `${path}.${key}` : key;
           if ((data as Record<string, unknown>)[key] !== undefined) {
-            this.validateSchemaRecursive((data as Record<string, unknown>)[key], value as Record<string, unknown>, propertyPath, errors);
+            this.validateSchemaRecursive(
+              (data as Record<string, unknown>)[key],
+              value as Record<string, unknown>,
+              propertyPath,
+              errors
+            );
           } else if (schema.required && (schema.required as string[]).includes(key)) {
             errors.push(`${propertyPath}: Required field missing`);
           }
@@ -414,7 +456,12 @@ export class InputValidationService {
         errors.push(`${path}: Expected array, got ${typeof data}`);
       } else {
         for (let i = 0; i < (data as unknown[]).length; i++) {
-          this.validateSchemaRecursive((data as unknown[])[i], schema.items as Record<string, unknown>, `${path}[${i}]`, errors);
+          this.validateSchemaRecursive(
+            (data as unknown[])[i],
+            schema.items as Record<string, unknown>,
+            `${path}[${i}]`,
+            errors
+          );
         }
       }
     }

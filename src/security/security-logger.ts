@@ -1,11 +1,11 @@
 import { SecurityEventDetails } from '../types/security';
 
 export class SecurityLogger {
-  private logLevel: 'debug' | 'info' | 'warn' | 'error';
-  private enableFileLogging: boolean;
-  private logFilePath: string;
-  private maxLogFileSize: number;
-  private maxLogFiles: number;
+  private readonly logLevel: 'debug' | 'info' | 'warn' | 'error';
+  private readonly enableFileLogging: boolean;
+  private readonly logFilePath: string;
+  private readonly maxLogFileSize: number;
+  private readonly maxLogFiles: number;
 
   constructor(config: {
     level: 'debug' | 'info' | 'warn' | 'error';
@@ -31,7 +31,7 @@ export class SecurityLogger {
       severity: 'INFO',
       source: 'SECURITY_LOGGER',
       details: event,
-      metadata: event.metadata || {}
+      metadata: event.metadata || {},
     };
 
     // Log to console
@@ -48,7 +48,7 @@ export class SecurityLogger {
    */
   private logToConsole(logEntry: any): void {
     const message = JSON.stringify(logEntry, null, 2);
-    
+
     switch (logEntry.severity) {
       case 'DEBUG':
         if (this.logLevel === 'debug') {
@@ -81,7 +81,7 @@ export class SecurityLogger {
     try {
       const fs = require('fs');
       const path = require('path');
-      
+
       // Ensure log directory exists
       const logDir = path.dirname(this.logFilePath);
       if (!fs.existsSync(logDir)) {
@@ -90,7 +90,7 @@ export class SecurityLogger {
 
       // Append to log file
       fs.appendFileSync(this.logFilePath, JSON.stringify(logEntry) + '\n');
-      
+
       // Check file size and rotate if necessary
       this.rotateLogFile();
     } catch (error) {
@@ -104,24 +104,24 @@ export class SecurityLogger {
   private rotateLogFile(): void {
     try {
       const fs = require('fs');
-      
+
       if (!fs.existsSync(this.logFilePath)) {
         return;
       }
 
       const stats = fs.statSync(this.logFilePath);
-      
+
       if (stats.size > this.maxLogFileSize) {
         // Rotate files
         for (let i = this.maxLogFiles - 1; i > 0; i--) {
           const oldFile = `${this.logFilePath}.${i}`;
           const newFile = `${this.logFilePath}.${i + 1}`;
-          
+
           if (fs.existsSync(oldFile)) {
             fs.renameSync(oldFile, newFile);
           }
         }
-        
+
         // Move current log to .1
         fs.renameSync(this.logFilePath, `${this.logFilePath}.1`);
       }
@@ -145,7 +145,7 @@ export class SecurityLogger {
       totalEvents: 0,
       eventsByType: {},
       eventsBySeverity: {},
-      eventsBySource: {}
+      eventsBySource: {},
     };
   }
 }

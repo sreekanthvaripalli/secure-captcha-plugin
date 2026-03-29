@@ -19,7 +19,7 @@ import {
   BotDetectionVerdict,
   BehavioralSession,
   BehavioralAnalysisConfig,
-  StatisticalSummary
+  StatisticalSummary,
 } from '../types/behavioral';
 
 export class MouseMovementAnalyzer {
@@ -43,7 +43,7 @@ export class MouseMovementAnalyzer {
         scroll: 0.15,
         keystroke: 0.15,
         timing: 0.1,
-        pattern: 0.05
+        pattern: 0.05,
       },
       useMachineLearning: false,
       cacheResults: true,
@@ -51,7 +51,7 @@ export class MouseMovementAnalyzer {
       maxAnalysisPerMinute: 100,
       logLevel: 'info',
       logAnomalies: true,
-      ...config
+      ...config,
     };
 
     this.securityLogger = securityLogger;
@@ -87,7 +87,9 @@ export class MouseMovementAnalyzer {
 
       // Calculate time delta
       const dt = curr.timestamp - prev.timestamp;
-      if (dt === 0) continue;
+      if (dt === 0) {
+        continue;
+      }
 
       // Calculate velocity
       const velocity = distance / dt;
@@ -135,15 +137,15 @@ export class MouseMovementAnalyzer {
     const firstPoint = movements[0];
     const lastPoint = movements[movements.length - 1];
     const straightLineDistance = Math.sqrt(
-      Math.pow(lastPoint.x - firstPoint.x, 2) +
-      Math.pow(lastPoint.y - firstPoint.y, 2)
+      Math.pow(lastPoint.x - firstPoint.x, 2) + Math.pow(lastPoint.y - firstPoint.y, 2)
     );
 
     // Calculate direction changes
     let directionChanges = 0;
     for (let i = 2; i < angles.length; i++) {
       const angleDiff = Math.abs(angles[i] - angles[i - 1]);
-      if (angleDiff > Math.PI / 4) { // 45 degrees threshold
+      if (angleDiff > Math.PI / 4) {
+        // 45 degrees threshold
         directionChanges++;
       }
     }
@@ -174,7 +176,7 @@ export class MouseMovementAnalyzer {
       angleVariance: angleStats.variance,
       directionChanges,
       averageJerk: jerkStats.mean,
-      jerkVariance: jerkStats.variance
+      jerkVariance: jerkStats.variance,
     };
   }
 
@@ -210,7 +212,7 @@ export class MouseMovementAnalyzer {
       clickDurationVariance: durationStats.variance,
       doubleClickRate: clicks.length > 1 ? doubleClicks / (clicks.length - 1) : 0,
       clickIntervalVariance: intervalStats.variance,
-      clickAccuracy: 1.0 // Would need target information to calculate accurately
+      clickAccuracy: 1.0, // Would need target information to calculate accurately
     };
   }
 
@@ -230,7 +232,11 @@ export class MouseMovementAnalyzer {
     for (let i = 1; i < scrolls.length; i++) {
       const prevDy = scrolls[i - 1].deltaY;
       const currDy = scrolls[i].deltaY;
-      if ((prevDy > 0 && currDy > 0) || (prevDy < 0 && currDy < 0) || (prevDy === 0 && currDy === 0)) {
+      if (
+        (prevDy > 0 && currDy > 0) ||
+        (prevDy < 0 && currDy < 0) ||
+        (prevDy === 0 && currDy === 0)
+      ) {
         consistentDirections++;
       }
     }
@@ -242,8 +248,9 @@ export class MouseMovementAnalyzer {
       totalScrolls: scrolls.length,
       averageScrollSpeed: speedStats.mean,
       scrollSpeedVariance: speedStats.variance,
-      scrollDirectionConsistency: scrolls.length > 1 ? consistentDirections / (scrolls.length - 1) : 1,
-      smoothScrollingScore: smoothness
+      scrollDirectionConsistency:
+        scrolls.length > 1 ? consistentDirections / (scrolls.length - 1) : 1,
+      smoothScrollingScore: smoothness,
     };
   }
 
@@ -261,7 +268,7 @@ export class MouseMovementAnalyzer {
         confidence: 0.8,
         description: 'Movement path is suspiciously linear',
         evidence: { pathEfficiency: metrics.pathEfficiency },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
@@ -273,7 +280,7 @@ export class MouseMovementAnalyzer {
         confidence: 0.85,
         description: 'No acceleration variation detected',
         evidence: { accelerationVariance: metrics.accelerationVariance },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
@@ -285,7 +292,7 @@ export class MouseMovementAnalyzer {
         confidence: 0.7,
         description: 'Missing natural micro-movements',
         evidence: { jerkVariance: metrics.jerkVariance },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
@@ -297,7 +304,7 @@ export class MouseMovementAnalyzer {
         confidence: 0.6,
         description: 'Movement speed is unusually fast',
         evidence: { averageVelocity: metrics.averageVelocity },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
@@ -309,7 +316,7 @@ export class MouseMovementAnalyzer {
         confidence: 0.5,
         description: 'Movement speed is unusually slow',
         evidence: { averageVelocity: metrics.averageVelocity },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
@@ -321,33 +328,41 @@ export class MouseMovementAnalyzer {
         confidence: 0.9,
         description: 'No velocity variation detected',
         evidence: { velocityVariance: metrics.velocityVariance },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
     // Check for inhuman precision
-    if (metrics.angleVariance < 0.01 && metrics.directionChanges < 2 && metrics.totalDistance > 200) {
+    if (
+      metrics.angleVariance < 0.01 &&
+      metrics.directionChanges < 2 &&
+      metrics.totalDistance > 200
+    ) {
       anomalies.push({
         type: 'inhuman_precision',
         severity: 'high',
         confidence: 0.85,
         description: 'Inhuman precision in movement angles',
-        evidence: { angleVariance: metrics.angleVariance, directionChanges: metrics.directionChanges },
-        timestamp: Date.now()
+        evidence: {
+          angleVariance: metrics.angleVariance,
+          directionChanges: metrics.directionChanges,
+        },
+        timestamp: Date.now(),
       });
     }
 
     // Calculate overall anomaly score
-    const anomalyScore = anomalies.length > 0
-      ? anomalies.reduce((sum, a) => sum + a.confidence, 0) / anomalies.length
-      : 0;
+    const anomalyScore =
+      anomalies.length > 0
+        ? anomalies.reduce((sum, a) => sum + a.confidence, 0) / anomalies.length
+        : 0;
 
     const humanLikelihood = 1 - anomalyScore;
 
     return {
       anomalies,
       anomalyScore,
-      humanLikelihood
+      humanLikelihood,
     };
   }
 
@@ -360,7 +375,7 @@ export class MouseMovementAnalyzer {
     // Check cache first
     if (this.config.cacheResults) {
       const cached = this.analysisCache.get(session.sessionId);
-      if (cached && (Date.now() - cached.timestamp) < this.config.cacheTTL * 1000) {
+      if (cached && Date.now() - cached.timestamp < this.config.cacheTTL * 1000) {
         return cached;
       }
     }
@@ -400,7 +415,7 @@ export class MouseMovementAnalyzer {
 
       // Pattern features
       patternVariability: this.calculatePatternVariability(movementMetrics),
-      repetitionScore: this.calculateRepetitionScore(session)
+      repetitionScore: this.calculateRepetitionScore(session),
     };
 
     // Calculate weighted bot score
@@ -421,7 +436,7 @@ export class MouseMovementAnalyzer {
       anomalies: anomalyResult.anomalies,
       riskFactors,
       timestamp: Date.now(),
-      processingTime: Date.now() - startTime
+      processingTime: Date.now() - startTime,
     };
 
     // Cache result
@@ -439,8 +454,8 @@ export class MouseMovementAnalyzer {
           sessionId: session.sessionId,
           anomalies: anomalyResult.anomalies,
           botScore,
-          verdict
-        }
+          verdict,
+        },
       });
     }
 
@@ -532,7 +547,9 @@ export class MouseMovementAnalyzer {
    * Calculate response time naturalness
    */
   private calculateResponseTimeNaturalness(session: BehavioralSession): number {
-    if (session.dataPoints.length < 2) return 0.5;
+    if (session.dataPoints.length < 2) {
+      return 0.5;
+    }
 
     // Calculate time between page load and first interaction
     const firstInteraction = session.dataPoints[0];
@@ -580,7 +597,9 @@ export class MouseMovementAnalyzer {
   private calculateRepetitionScore(session: BehavioralSession): number {
     // Check for repeated patterns in movements
     const movements = session.mouseTrail.movements;
-    if (movements.length < 10) return 0;
+    if (movements.length < 10) {
+      return 0;
+    }
 
     // Simple repetition detection: check if similar sequences exist
     let repeatedSequences = 0;
@@ -588,10 +607,10 @@ export class MouseMovementAnalyzer {
 
     for (let i = 0; i < movements.length - sequenceLength * 2; i++) {
       const sequence1 = movements.slice(i, i + sequenceLength);
-      
+
       for (let j = i + sequenceLength; j < movements.length - sequenceLength; j++) {
         const sequence2 = movements.slice(j, j + sequenceLength);
-        
+
         // Check if sequences are similar
         let similar = true;
         for (let k = 0; k < sequenceLength; k++) {
@@ -602,7 +621,7 @@ export class MouseMovementAnalyzer {
             break;
           }
         }
-        
+
         if (similar) {
           repeatedSequences++;
         }
@@ -622,17 +641,16 @@ export class MouseMovementAnalyzer {
     const weights = this.config.featureWeights;
 
     // Calculate weighted feature score (higher = more bot-like)
-    const featureScore = (
+    const featureScore =
       (1 - features.movementNaturalness) * weights.movement +
       (1 - features.clickNaturalness) * weights.click +
       (1 - features.scrollNaturalness) * weights.scroll +
       (1 - features.keystrokeRhythm) * weights.keystroke +
       (1 - features.responseTimeNaturalness) * weights.timing +
-      (1 - features.patternVariability) * weights.pattern
-    );
+      (1 - features.patternVariability) * weights.pattern;
 
     // Combine with anomaly score
-    const botScore = (featureScore * 0.7) + (anomalyResult.anomalyScore * 0.3);
+    const botScore = featureScore * 0.7 + anomalyResult.anomalyScore * 0.3;
 
     return Math.min(1, Math.max(0, botScore));
   }
@@ -710,7 +728,7 @@ export class MouseMovementAnalyzer {
         quartiles: [0, 0, 0],
         iqr: 0,
         skewness: 0,
-        kurtosis: 0
+        kurtosis: 0,
       };
     }
 
@@ -721,9 +739,8 @@ export class MouseMovementAnalyzer {
     const mean = values.reduce((sum, v) => sum + v, 0) / n;
 
     // Calculate median
-    const median = n % 2 === 0
-      ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2
-      : sorted[Math.floor(n / 2)];
+    const median =
+      n % 2 === 0 ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2 : sorted[Math.floor(n / 2)];
 
     // Calculate mode
     const freq: Record<number, number> = {};
@@ -748,10 +765,12 @@ export class MouseMovementAnalyzer {
     const iqr = q3 - q1;
 
     // Calculate skewness
-    const skewness = values.reduce((sum, v) => sum + Math.pow((v - mean) / standardDeviation, 3), 0) / n;
+    const skewness =
+      values.reduce((sum, v) => sum + Math.pow((v - mean) / standardDeviation, 3), 0) / n;
 
     // Calculate kurtosis
-    const kurtosis = values.reduce((sum, v) => sum + Math.pow((v - mean) / standardDeviation, 4), 0) / n - 3;
+    const kurtosis =
+      values.reduce((sum, v) => sum + Math.pow((v - mean) / standardDeviation, 4), 0) / n - 3;
 
     return {
       mean,
@@ -765,7 +784,7 @@ export class MouseMovementAnalyzer {
       quartiles: [q1, q2, q3],
       iqr,
       skewness,
-      kurtosis
+      kurtosis,
     };
   }
 
@@ -791,7 +810,7 @@ export class MouseMovementAnalyzer {
       angleVariance: 0,
       directionChanges: 0,
       averageJerk: 0,
-      jerkVariance: 0
+      jerkVariance: 0,
     };
   }
 
@@ -805,7 +824,7 @@ export class MouseMovementAnalyzer {
       clickDurationVariance: 0,
       doubleClickRate: 0,
       clickAccuracy: 0,
-      clickIntervalVariance: 0
+      clickIntervalVariance: 0,
     };
   }
 
@@ -818,7 +837,7 @@ export class MouseMovementAnalyzer {
       averageScrollSpeed: 0,
       scrollSpeedVariance: 0,
       scrollDirectionConsistency: 0,
-      smoothScrollingScore: 0
+      smoothScrollingScore: 0,
     };
   }
 
@@ -840,7 +859,7 @@ export class MouseMovementAnalyzer {
         totalDistance: 0,
         averageVelocity: 0,
         maxVelocity: 0,
-        minVelocity: 0
+        minVelocity: 0,
       },
       keystrokePattern: {
         sessionId,
@@ -849,7 +868,7 @@ export class MouseMovementAnalyzer {
         averageFlightTime: 0,
         typingSpeed: 0,
         errorRate: 0,
-        rhythm: []
+        rhythm: [],
       },
       metrics: {
         movement: this.getEmptyMovementMetrics(),
@@ -862,9 +881,9 @@ export class MouseMovementAnalyzer {
           flightTimeVariance: 0,
           typingSpeed: 0,
           rhythmConsistency: 0,
-          errorRate: 0
-        }
-      }
+          errorRate: 0,
+        },
+      },
     };
 
     this.sessions.set(sessionId, session);
@@ -883,7 +902,9 @@ export class MouseMovementAnalyzer {
    */
   updateSession(sessionId: string, movements: MouseMovement[]): void {
     const session = this.sessions.get(sessionId);
-    if (!session) return;
+    if (!session) {
+      return;
+    }
 
     // Add movements to trail
     session.mouseTrail.movements.push(...movements);
@@ -898,7 +919,9 @@ export class MouseMovementAnalyzer {
    */
   async endSession(sessionId: string): Promise<BotDetectionResult | null> {
     const session = this.sessions.get(sessionId);
-    if (!session) return null;
+    if (!session) {
+      return null;
+    }
 
     session.endTime = Date.now();
 
@@ -941,7 +964,7 @@ export class MouseMovementAnalyzer {
     return {
       activeSessions: this.sessions.size,
       cachedResults: this.analysisCache.size,
-      totalAnalyses: this.analysisCache.size
+      totalAnalyses: this.analysisCache.size,
     };
   }
 }

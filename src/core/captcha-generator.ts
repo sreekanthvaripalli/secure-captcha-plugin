@@ -1,6 +1,11 @@
 import { SecurityConfigurationService } from '../security/config';
 import { CaptchaType, Difficulty, GenerateCaptchaInput, CaptchaResponse } from '../types/captcha';
-import { SecurityEvent, SecurityEventType, SecurityEventDetails, SecurityConfiguration } from '../types/security';
+import {
+  SecurityEvent,
+  SecurityEventType,
+  SecurityEventDetails,
+  SecurityConfiguration,
+} from '../types/security';
 
 /**
  * Interface for all captcha generators
@@ -60,18 +65,21 @@ export abstract class BaseCaptchaGenerator implements CaptchaGenerator {
   /**
    * Generate cryptographically secure random string
    */
-  protected generateSecureRandom(length: number, charset: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'): string {
+  protected generateSecureRandom(
+    length: number,
+    charset: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  ): string {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const crypto = require('crypto');
     let result = '';
     const charsetLength = charset.length;
-    
+
     for (let i = 0; i < length; i++) {
       const randomBytes = crypto.randomBytes(4);
       const randomIndex = randomBytes.readUInt32BE(0) % charsetLength;
       result += charset[randomIndex];
     }
-    
+
     return result;
   }
 
@@ -87,7 +95,16 @@ export abstract class BaseCaptchaGenerator implements CaptchaGenerator {
       throw new Error('Difficulty level is required');
     }
 
-    const supportedTypes = ['text', 'math', 'logic', 'image', 'audio', 'behavioral', 'invisible', 'multi-layer'];
+    const supportedTypes = [
+      'text',
+      'math',
+      'logic',
+      'image',
+      'audio',
+      'behavioral',
+      'invisible',
+      'multi-layer',
+    ];
     if (!supportedTypes.includes(input.type)) {
       throw new Error(`Unsupported captcha type: ${input.type}`);
     }
@@ -101,7 +118,11 @@ export abstract class BaseCaptchaGenerator implements CaptchaGenerator {
   /**
    * Log security events
    */
-  protected logSecurityEvent(type: SecurityEventType, sessionId: string, details: SecurityEventDetails): void {
+  protected logSecurityEvent(
+    type: SecurityEventType,
+    sessionId: string,
+    details: SecurityEventDetails
+  ): void {
     const event: SecurityEvent = {
       id: this.generateSecureRandom(32),
       type,
@@ -111,7 +132,7 @@ export abstract class BaseCaptchaGenerator implements CaptchaGenerator {
       ip: 'unknown', // Will be populated by calling service
       userAgent: 'unknown', // Will be populated by calling service
       details,
-      resolved: false
+      resolved: false,
     };
 
     // Log the event (implementation depends on logging service)
@@ -210,7 +231,7 @@ export class MultiLayerCaptchaGenerator extends BaseCaptchaGenerator {
     this.validateInput(input);
 
     const responses: CaptchaResponse[] = [];
-    
+
     // Generate captchas for each layer
     for (const layerType of this.layers) {
       if (!this.factory.isSupported(layerType)) {
@@ -220,7 +241,7 @@ export class MultiLayerCaptchaGenerator extends BaseCaptchaGenerator {
       const generator = this.factory.getGenerator(layerType);
       const layerInput: GenerateCaptchaInput = {
         ...input,
-        type: layerType
+        type: layerType,
       };
 
       const response = await generator.generate(layerInput);
@@ -241,16 +262,16 @@ export class MultiLayerCaptchaGenerator extends BaseCaptchaGenerator {
         behavioralData: {
           mouseMovements: [],
           keystrokeTimings: [],
-          interactionPatterns: []
+          interactionPatterns: [],
         },
         deviceInfo: {
           browser: 'unknown',
           os: 'unknown',
           screenResolution: 'unknown',
           timezone: 'unknown',
-          language: 'unknown'
-        }
-      }
+          language: 'unknown',
+        },
+      },
     };
 
     this.logSecurityEvent('captcha_generated' as SecurityEventType, combinedResponse.sessionId, {
@@ -260,8 +281,8 @@ export class MultiLayerCaptchaGenerator extends BaseCaptchaGenerator {
       metadata: {
         type: 'multi-layer',
         layers: this.layers,
-        difficulty: input.difficulty
-      }
+        difficulty: input.difficulty,
+      },
     });
 
     return combinedResponse;
@@ -277,8 +298,8 @@ export class MultiLayerCaptchaGenerator extends BaseCaptchaGenerator {
       reason: 'Multi-layer captcha validation',
       metadata: {
         type: 'multi-layer',
-        responseLength: response.length
-      }
+        responseLength: response.length,
+      },
     });
 
     return true;
@@ -309,7 +330,7 @@ export class CaptchaGeneratorRegistry {
   registerStandardGenerators(): void {
     // Note: Actual generator implementations will be added in subsequent tasks
     // This is the base architecture setup
-    
+
     // Register multi-layer generator
     const multiLayerGenerator = new MultiLayerCaptchaGenerator(
       this.factory['configService'],

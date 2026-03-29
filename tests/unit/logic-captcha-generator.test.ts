@@ -36,7 +36,7 @@ describe('LogicCaptchaGenerator', () => {
     test('should generate captcha with easy difficulty', async () => {
       const input: GenerateCaptchaInput = {
         type: 'logic',
-        difficulty: 'easy'
+        difficulty: 'easy',
       };
 
       const response = await generator.generate(input);
@@ -53,7 +53,7 @@ describe('LogicCaptchaGenerator', () => {
     test('should generate captcha with medium difficulty', async () => {
       const input: GenerateCaptchaInput = {
         type: 'logic',
-        difficulty: 'medium'
+        difficulty: 'medium',
       };
 
       const response = await generator.generate(input);
@@ -68,7 +68,7 @@ describe('LogicCaptchaGenerator', () => {
     test('should generate captcha with hard difficulty', async () => {
       const input: GenerateCaptchaInput = {
         type: 'logic',
-        difficulty: 'hard'
+        difficulty: 'hard',
       };
 
       const response = await generator.generate(input);
@@ -83,7 +83,7 @@ describe('LogicCaptchaGenerator', () => {
     test('should generate unique session IDs', async () => {
       const input: GenerateCaptchaInput = {
         type: 'logic',
-        difficulty: 'medium'
+        difficulty: 'medium',
       };
 
       const response1 = await generator.generate(input);
@@ -95,7 +95,7 @@ describe('LogicCaptchaGenerator', () => {
     test('should generate different challenges', async () => {
       const input: GenerateCaptchaInput = {
         type: 'logic',
-        difficulty: 'medium'
+        difficulty: 'medium',
       };
 
       const challenges = new Set();
@@ -111,7 +111,7 @@ describe('LogicCaptchaGenerator', () => {
     test('should throw error for invalid type', async () => {
       const input = {
         type: 'invalid',
-        difficulty: 'medium'
+        difficulty: 'medium',
       } as unknown as GenerateCaptchaInput;
 
       await expect(generator.generate(input)).rejects.toThrow('Unsupported captcha type: invalid');
@@ -120,15 +120,17 @@ describe('LogicCaptchaGenerator', () => {
     test('should throw error for invalid difficulty', async () => {
       const input = {
         type: 'logic',
-        difficulty: 'invalid'
+        difficulty: 'invalid',
       } as unknown as GenerateCaptchaInput;
 
-      await expect(generator.generate(input)).rejects.toThrow('Unsupported difficulty for logic: invalid');
+      await expect(generator.generate(input)).rejects.toThrow(
+        'Unsupported difficulty for logic: invalid'
+      );
     });
 
     test('should throw error for missing type', async () => {
       const input = {
-        difficulty: 'medium'
+        difficulty: 'medium',
       } as GenerateCaptchaInput;
 
       await expect(generator.generate(input)).rejects.toThrow('Captcha type is required');
@@ -136,7 +138,7 @@ describe('LogicCaptchaGenerator', () => {
 
     test('should throw error for missing difficulty', async () => {
       const input = {
-        type: 'logic'
+        type: 'logic',
       } as GenerateCaptchaInput;
 
       await expect(generator.generate(input)).rejects.toThrow('Difficulty level is required');
@@ -151,14 +153,14 @@ describe('LogicCaptchaGenerator', () => {
 
     test('should log security event on validation', async () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       await generator.validate('test-session-id', 'A');
-      
+
       expect(consoleSpy).toHaveBeenCalledWith(
         'Security Event:',
         expect.stringContaining('captcha_validated')
       );
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -167,7 +169,7 @@ describe('LogicCaptchaGenerator', () => {
     test('should generate pattern puzzles', async () => {
       const input: GenerateCaptchaInput = {
         type: 'logic',
-        difficulty: 'easy'
+        difficulty: 'easy',
       };
 
       // Generate multiple times to increase chance of getting pattern puzzle
@@ -187,7 +189,7 @@ describe('LogicCaptchaGenerator', () => {
     test('should generate sequence puzzles', async () => {
       const input: GenerateCaptchaInput = {
         type: 'logic',
-        difficulty: 'easy'
+        difficulty: 'easy',
       };
 
       // Generate multiple times to increase chance of getting sequence puzzle
@@ -204,11 +206,10 @@ describe('LogicCaptchaGenerator', () => {
       expect(hasSequence).toBe(true);
     });
 
-
     test('should generate analogy puzzles', async () => {
       const input: GenerateCaptchaInput = {
         type: 'logic',
-        difficulty: 'easy'
+        difficulty: 'easy',
       };
 
       // Generate multiple times to increase chance of getting analogy puzzle
@@ -230,11 +231,11 @@ describe('LogicCaptchaGenerator', () => {
     test('easy difficulty should have shorter patterns', async () => {
       const input: GenerateCaptchaInput = {
         type: 'logic',
-        difficulty: 'easy'
+        difficulty: 'easy',
       };
 
       const response = await generator.generate(input);
-      
+
       // Challenge should be defined
       expect(response.challenge).toBeDefined();
       expect(response.challenge.length).toBeGreaterThan(0);
@@ -243,11 +244,11 @@ describe('LogicCaptchaGenerator', () => {
     test('hard difficulty should have longer patterns', async () => {
       const input: GenerateCaptchaInput = {
         type: 'logic',
-        difficulty: 'hard'
+        difficulty: 'hard',
       };
 
       const response = await generator.generate(input);
-      
+
       // Challenge should be defined
       expect(response.challenge).toBeDefined();
       expect(response.challenge.length).toBeGreaterThan(0);
@@ -258,15 +259,15 @@ describe('LogicCaptchaGenerator', () => {
     test('should format challenge with options', async () => {
       const input: GenerateCaptchaInput = {
         type: 'logic',
-        difficulty: 'easy'
+        difficulty: 'easy',
       };
 
       const response = await generator.generate(input);
-      
+
       // Challenge should contain question and options
       expect(response.challenge).toBeDefined();
       expect(response.challenge.length).toBeGreaterThan(0);
-      
+
       // Should have multiple lines (question + options)
       const lines = response.challenge.split('\n');
       expect(lines.length).toBeGreaterThan(1);
@@ -275,33 +276,32 @@ describe('LogicCaptchaGenerator', () => {
     test('should include option letters (A, B, C, D)', async () => {
       const input: GenerateCaptchaInput = {
         type: 'logic',
-        difficulty: 'easy'
+        difficulty: 'easy',
       };
 
       const response = await generator.generate(input);
-      
+
       // Should contain option letters
       expect(response.challenge).toMatch(/[A-D]\)/);
     });
   });
 
   describe('security features', () => {
-
     test('should log security events', async () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       const input: GenerateCaptchaInput = {
         type: 'logic',
-        difficulty: 'medium'
+        difficulty: 'medium',
       };
 
       await generator.generate(input);
-      
+
       expect(consoleSpy).toHaveBeenCalledWith(
         'Security Event:',
         expect.stringContaining('captcha_generated')
       );
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -335,19 +335,19 @@ describe('LogicCaptchaGenerator Integration', () => {
 
   test('should work with factory pattern', async () => {
     const { CaptchaGeneratorFactory } = await import('../../src/core/captcha-generator');
-    
+
     const factory = new CaptchaGeneratorFactory(configService);
     factory.registerGenerator(generator);
 
     expect(factory.isSupported('logic')).toBe(true);
-    
+
     const retrievedGenerator = factory.getGenerator('logic');
     expect(retrievedGenerator).toBe(generator);
   });
 
   test('should work with registry', async () => {
     const { CaptchaGeneratorRegistry } = await import('../../src/core/captcha-generator');
-    
+
     const registry = CaptchaGeneratorRegistry.getInstance(configService);
     registry.registerStandardGenerators();
 
@@ -362,7 +362,7 @@ describe('LogicCaptchaGenerator Integration', () => {
     for (const difficulty of difficulties) {
       const input: GenerateCaptchaInput = {
         type: 'logic',
-        difficulty
+        difficulty,
       };
 
       const response = await generator.generate(input);
@@ -376,15 +376,15 @@ describe('LogicCaptchaGenerator Integration', () => {
   test('should generate all puzzle types', async () => {
     const input: GenerateCaptchaInput = {
       type: 'logic',
-      difficulty: 'medium'
+      difficulty: 'medium',
     };
 
     const puzzleTypes = new Set<string>();
-    
+
     // Generate many puzzles to collect all types
     for (let i = 0; i < 100; i++) {
       const response = await generator.generate(input);
-      
+
       // Detect puzzle type from challenge content
       if (response.challenge.includes('pattern')) {
         puzzleTypes.add('pattern');

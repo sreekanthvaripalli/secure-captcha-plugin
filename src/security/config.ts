@@ -21,7 +21,7 @@ export class SecurityConfigurationService {
         enableSecurityHeaders: true,
         enableRateLimiting: true,
         rateLimitRequests: 100,
-        ...config?.app
+        ...config?.app,
       },
       crypto: {
         encryption: {
@@ -29,23 +29,23 @@ export class SecurityConfigurationService {
           keySize: 256,
           ivLength: 12,
           tagLength: 16,
-          ...config?.crypto?.encryption
+          ...config?.crypto?.encryption,
         },
         hashing: {
           algorithm: 'SHA-256',
           saltLength: 32,
-          ...config?.crypto?.hashing
+          ...config?.crypto?.hashing,
         },
         signing: {
           algorithm: 'HMAC-SHA256',
           keySize: 256,
-          ...config?.crypto?.signing
+          ...config?.crypto?.signing,
         },
         random: {
           algorithm: 'crypto.randomBytes',
           minEntropy: 128,
-          ...config?.crypto?.random
-        }
+          ...config?.crypto?.random,
+        },
       },
       network: {
         allowedOrigins: ['*'],
@@ -53,7 +53,7 @@ export class SecurityConfigurationService {
         allowedHeaders: ['Content-Type', 'Authorization'],
         enforceHttps: true,
         trustedProxies: [],
-        ...config?.network
+        ...config?.network,
       },
       logging: {
         level: 'info',
@@ -62,7 +62,7 @@ export class SecurityConfigurationService {
         maxLogFileSize: 10485760, // 10MB
         maxLogFiles: 5,
         enableSecurityLogging: true,
-        ...config?.logging
+        ...config?.logging,
       },
       monitoring: {
         enablePerformanceMonitoring: true,
@@ -71,15 +71,15 @@ export class SecurityConfigurationService {
           failedAuthThreshold: 10,
           suspiciousActivityThreshold: 5,
           performanceThreshold: 1000,
-          ...config?.monitoring?.thresholds
+          ...config?.monitoring?.thresholds,
         },
         alertChannels: {
           email: false,
           webhook: false,
           console: true,
-          ...config?.monitoring?.alertChannels
+          ...config?.monitoring?.alertChannels,
         },
-        ...config?.monitoring
+        ...config?.monitoring,
       },
       compliance: {
         enableAuditLogging: true,
@@ -88,8 +88,8 @@ export class SecurityConfigurationService {
         encryptDataAtRest: true,
         encryptDataInTransit: true,
         standards: ['GDPR', 'SOC2'],
-        ...config?.compliance
-      }
+        ...config?.compliance,
+      },
     };
 
     // Initialize security logger
@@ -98,7 +98,7 @@ export class SecurityConfigurationService {
       enableFileLogging: this.config.logging.enableFileLogging,
       logFilePath: this.config.logging.logFilePath,
       maxLogFileSize: this.config.logging.maxLogFileSize,
-      maxLogFiles: this.config.logging.maxLogFiles
+      maxLogFiles: this.config.logging.maxLogFiles,
     });
 
     // Initialize crypto service
@@ -118,7 +118,7 @@ export class SecurityConfigurationService {
   updateConfig(newConfig: Partial<SecurityConfiguration>): void {
     this.config = {
       ...this.config,
-      ...newConfig
+      ...newConfig,
     };
   }
 
@@ -164,7 +164,7 @@ export class SecurityConfigurationService {
       'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
       'Content-Security-Policy': "default-src 'self'",
       'Referrer-Policy': 'strict-origin-when-cross-origin',
-      'Permissions-Policy': 'geolocation=(), microphone=(), camera=()'
+      'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
     };
   }
 
@@ -181,7 +181,7 @@ export class SecurityConfigurationService {
       origin: this.config.network.allowedOrigins,
       methods: this.config.network.allowedMethods,
       allowedHeaders: this.config.network.allowedHeaders,
-      credentials: true
+      credentials: true,
     };
   }
 
@@ -206,7 +206,7 @@ export class SecurityConfigurationService {
     return {
       windowMs: 60 * 1000, // 1 minute
       max: this.config.app.rateLimitRequests,
-      message: 'Too many requests, please try again later'
+      message: 'Too many requests, please try again later',
     };
   }
 }

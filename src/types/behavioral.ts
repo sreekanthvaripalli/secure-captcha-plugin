@@ -5,7 +5,7 @@
 
 import { MouseMovement } from './captcha';
 
-export type BehavioralEventType = 
+export type BehavioralEventType =
   | 'mouse_move'
   | 'mouse_click'
   | 'mouse_scroll'
@@ -19,11 +19,7 @@ export type BehavioralEventType =
   | 'touch_move'
   | 'touch_end';
 
-export type BotDetectionVerdict = 
-  | 'human'
-  | 'bot'
-  | 'suspicious'
-  | 'uncertain';
+export type BotDetectionVerdict = 'human' | 'bot' | 'suspicious' | 'uncertain';
 
 export type AnomalyType =
   | 'unnatural_movement'
@@ -113,27 +109,27 @@ export interface MovementMetrics {
   maxVelocity: number;
   minVelocity: number;
   velocityVariance: number;
-  
+
   // Acceleration metrics
   averageAcceleration: number;
   maxAcceleration: number;
   accelerationVariance: number;
-  
+
   // Path metrics
   totalDistance: number;
   straightLineDistance: number;
   pathEfficiency: number; // straightLineDistance / totalDistance
-  
+
   // Timing metrics
   totalDuration: number;
   pauseCount: number;
   averagePauseDuration: number;
-  
+
   // Angle metrics
   averageAngle: number;
   angleVariance: number;
   directionChanges: number;
-  
+
   // Jerk metrics (rate of change of acceleration)
   averageJerk: number;
   jerkVariance: number;
@@ -190,23 +186,23 @@ export interface BotDetectionFeatures {
   accelerationPattern: number;
   pathEfficiency: number;
   microMovementPresence: number;
-  
+
   // Click features
   clickNaturalness: number;
   clickTimingVariation: number;
-  
+
   // Scroll features
   scrollNaturalness: number;
   scrollSmoothness: number;
-  
+
   // Keystroke features
   keystrokeRhythm: number;
   typingSpeedNaturalness: number;
-  
+
   // Timing features
   responseTimeNaturalness: number;
   sessionDurationNaturalness: number;
-  
+
   // Pattern features
   patternVariability: number;
   repetitionScore: number;
@@ -256,19 +252,19 @@ export interface BehavioralTrackingConfig {
   trackClicks: boolean;
   trackScrolls: boolean;
   trackKeystrokes: boolean;
-  
+
   // Sampling configuration
   mouseSamplingRate: number; // ms between samples
   maxDataPoints: number;
-  
+
   // Privacy settings
   anonymizeKeystrokes: boolean; // Don't record actual keys
   excludeSensitiveFields: string[]; // Selectors to exclude
-  
+
   // Performance settings
   batchSize: number; // Send data in batches
   flushInterval: number; // ms between batch sends
-  
+
   // Encryption
   encryptData: boolean;
   publicKey?: string; // For client-side encryption
@@ -280,7 +276,7 @@ export interface BehavioralAnalysisConfig {
   botScoreThreshold: number; // Above this = bot
   humanScoreThreshold: number; // Above this = human
   anomalyThreshold: number; // Above this = suspicious
-  
+
   // Feature weights
   featureWeights: {
     movement: number;
@@ -290,18 +286,18 @@ export interface BehavioralAnalysisConfig {
     timing: number;
     pattern: number;
   };
-  
+
   // ML Model settings
   useMachineLearning: boolean;
   modelPath?: string;
-  
+
   // Caching
   cacheResults: boolean;
   cacheTTL: number; // seconds
-  
+
   // Rate limiting
   maxAnalysisPerMinute: number;
-  
+
   // Logging
   logLevel: 'debug' | 'info' | 'warn' | 'error';
   logAnomalies: boolean;

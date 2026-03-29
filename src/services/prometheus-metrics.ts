@@ -17,33 +17,33 @@ export interface MetricsLabels {
 }
 
 export class PrometheusMetricsService {
-  private registry: Registry;
-  
+  private readonly registry: Registry;
+
   // Request metrics
   private requestCounter!: Counter<string>;
   private requestLatency!: Histogram<string>;
   private errorCounter!: Counter<string>;
-  
+
   // CAPTCHA-specific metrics
   private captchaGenerationTime!: Histogram<string>;
   private captchaValidationTime!: Histogram<string>;
   private captchaGenerationCounter!: Counter<string>;
   private captchaValidationCounter!: Counter<string>;
-  
+
   // Session metrics
   private activeSessions!: Gauge<string>;
   private sessionCreationCounter!: Counter<string>;
   private sessionDeletionCounter!: Counter<string>;
-  
+
   // Cache metrics
   private cacheHitCounter!: Counter<string>;
   private cacheMissCounter!: Counter<string>;
   private cacheOperationDuration!: Histogram<string>;
-  
+
   // Security metrics
   private securityEventCounter!: Counter<string>;
   private rateLimitCounter!: Counter<string>;
-  
+
   // System metrics
   private memoryUsage!: Gauge<string>;
   private cpuUsage!: Gauge<string>;
@@ -51,10 +51,10 @@ export class PrometheusMetricsService {
 
   constructor() {
     this.registry = new Registry();
-    
+
     // Collect default Node.js metrics
     collectDefaultMetrics({ register: this.registry });
-    
+
     this.initializeMetrics();
   }
 
@@ -67,7 +67,7 @@ export class PrometheusMetricsService {
       name: 'captcha_http_requests_total',
       help: 'Total number of HTTP requests',
       labelNames: ['method', 'path', 'status'],
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     this.requestLatency = new Histogram({
@@ -75,14 +75,14 @@ export class PrometheusMetricsService {
       help: 'HTTP request latency in seconds',
       labelNames: ['method', 'path', 'status'],
       buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10],
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     this.errorCounter = new Counter({
       name: 'captcha_http_errors_total',
       help: 'Total number of HTTP errors',
       labelNames: ['method', 'path', 'status'],
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     // CAPTCHA generation metrics
@@ -91,14 +91,14 @@ export class PrometheusMetricsService {
       help: 'Time taken to generate captcha in seconds',
       labelNames: ['type', 'difficulty'],
       buckets: [0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5],
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     this.captchaGenerationCounter = new Counter({
       name: 'captcha_generation_total',
       help: 'Total number of captcha generations',
       labelNames: ['type', 'difficulty', 'status'],
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     // CAPTCHA validation metrics
@@ -107,14 +107,14 @@ export class PrometheusMetricsService {
       help: 'Time taken to validate captcha in seconds',
       labelNames: ['type', 'difficulty'],
       buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5],
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     this.captchaValidationCounter = new Counter({
       name: 'captcha_validation_total',
       help: 'Total number of captcha validations',
       labelNames: ['type', 'difficulty', 'result'],
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     // Session metrics
@@ -122,21 +122,21 @@ export class PrometheusMetricsService {
       name: 'captcha_active_sessions',
       help: 'Number of active captcha sessions',
       labelNames: ['type'],
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     this.sessionCreationCounter = new Counter({
       name: 'captcha_sessions_created_total',
       help: 'Total number of sessions created',
       labelNames: ['type', 'difficulty'],
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     this.sessionDeletionCounter = new Counter({
       name: 'captcha_sessions_deleted_total',
       help: 'Total number of sessions deleted',
       labelNames: ['reason'],
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     // Cache metrics
@@ -144,13 +144,13 @@ export class PrometheusMetricsService {
       name: 'captcha_cache_hits_total',
       help: 'Total number of cache hits',
       labelNames: ['level'],
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     this.cacheMissCounter = new Counter({
       name: 'captcha_cache_misses_total',
       help: 'Total number of cache misses',
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     this.cacheOperationDuration = new Histogram({
@@ -158,7 +158,7 @@ export class PrometheusMetricsService {
       help: 'Cache operation duration in seconds',
       labelNames: ['operation', 'level'],
       buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25],
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     // Security metrics
@@ -166,14 +166,14 @@ export class PrometheusMetricsService {
       name: 'captcha_security_events_total',
       help: 'Total number of security events',
       labelNames: ['action', 'resource'],
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     this.rateLimitCounter = new Counter({
       name: 'captcha_rate_limit_hits_total',
       help: 'Total number of rate limit hits',
       labelNames: ['endpoint'],
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     // System metrics
@@ -181,20 +181,20 @@ export class PrometheusMetricsService {
       name: 'captcha_memory_usage_bytes',
       help: 'Memory usage in bytes',
       labelNames: ['type'],
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     this.cpuUsage = new Gauge({
       name: 'captcha_cpu_usage_seconds',
       help: 'CPU usage in seconds',
       labelNames: ['type'],
-      registers: [this.registry]
+      registers: [this.registry],
     });
 
     this.uptime = new Gauge({
       name: 'captcha_uptime_seconds',
       help: 'Server uptime in seconds',
-      registers: [this.registry]
+      registers: [this.registry],
     });
   }
 
@@ -203,10 +203,10 @@ export class PrometheusMetricsService {
    */
   recordRequest(method: string, path: string, status: number, duration: number): void {
     const labels = { method, path, status: status.toString() };
-    
+
     this.requestCounter.inc(labels);
     this.requestLatency.observe(labels, duration / 1000);
-    
+
     if (status >= 400) {
       this.errorCounter.inc(labels);
     }
@@ -222,11 +222,11 @@ export class PrometheusMetricsService {
     success: boolean
   ): void {
     const labels = { type, difficulty };
-    
+
     this.captchaGenerationTime.observe(labels, duration / 1000);
     this.captchaGenerationCounter.inc({
       ...labels,
-      status: success ? 'success' : 'failure'
+      status: success ? 'success' : 'failure',
     });
   }
 
@@ -240,11 +240,11 @@ export class PrometheusMetricsService {
     isCorrect: boolean
   ): void {
     const labels = { type, difficulty };
-    
+
     this.captchaValidationTime.observe(labels, duration / 1000);
     this.captchaValidationCounter.inc({
       ...labels,
-      result: isCorrect ? 'correct' : 'incorrect'
+      result: isCorrect ? 'correct' : 'incorrect',
     });
   }
 

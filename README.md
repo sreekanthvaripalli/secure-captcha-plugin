@@ -1789,6 +1789,10 @@ Performs comprehensive security analysis:
 - Runs weekly on schedule
 - Uploads results to GitHub Security tab
 
+**Important:** To view SARIF security scan results in GitHub's Security tab, you must enable Code Scanning in your repository:
+1. Go to **Settings** → **Code security and analysis**
+2. Enable **Code scanning** under "Code scanning and analysis"
+
 ```bash
 # Trigger manually
 gh workflow run security.yml
@@ -1826,6 +1830,59 @@ Configure these secrets in your GitHub repository settings:
 | `SNYK_TOKEN` | Snyk API token for security scanning |
 | `KUBE_CONFIG_STAGING` | Kubernetes config for staging environment |
 | `KUBE_CONFIG_PRODUCTION` | Kubernetes config for production environment |
+
+### Docker Hub Credentials Setup
+
+The build pipeline includes a Docker job that builds and pushes Docker images. For security, Docker credentials are stored as GitHub Secrets.
+
+#### Step 1: Create Docker Hub Access Token
+
+1. Log in to [Docker Hub](https://hub.docker.com)
+2. Go to **Account Settings** → **Security**
+3. Click **New Access Token**
+4. Give it a descriptive name (e.g., "GitHub Actions CI/CD")
+5. Select appropriate permissions (Read, Write, Delete)
+6. Click **Generate** and copy the token immediately (it won't be shown again)
+
+#### Step 2: Add Secrets to GitHub Repository
+
+1. Go to your GitHub repository
+2. Navigate to **Settings** → **Secrets and variables** → **Actions**
+3. Click **New repository secret**
+4. Add the following secrets:
+   - **Name**: `DOCKERHUB_USERNAME`
+     **Value**: Your Docker Hub username
+   - **Name**: `DOCKERHUB_TOKEN`
+     **Value**: The access token you created in Step 1
+
+#### How It Works
+
+The build workflow conditionally handles Docker credentials:
+
+- **For Pull Requests**: Docker login and push steps are skipped entirely
+  - The workflow only builds the Docker image (no login, no push)
+  - This allows the build to pass without Docker credentials configured
+
+- **For Pushes to main/develop**: Docker login and push only run if secrets are configured
+  - If secrets are NOT configured: Build passes (image is built but not pushed)
+  - If secrets ARE configured: Image is built and pushed to Docker Hub
+
+This approach ensures the build pipeline works for everyone, regardless of whether Docker credentials are configured, while still allowing Docker image pushes when credentials are available.
+
+#### Verifying Docker Credentials
+
+After adding the secrets, you can verify they're working by:
+
+1. Pushing a commit to the `main` or `develop` branch
+2. Checking the **Actions** tab in your GitHub repository
+3. Viewing the **Build** workflow run
+4. The Docker job should show "Login to Docker Hub" step as successful
+
+#### Troubleshooting
+
+- **Build fails with "Username and password required"**: Ensure both `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets are configured
+- **Build fails with "unauthorized"**: Verify the Docker Hub access token has correct permissions
+- **Build passes but no image pushed**: Check that you're pushing to `main` or `develop` branch (not a pull request)
 
 ### Pipeline Status Badges
 

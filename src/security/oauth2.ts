@@ -8,8 +8,18 @@ import { SecurityLogger } from './security-logger';
 import { SecurityEventDetails } from '../types/security';
 
 // OAuth 2.0 Types
-export type OAuth2GrantType = 'authorization_code' | 'client_credentials' | 'refresh_token' | 'implicit';
-export type OAuth2ResponseType = 'code' | 'token' | 'id_token' | 'code token' | 'code id_token' | 'code token id_token';
+export type OAuth2GrantType =
+  | 'authorization_code'
+  | 'client_credentials'
+  | 'refresh_token'
+  | 'implicit';
+export type OAuth2ResponseType =
+  | 'code'
+  | 'token'
+  | 'id_token'
+  | 'code token'
+  | 'code id_token'
+  | 'code token id_token';
 export type OAuth2TokenType = 'Bearer' | 'MAC';
 export type OAuth2CodeChallengeMethod = 'plain' | 'S256';
 
@@ -21,7 +31,12 @@ export interface OAuth2Client {
   allowedScopes: string[];
   grantTypes: OAuth2GrantType[];
   responseTypes: OAuth2ResponseType[];
-  tokenEndpointAuthMethod: 'client_secret_basic' | 'client_secret_post' | 'client_secret_jwt' | 'private_key_jwt' | 'none';
+  tokenEndpointAuthMethod:
+    | 'client_secret_basic'
+    | 'client_secret_post'
+    | 'client_secret_jwt'
+    | 'private_key_jwt'
+    | 'none';
   accessTokenLifetime: number; // seconds
   refreshTokenLifetime: number; // seconds
   requirePkce: boolean;
@@ -173,29 +188,29 @@ export interface OAuth2Config {
   jwksUri: string;
   revocationEndpoint: string;
   introspectionEndpoint: string;
-  
+
   // Token lifetimes
   authorizationCodeLifetime: number; // seconds
   accessTokenLifetime: number; // seconds
   refreshTokenLifetime: number; // seconds
   idTokenLifetime: number; // seconds
-  
+
   // Security settings
   requirePkce: boolean;
   requireState: boolean;
   requireNonce: boolean;
   allowRefreshTokenReuse: boolean;
   rotateRefreshTokens: boolean;
-  
+
   // Supported features
   supportedScopes: string[];
   supportedGrantTypes: OAuth2GrantType[];
   supportedResponseTypes: OAuth2ResponseType[];
   supportedCodeChallengeMethods: OAuth2CodeChallengeMethod[];
-  
+
   // Provider integration
   providers: OAuth2Provider[];
-  
+
   // Logging
   enableLogging: boolean;
   logLevel: 'debug' | 'info' | 'warn' | 'error';
@@ -222,7 +237,7 @@ export interface OAuth2Stats {
 export class OAuth2Service {
   private readonly config: OAuth2Config;
   private readonly securityLogger: SecurityLogger;
-  
+
   // Data stores
   private readonly clients: Map<string, OAuth2Client> = new Map();
   private readonly authorizationCodes: Map<string, OAuth2AuthorizationCode> = new Map();
@@ -230,12 +245,12 @@ export class OAuth2Service {
   private readonly refreshTokens: Map<string, OAuth2RefreshToken> = new Map();
   private readonly idTokens: Map<string, OAuth2IdToken> = new Map();
   private readonly providers: Map<string, OAuth2Provider> = new Map();
-  
+
   // Caches
   private readonly tokenCache: Map<string, OAuth2AccessToken> = new Map();
-  
+
   // Statistics
-  private stats: OAuth2Stats = {
+  private readonly stats: OAuth2Stats = {
     totalClients: 0,
     activeClients: 0,
     totalAuthorizationCodes: 0,
@@ -250,13 +265,10 @@ export class OAuth2Service {
     failedTokenRequests: 0,
     cacheHits: 0,
     cacheMisses: 0,
-    lastActivity: Date.now()
+    lastActivity: Date.now(),
   };
 
-  constructor(
-    config: Partial<OAuth2Config>,
-    securityLogger: SecurityLogger
-  ) {
+  constructor(config: Partial<OAuth2Config>, securityLogger: SecurityLogger) {
     this.config = {
       issuer: 'https://secure-captcha.example.com',
       authorizationEndpoint: '/oauth2/authorize',
@@ -281,7 +293,7 @@ export class OAuth2Service {
       providers: [],
       enableLogging: true,
       logLevel: 'info',
-      ...config
+      ...config,
     };
 
     this.securityLogger = securityLogger;
@@ -297,7 +309,10 @@ export class OAuth2Service {
       {
         secret: this.generateClientSecret(),
         name: 'Secure CAPTCHA Web App',
-        redirectUris: ['https://secure-captcha.example.com/callback', 'http://localhost:3000/callback'],
+        redirectUris: [
+          'https://secure-captcha.example.com/callback',
+          'http://localhost:3000/callback',
+        ],
         allowedScopes: ['openid', 'profile', 'email', 'offline_access'],
         grantTypes: ['authorization_code', 'refresh_token'],
         responseTypes: ['code', 'id_token', 'code id_token'],
@@ -307,7 +322,7 @@ export class OAuth2Service {
         requirePkce: true,
         requireConsent: true,
         isActive: true,
-        metadata: { type: 'web' }
+        metadata: { type: 'web' },
       },
       {
         secret: this.generateClientSecret(),
@@ -322,7 +337,7 @@ export class OAuth2Service {
         requirePkce: true,
         requireConsent: true,
         isActive: true,
-        metadata: { type: 'native' }
+        metadata: { type: 'native' },
       },
       {
         secret: this.generateClientSecret(),
@@ -337,19 +352,19 @@ export class OAuth2Service {
         requirePkce: false,
         requireConsent: false,
         isActive: true,
-        metadata: { type: 'service' }
-      }
+        metadata: { type: 'service' },
+      },
     ];
 
     defaultClients.forEach(client => {
       const id = this.generateId('client');
       const now = Date.now();
-      
+
       this.clients.set(id, {
         ...client,
         id,
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
       });
     });
 
@@ -375,7 +390,7 @@ export class OAuth2Service {
         grantTypesSupported: ['authorization_code', 'refresh_token'],
         tokenEndpointAuthMethodsSupported: ['client_secret_basic', 'client_secret_post'],
         codeChallengeMethodsSupported: ['plain', 'S256'],
-        metadata: {}
+        metadata: {},
       },
       {
         id: 'github',
@@ -389,7 +404,7 @@ export class OAuth2Service {
         grantTypesSupported: ['authorization_code'],
         tokenEndpointAuthMethodsSupported: ['client_secret_basic', 'client_secret_post'],
         codeChallengeMethodsSupported: ['S256'],
-        metadata: {}
+        metadata: {},
       },
       {
         id: 'microsoft',
@@ -402,10 +417,14 @@ export class OAuth2Service {
         scopesSupported: ['openid', 'profile', 'email', 'offline_access'],
         responseTypesSupported: ['code', 'id_token', 'code id_token'],
         grantTypesSupported: ['authorization_code', 'refresh_token'],
-        tokenEndpointAuthMethodsSupported: ['client_secret_basic', 'client_secret_post', 'private_key_jwt'],
+        tokenEndpointAuthMethodsSupported: [
+          'client_secret_basic',
+          'client_secret_post',
+          'private_key_jwt',
+        ],
         codeChallengeMethodsSupported: ['plain', 'S256'],
-        metadata: {}
-      }
+        metadata: {},
+      },
     ];
 
     defaultProviders.forEach(provider => {
@@ -416,7 +435,9 @@ export class OAuth2Service {
   /**
    * Register a new OAuth 2.0 client
    */
-  registerClient(client: Omit<OAuth2Client, 'id' | 'secret' | 'createdAt' | 'updatedAt'>): OAuth2Client {
+  registerClient(
+    client: Omit<OAuth2Client, 'id' | 'secret' | 'createdAt' | 'updatedAt'>
+  ): OAuth2Client {
     const id = this.generateId('client');
     const secret = this.generateClientSecret();
     const now = Date.now();
@@ -426,7 +447,7 @@ export class OAuth2Service {
       id,
       secret,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     };
 
     this.clients.set(id, newClient);
@@ -435,7 +456,7 @@ export class OAuth2Service {
     this.logOAuth2Event('client_registered', {
       clientId: id,
       clientName: client.name,
-      grantTypes: client.grantTypes
+      grantTypes: client.grantTypes,
     });
 
     return newClient;
@@ -501,20 +522,34 @@ export class OAuth2Service {
       response_type: request.responseType,
       client_id: request.clientId,
       redirect_uri: request.redirectUri,
-      scope: request.scopes.join(' ')
+      scope: request.scopes.join(' '),
     });
 
-    if (state) params.append('state', state);
-    if (nonce) params.append('nonce', nonce);
+    if (state) {
+      params.append('state', state);
+    }
+    if (nonce) {
+      params.append('nonce', nonce);
+    }
     if (request.codeChallenge) {
       params.append('code_challenge', request.codeChallenge);
       params.append('code_challenge_method', request.codeChallengeMethod || 'plain');
     }
-    if (request.prompt) params.append('prompt', request.prompt);
-    if (request.maxAge) params.append('max_age', request.maxAge.toString());
-    if (request.loginHint) params.append('login_hint', request.loginHint);
-    if (request.idTokenHint) params.append('id_token_hint', request.idTokenHint);
-    if (request.acrValues) params.append('acr_values', request.acrValues.join(' '));
+    if (request.prompt) {
+      params.append('prompt', request.prompt);
+    }
+    if (request.maxAge) {
+      params.append('max_age', request.maxAge.toString());
+    }
+    if (request.loginHint) {
+      params.append('login_hint', request.loginHint);
+    }
+    if (request.idTokenHint) {
+      params.append('id_token_hint', request.idTokenHint);
+    }
+    if (request.acrValues) {
+      params.append('acr_values', request.acrValues.join(' '));
+    }
 
     this.stats.authorizationRequests++;
     this.updateStats();
@@ -523,7 +558,7 @@ export class OAuth2Service {
       clientId: request.clientId,
       responseType: request.responseType,
       scopes: request.scopes,
-      hasPkce: !!request.codeChallenge
+      hasPkce: !!request.codeChallenge,
     });
 
     return `${this.config.authorizationEndpoint}?${params.toString()}`;
@@ -565,9 +600,9 @@ export class OAuth2Service {
       codeChallengeMethod,
       nonce,
       state,
-      expiresAt: now + (this.config.authorizationCodeLifetime * 1000),
+      expiresAt: now + this.config.authorizationCodeLifetime * 1000,
       createdAt: now,
-      used: false
+      used: false,
     };
 
     this.authorizationCodes.set(code, authCode);
@@ -579,7 +614,7 @@ export class OAuth2Service {
       clientId,
       userId,
       scopes,
-      expiresAt: authCode.expiresAt
+      expiresAt: authCode.expiresAt,
     });
 
     return authCode;
@@ -588,7 +623,11 @@ export class OAuth2Service {
   /**
    * Validate PKCE code verifier
    */
-  private validatePkce(codeVerifier: string, codeChallenge: string, method: OAuth2CodeChallengeMethod): boolean {
+  private validatePkce(
+    codeVerifier: string,
+    codeChallenge: string,
+    method: OAuth2CodeChallengeMethod
+  ): boolean {
     if (method === 'plain') {
       return codeVerifier === codeChallenge;
     }
@@ -685,7 +724,7 @@ export class OAuth2Service {
         expires_in: this.config.accessTokenLifetime,
         refresh_token: refreshToken.token,
         id_token: idToken,
-        scope: authCode.scopes.join(' ')
+        scope: authCode.scopes.join(' '),
       };
 
       this.logOAuth2Event('code_exchanged', {
@@ -693,16 +732,15 @@ export class OAuth2Service {
         userId: authCode.userId,
         scopes: authCode.scopes,
         hasRefreshToken: !!refreshToken.token,
-        hasIdToken: !!idToken
+        hasIdToken: !!idToken,
       });
 
       return response;
-
     } catch (error) {
       this.stats.failedTokenRequests++;
       this.logOAuth2Event('code_exchange_failed', {
         clientId: request.clientId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
       throw error;
     }
@@ -786,23 +824,22 @@ export class OAuth2Service {
         token_type: 'Bearer',
         expires_in: this.config.accessTokenLifetime,
         refresh_token: newRefreshToken?.token,
-        scope: scopes.join(' ')
+        scope: scopes.join(' '),
       };
 
       this.logOAuth2Event('token_refreshed', {
         clientId: request.clientId,
         userId: refreshToken.userId,
         scopes,
-        rotatedRefreshToken: !!newRefreshToken
+        rotatedRefreshToken: !!newRefreshToken,
       });
 
       return response;
-
     } catch (error) {
       this.stats.failedTokenRequests++;
       this.logOAuth2Event('token_refresh_failed', {
         clientId: request.clientId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
       throw error;
     }
@@ -849,21 +886,20 @@ export class OAuth2Service {
         access_token: accessToken.token,
         token_type: 'Bearer',
         expires_in: client.accessTokenLifetime,
-        scope: scopes.join(' ')
+        scope: scopes.join(' '),
       };
 
       this.logOAuth2Event('client_credentials_token_issued', {
         clientId: request.clientId,
-        scopes
+        scopes,
       });
 
       return response;
-
     } catch (error) {
       this.stats.failedTokenRequests++;
       this.logOAuth2Event('client_credentials_failed', {
         clientId: request.clientId,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
       throw error;
     }
@@ -920,7 +956,7 @@ export class OAuth2Service {
       iat: Math.floor(accessToken.issuedAt / 1000),
       sub: accessToken.userId,
       iss: this.config.issuer,
-      jti: accessToken.token
+      jti: accessToken.token,
     };
   }
 
@@ -940,7 +976,7 @@ export class OAuth2Service {
         this.logOAuth2Event('access_token_revoked', {
           token: token.substring(0, 8) + '...',
           clientId: accessToken.clientId,
-          userId: accessToken.userId
+          userId: accessToken.userId,
         });
         return true;
       }
@@ -954,7 +990,7 @@ export class OAuth2Service {
         this.logOAuth2Event('refresh_token_revoked', {
           token: token.substring(0, 8) + '...',
           clientId: refreshToken.clientId,
-          userId: refreshToken.userId
+          userId: refreshToken.userId,
         });
         return true;
       }
@@ -981,7 +1017,7 @@ export class OAuth2Service {
       email_verified: true,
       picture: 'https://example.com/avatar.jpg',
       locale: 'en-US',
-      updated_at: Math.floor(Date.now() / 1000)
+      updated_at: Math.floor(Date.now() / 1000),
     };
   }
 
@@ -1002,7 +1038,15 @@ export class OAuth2Service {
       grant_types_supported: this.config.supportedGrantTypes,
       token_endpoint_auth_methods_supported: ['client_secret_basic', 'client_secret_post', 'none'],
       code_challenge_methods_supported: this.config.supportedCodeChallengeMethods,
-      claims_supported: ['sub', 'name', 'email', 'email_verified', 'picture', 'locale', 'updated_at']
+      claims_supported: [
+        'sub',
+        'name',
+        'email',
+        'email_verified',
+        'picture',
+        'locale',
+        'updated_at',
+      ],
     };
   }
 
@@ -1023,7 +1067,11 @@ export class OAuth2Service {
   /**
    * Generate access token
    */
-  private generateAccessToken(clientId: string, userId: string, scopes: string[]): OAuth2AccessToken {
+  private generateAccessToken(
+    clientId: string,
+    userId: string,
+    scopes: string[]
+  ): OAuth2AccessToken {
     const token = this.generateToken();
     const now = Date.now();
     const client = this.clients.get(clientId);
@@ -1034,9 +1082,9 @@ export class OAuth2Service {
       clientId,
       userId,
       scopes,
-      expiresAt: now + ((client?.accessTokenLifetime || this.config.accessTokenLifetime) * 1000),
+      expiresAt: now + (client?.accessTokenLifetime || this.config.accessTokenLifetime) * 1000,
       issuedAt: now,
-      metadata: {}
+      metadata: {},
     };
 
     this.accessTokens.set(token, accessToken);
@@ -1065,9 +1113,9 @@ export class OAuth2Service {
       userId,
       scopes,
       accessTokenId,
-      expiresAt: now + ((client?.refreshTokenLifetime || this.config.refreshTokenLifetime) * 1000),
+      expiresAt: now + (client?.refreshTokenLifetime || this.config.refreshTokenLifetime) * 1000,
       issuedAt: now,
-      revoked: false
+      revoked: false,
     };
 
     this.refreshTokens.set(token, refreshToken);
@@ -1097,7 +1145,7 @@ export class OAuth2Service {
       exp: now + this.config.idTokenLifetime,
       iat: now,
       nonce,
-      claims: {}
+      claims: {},
     };
 
     // Add claims based on scopes
@@ -1208,7 +1256,7 @@ export class OAuth2Service {
     this.logOAuth2Event('cleanup_completed', {
       authorizationCodes: this.authorizationCodes.size,
       accessTokens: this.accessTokens.size,
-      refreshTokens: this.refreshTokens.size
+      refreshTokens: this.refreshTokens.size,
     });
   }
 
@@ -1216,13 +1264,15 @@ export class OAuth2Service {
    * Log OAuth 2.0 event
    */
   private logOAuth2Event(action: string, metadata: Record<string, unknown>): void {
-    if (!this.config.enableLogging) return;
+    if (!this.config.enableLogging) {
+      return;
+    }
 
     const event: SecurityEventDetails = {
       action,
       resource: 'oauth2',
       reason: `OAuth 2.0 event: ${action}`,
-      metadata
+      metadata,
     };
 
     this.securityLogger.logSecurityEvent(event);

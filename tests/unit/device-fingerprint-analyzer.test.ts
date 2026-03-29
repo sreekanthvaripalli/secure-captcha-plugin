@@ -19,7 +19,7 @@ describe('DeviceFingerprintAnalyzer', () => {
       enableFileLogging: false,
       logFilePath: '/tmp/test.log',
       maxLogFileSize: 1024 * 1024,
-      maxLogFiles: 5
+      maxLogFiles: 5,
     });
 
     analyzer = new DeviceFingerprintAnalyzer(
@@ -29,7 +29,7 @@ describe('DeviceFingerprintAnalyzer', () => {
         enableAudio: true,
         enableFonts: true,
         cacheResults: false,
-        logAnomalies: false
+        logAnomalies: false,
       },
       cryptoService,
       securityLogger
@@ -53,13 +53,14 @@ describe('DeviceFingerprintAnalyzer', () => {
           pixelRatio: 1,
           touchSupport: false,
           plugins: ['Chrome PDF Plugin', 'Chrome PDF Viewer'],
-          mimeTypes: ['application/pdf']
+          mimeTypes: ['application/pdf'],
         },
         canvas: {
-          dataUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+          dataUrl:
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
           hash: 'abc123',
           width: 200,
-          height: 50
+          height: 50,
         },
         webgl: {
           vendor: 'Google Inc. (NVIDIA)',
@@ -69,29 +70,29 @@ describe('DeviceFingerprintAnalyzer', () => {
           extensions: ['ANGLE_instanced_arrays', 'EXT_blend_minmax'],
           maxTextureSize: 16384,
           maxViewportDims: [16384, 16384],
-          hash: 'def456'
+          hash: 'def456',
         },
         audio: {
           sampleRate: 44100,
           channelCount: 2,
-          hash: 'ghi789'
+          hash: 'ghi789',
         },
         fonts: {
           detectedFonts: ['Arial', 'Times New Roman', 'Courier New'],
-          hash: 'jkl012'
+          hash: 'jkl012',
         },
         hardware: {
           hardwareConcurrency: 8,
           deviceMemory: 8,
           maxTouchPoints: 0,
-          platform: 'Win32'
+          platform: 'Win32',
         },
         network: {
           connectionType: 'wifi',
           downlink: 10,
           effectiveType: '4g',
-          rtt: 50
-        }
+          rtt: 50,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -114,11 +115,11 @@ describe('DeviceFingerprintAnalyzer', () => {
       const data = {
         browser: {
           userAgent: 'Mozilla/5.0',
-          platform: 'Linux'
+          platform: 'Linux',
         },
         hardware: {
-          hardwareConcurrency: 4
-        }
+          hardwareConcurrency: 4,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -132,11 +133,11 @@ describe('DeviceFingerprintAnalyzer', () => {
       const data = {
         browser: {
           userAgent: 'unknown',
-          platform: 'Win32'
+          platform: 'Win32',
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -150,11 +151,11 @@ describe('DeviceFingerprintAnalyzer', () => {
       const data = {
         browser: {
           userAgent: 'HeadlessChrome/91.0.4472.124',
-          platform: 'Linux'
+          platform: 'Linux',
         },
         hardware: {
-          hardwareConcurrency: 4
-        }
+          hardwareConcurrency: 4,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -168,11 +169,11 @@ describe('DeviceFingerprintAnalyzer', () => {
         browser: {
           userAgent: 'Mozilla/5.0',
           platform: 'Win32',
-          screenResolution: '0x0'
+          screenResolution: '0x0',
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -185,11 +186,11 @@ describe('DeviceFingerprintAnalyzer', () => {
         browser: {
           userAgent: 'Mozilla/5.0',
           platform: 'Win32',
-          timezoneOffset: 1000 // More than 12 hours
+          timezoneOffset: 1000, // More than 12 hours
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -202,11 +203,11 @@ describe('DeviceFingerprintAnalyzer', () => {
         browser: {
           userAgent: 'Mozilla/5.0',
           platform: 'Win32',
-          screenResolution: '50x50' // Too small
+          screenResolution: '50x50', // Too small
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -220,11 +221,11 @@ describe('DeviceFingerprintAnalyzer', () => {
           userAgent: 'unknown',
           platform: 'Win32',
           screenResolution: '0x0',
-          timezoneOffset: 1000
+          timezoneOffset: 1000,
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -236,7 +237,7 @@ describe('DeviceFingerprintAnalyzer', () => {
       const analyzerWithCache = new DeviceFingerprintAnalyzer(
         {
           cacheResults: true,
-          cacheTTL: 300
+          cacheTTL: 300,
         },
         cryptoService,
         securityLogger
@@ -245,11 +246,11 @@ describe('DeviceFingerprintAnalyzer', () => {
       const data = {
         browser: {
           userAgent: 'Mozilla/5.0',
-          platform: 'Win32'
+          platform: 'Win32',
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       const result1 = await analyzerWithCache.analyzeFingerprint(data);
@@ -265,11 +266,11 @@ describe('DeviceFingerprintAnalyzer', () => {
         browser: {
           userAgent: 'Mozilla/5.0',
           platform: 'Win32',
-          language: 'en-US'
+          language: 'en-US',
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -283,17 +284,17 @@ describe('DeviceFingerprintAnalyzer', () => {
       const data = {
         browser: {
           userAgent: 'Mozilla/5.0',
-          platform: 'Win32'
+          platform: 'Win32',
         },
         canvas: {
           dataUrl: 'data:image/png;base64,test',
           hash: 'testhash',
           width: 200,
-          height: 50
+          height: 50,
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -306,16 +307,16 @@ describe('DeviceFingerprintAnalyzer', () => {
       const data = {
         browser: {
           userAgent: 'Mozilla/5.0',
-          platform: 'Win32'
+          platform: 'Win32',
         },
         webgl: {
           vendor: 'Google Inc.',
           renderer: 'ANGLE',
-          version: 'OpenGL ES 2.0'
+          version: 'OpenGL ES 2.0',
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -328,15 +329,15 @@ describe('DeviceFingerprintAnalyzer', () => {
       const data = {
         browser: {
           userAgent: 'Mozilla/5.0',
-          platform: 'Win32'
+          platform: 'Win32',
         },
         audio: {
           sampleRate: 44100,
-          channelCount: 2
+          channelCount: 2,
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -349,33 +350,36 @@ describe('DeviceFingerprintAnalyzer', () => {
       const data = {
         browser: {
           userAgent: 'Mozilla/5.0',
-          platform: 'Win32'
+          platform: 'Win32',
         },
         fonts: {
-          detectedFonts: ['Arial', 'Times New Roman']
+          detectedFonts: ['Arial', 'Times New Roman'],
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
 
-      expect(result.fingerprint.components.fonts.detectedFonts).toEqual(['Arial', 'Times New Roman']);
+      expect(result.fingerprint.components.fonts.detectedFonts).toEqual([
+        'Arial',
+        'Times New Roman',
+      ]);
     });
 
     it('should normalize hardware fingerprint', async () => {
       const data = {
         browser: {
           userAgent: 'Mozilla/5.0',
-          platform: 'Win32'
+          platform: 'Win32',
         },
         hardware: {
           hardwareConcurrency: 8,
           deviceMemory: 16,
           maxTouchPoints: 10,
-          platform: 'Win32'
-        }
+          platform: 'Win32',
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -389,17 +393,17 @@ describe('DeviceFingerprintAnalyzer', () => {
       const data = {
         browser: {
           userAgent: 'Mozilla/5.0',
-          platform: 'Win32'
+          platform: 'Win32',
         },
         hardware: {
-          hardwareConcurrency: 8
+          hardwareConcurrency: 8,
         },
         network: {
           connectionType: 'wifi',
           downlink: 10,
           effectiveType: '4g',
-          rtt: 50
-        }
+          rtt: 50,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -414,27 +418,27 @@ describe('DeviceFingerprintAnalyzer', () => {
       const data = {
         browser: {
           userAgent: 'Mozilla/5.0',
-          platform: 'Win32'
+          platform: 'Win32',
         },
         canvas: {
           dataUrl: 'data:image/png;base64,test',
-          hash: 'testhash'
+          hash: 'testhash',
         },
         webgl: {
           vendor: 'Google Inc.',
-          renderer: 'ANGLE'
+          renderer: 'ANGLE',
         },
         audio: {
           sampleRate: 44100,
-          hash: 'audiohash'
+          hash: 'audiohash',
         },
         fonts: {
           detectedFonts: ['Arial'],
-          hash: 'fonthash'
+          hash: 'fonthash',
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -446,11 +450,11 @@ describe('DeviceFingerprintAnalyzer', () => {
       const data = {
         browser: {
           userAgent: 'unknown',
-          platform: 'unknown'
+          platform: 'unknown',
         },
         hardware: {
-          hardwareConcurrency: 0
-        }
+          hardwareConcurrency: 0,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -464,21 +468,21 @@ describe('DeviceFingerprintAnalyzer', () => {
       const data1 = {
         browser: {
           userAgent: 'Mozilla/5.0 (Windows)',
-          platform: 'Win32'
+          platform: 'Win32',
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       const data2 = {
         browser: {
           userAgent: 'Mozilla/5.0 (Mac)',
-          platform: 'MacIntel'
+          platform: 'MacIntel',
         },
         hardware: {
-          hardwareConcurrency: 4
-        }
+          hardwareConcurrency: 4,
+        },
       };
 
       const result1 = await analyzer.analyzeFingerprint(data1);
@@ -494,7 +498,7 @@ describe('DeviceFingerprintAnalyzer', () => {
       const analyzerWithCache = new DeviceFingerprintAnalyzer(
         {
           cacheResults: false,
-          logAnomalies: false
+          logAnomalies: false,
         },
         cryptoService,
         securityLogger
@@ -505,12 +509,12 @@ describe('DeviceFingerprintAnalyzer', () => {
           userAgent: 'Mozilla/5.0',
           platform: 'Win32',
           language: 'en-US',
-          screenResolution: '1920x1080'
+          screenResolution: '1920x1080',
         },
         hardware: {
           hardwareConcurrency: 8,
-          platform: 'Win32'
-        }
+          platform: 'Win32',
+        },
       };
 
       const data2 = {
@@ -518,12 +522,12 @@ describe('DeviceFingerprintAnalyzer', () => {
           userAgent: 'Mozilla/5.0',
           platform: 'Win32',
           language: 'en-US',
-          screenResolution: '1920x1080'
+          screenResolution: '1920x1080',
         },
         hardware: {
           hardwareConcurrency: 8,
-          platform: 'Win32'
-        }
+          platform: 'Win32',
+        },
       };
 
       const result1 = await analyzerWithCache.analyzeFingerprint(data1);
@@ -543,7 +547,7 @@ describe('DeviceFingerprintAnalyzer', () => {
           enableAudio: true,
           enableFonts: true,
           cacheResults: false,
-          logAnomalies: false
+          logAnomalies: false,
         },
         cryptoService,
         securityLogger
@@ -556,28 +560,28 @@ describe('DeviceFingerprintAnalyzer', () => {
           screenResolution: '1920x1080',
           timezoneOffset: 300,
           plugins: ['Chrome PDF Plugin'],
-          mimeTypes: ['application/pdf']
+          mimeTypes: ['application/pdf'],
         },
         canvas: {
           dataUrl: 'data:image/png;base64,test',
-          hash: 'testhash'
+          hash: 'testhash',
         },
         webgl: {
           vendor: 'Google Inc.',
-          renderer: 'ANGLE'
+          renderer: 'ANGLE',
         },
         audio: {
           sampleRate: 44100,
           channelCount: 2,
-          hash: 'audiohash'
+          hash: 'audiohash',
         },
         fonts: {
           detectedFonts: ['Arial', 'Times New Roman'],
-          hash: 'fonthash'
+          hash: 'fonthash',
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       const result = await analyzerNoLog.analyzeFingerprint(data);
@@ -591,11 +595,11 @@ describe('DeviceFingerprintAnalyzer', () => {
           userAgent: 'HeadlessChrome',
           platform: 'Linux',
           screenResolution: '0x0',
-          timezoneOffset: 1000
+          timezoneOffset: 1000,
         },
         hardware: {
-          hardwareConcurrency: 4
-        }
+          hardwareConcurrency: 4,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -623,13 +627,13 @@ describe('DeviceFingerprintAnalyzer', () => {
             pixelRatio: 1,
             touchSupport: false,
             plugins: [],
-            mimeTypes: []
+            mimeTypes: [],
           },
           canvas: {
             dataUrl: '',
             hash: '',
             width: 0,
-            height: 0
+            height: 0,
           },
           webgl: {
             vendor: 'unknown',
@@ -639,33 +643,33 @@ describe('DeviceFingerprintAnalyzer', () => {
             extensions: [],
             maxTextureSize: 0,
             maxViewportDims: [0, 0],
-            hash: ''
+            hash: '',
           },
           audio: {
             sampleRate: 0,
             channelCount: 0,
-            hash: ''
+            hash: '',
           },
           fonts: {
             detectedFonts: [],
-            hash: ''
+            hash: '',
           },
           hardware: {
             hardwareConcurrency: 8,
             deviceMemory: undefined,
             maxTouchPoints: 0,
-            platform: 'Win32'
+            platform: 'Win32',
           },
           network: {
             connectionType: undefined,
             downlink: undefined,
             effectiveType: undefined,
-            rtt: undefined
-          }
+            rtt: undefined,
+          },
         },
         hash: 'testhash123',
         confidence: 0.8,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       analyzer.registerFingerprint(fingerprint);
@@ -680,7 +684,7 @@ describe('DeviceFingerprintAnalyzer', () => {
       const analyzerWithCache = new DeviceFingerprintAnalyzer(
         {
           cacheResults: true,
-          cacheTTL: 1 // 1 second
+          cacheTTL: 1, // 1 second
         },
         cryptoService,
         securityLogger
@@ -689,11 +693,11 @@ describe('DeviceFingerprintAnalyzer', () => {
       const data = {
         browser: {
           userAgent: 'Mozilla/5.0',
-          platform: 'Win32'
+          platform: 'Win32',
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       await analyzerWithCache.analyzeFingerprint(data);
@@ -713,11 +717,11 @@ describe('DeviceFingerprintAnalyzer', () => {
       const data = {
         browser: {
           userAgent: 'Mozilla/5.0',
-          platform: 'Win32'
+          platform: 'Win32',
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       await analyzer.analyzeFingerprint(data);
@@ -734,7 +738,7 @@ describe('DeviceFingerprintAnalyzer', () => {
     it('should handle empty browser data', async () => {
       const data = {
         browser: {},
-        hardware: {}
+        hardware: {},
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -747,11 +751,11 @@ describe('DeviceFingerprintAnalyzer', () => {
       const data = {
         browser: {
           userAgent: 'Mozilla/5.0',
-          platform: 'Win32'
+          platform: 'Win32',
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       const result = await analyzer.analyzeFingerprint(data);
@@ -768,7 +772,7 @@ describe('DeviceFingerprintAnalyzer', () => {
           enableCanvas: false,
           enableWebGL: false,
           enableAudio: false,
-          enableFonts: false
+          enableFonts: false,
         },
         cryptoService,
         securityLogger
@@ -777,15 +781,15 @@ describe('DeviceFingerprintAnalyzer', () => {
       const data = {
         browser: {
           userAgent: 'Mozilla/5.0',
-          platform: 'Win32'
+          platform: 'Win32',
         },
         canvas: {
           dataUrl: 'data:image/png;base64,test',
-          hash: 'testhash'
+          hash: 'testhash',
         },
         hardware: {
-          hardwareConcurrency: 8
-        }
+          hardwareConcurrency: 8,
+        },
       };
 
       const result = await analyzerDisabled.analyzeFingerprint(data);

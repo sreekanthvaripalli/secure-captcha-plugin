@@ -36,15 +36,12 @@ export interface SessionManagerOptions {
 }
 
 export class SessionManager {
-  private redis: Redis;
-  private config: SecurityConfigurationService;
-  private options: Required<SessionManagerOptions>;
+  private readonly redis: Redis;
+  private readonly config: SecurityConfigurationService;
+  private readonly options: Required<SessionManagerOptions>;
   private cleanupTimer?: NodeJS.Timeout;
 
-  constructor(
-    config: SecurityConfigurationService,
-    options: SessionManagerOptions = {}
-  ) {
+  constructor(config: SecurityConfigurationService, options: SessionManagerOptions = {}) {
     this.config = config;
     this.options = {
       redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
@@ -52,13 +49,13 @@ export class SessionManager {
       maxAttempts: 3,
       attemptWindow: 300, // 5 minutes
       cleanupInterval: 300000, // 5 minutes
-      ...options
+      ...options,
     };
 
     this.redis = new Redis(this.options.redisUrl, {
       maxRetriesPerRequest: 3,
       lazyConnect: true,
-      connectionName: 'captcha-session-manager'
+      connectionName: 'captcha-session-manager',
     });
 
     this.startCleanupJob();
@@ -78,7 +75,7 @@ export class SessionManager {
     const sessionId = uuidv4();
     const challengeId = uuidv4();
     const now = Date.now();
-    const expiresAt = now + (this.options.defaultTTL * 1000);
+    const expiresAt = now + this.options.defaultTTL * 1000;
 
     const sessionData: SessionData = {
       id: sessionId,
@@ -97,8 +94,8 @@ export class SessionManager {
         sessionId,
         challengeId,
         generationTime: now,
-        securityEvents: []
-      }
+        securityEvents: [],
+      },
     };
 
     try {
@@ -109,11 +106,7 @@ export class SessionManager {
       const encryptedData = JSON.stringify(encryptionResult);
 
       // Store in Redis with TTL
-      await this.redis.setex(
-        `session:${sessionId}`,
-        this.options.defaultTTL,
-        encryptedData
-      );
+      await this.redis.setex(`session:${sessionId}`, this.options.defaultTTL, encryptedData);
 
       // Log security event
       this.config.securityLogger.logSecurityEvent({
@@ -125,8 +118,8 @@ export class SessionManager {
           captchaType,
           difficulty,
           ipAddress,
-          userAgent
-        }
+          userAgent,
+        },
       });
 
       return sessionData;
@@ -138,8 +131,8 @@ export class SessionManager {
         metadata: {
           captchaType,
           difficulty,
-          ipAddress
-        }
+          ipAddress,
+        },
       });
 
       throw new Error('Failed to create session');
@@ -152,7 +145,7 @@ export class SessionManager {
   async getSession(sessionId: string): Promise<SessionData | null> {
     try {
       const encryptedData = await this.redis.get(`session:${sessionId}`);
-      
+
       if (!encryptedData) {
         return null;
       }
@@ -179,8 +172,8 @@ export class SessionManager {
         resource: 'SESSION_MANAGER',
         reason: error instanceof Error ? error.message : 'Unknown error',
         metadata: {
-          sessionId
-        }
+          sessionId,
+        },
       });
 
       return null;
@@ -196,7 +189,7 @@ export class SessionManager {
     isCorrect: boolean
   ): Promise<SessionData | null> {
     const sessionData = await this.getSession(sessionId);
-    
+
     if (!sessionData) {
       return null;
     }
@@ -233,8 +226,8 @@ export class SessionManager {
           difficulty: sessionData.difficulty,
           isCorrect,
           attempts: sessionData.attempts,
-          ipAddress: sessionData.ipAddress
-        }
+          ipAddress: sessionData.ipAddress,
+        },
       });
 
       return sessionData;
@@ -245,8 +238,8 @@ export class SessionManager {
         reason: error instanceof Error ? error.message : 'Unknown error',
         metadata: {
           sessionId,
-          isCorrect
-        }
+          isCorrect,
+        },
       });
 
       return null;
@@ -259,14 +252,14 @@ export class SessionManager {
   async deleteSession(sessionId: string): Promise<void> {
     try {
       await this.redis.del(`session:${sessionId}`);
-      
+
       this.config.securityLogger.logSecurityEvent({
         action: 'SESSION_DELETED',
         resource: 'SESSION_MANAGER',
         reason: 'Session deleted successfully',
         metadata: {
-          sessionId
-        }
+          sessionId,
+        },
       });
     } catch (error) {
       this.config.securityLogger.logSecurityEvent({
@@ -274,8 +267,8 @@ export class SessionManager {
         resource: 'SESSION_MANAGER',
         reason: error instanceof Error ? error.message : 'Unknown error',
         metadata: {
-          sessionId
-        }
+          sessionId,
+        },
       });
     }
   }
@@ -285,7 +278,7 @@ export class SessionManager {
    */
   async isMaxAttemptsReached(sessionId: string): Promise<boolean> {
     const sessionData = await this.getSession(sessionId);
-    
+
     if (!sessionData) {
       return false;
     }
@@ -294,10 +287,10 @@ export class SessionManager {
     const timeSinceLastAttempt = now - sessionData.lastAttemptAt;
 
     // Reset attempts if outside the attempt window
-    if (timeSinceLastAttempt > (this.options.attemptWindow * 1000)) {
+    if (timeSinceLastAttempt > this.options.attemptWindow * 1000) {
       sessionData.attempts = 0;
       sessionData.lastAttemptAt = 0;
-      
+
       try {
         const encryptionResult = await this.config.cryptoService.encryptAES256GCM(
           JSON.stringify(sessionData)
@@ -311,8 +304,8 @@ export class SessionManager {
           resource: 'SESSION_MANAGER',
           reason: error instanceof Error ? error.message : 'Unknown error',
           metadata: {
-            sessionId
-          }
+            sessionId,
+          },
         });
       }
     }
@@ -340,7 +333,7 @@ export class SessionManager {
 
       for (const key of keys) {
         const encryptedData = await this.redis.get(key);
-        
+
         if (encryptedData) {
           try {
             const decryptionResult = await this.config.cryptoService.decryptAES256GCM(
@@ -371,21 +364,21 @@ export class SessionManager {
         totalSessions,
         activeSessions,
         expiredSessions,
-        verifiedSessions
+        verifiedSessions,
       };
     } catch (error) {
       this.config.securityLogger.logSecurityEvent({
         action: 'SESSION_STATS_FAILED',
         resource: 'SESSION_MANAGER',
         reason: error instanceof Error ? error.message : 'Unknown error',
-        metadata: {}
+        metadata: {},
       });
 
       return {
         totalSessions: 0,
         activeSessions: 0,
         expiredSessions: 0,
-        verifiedSessions: 0
+        verifiedSessions: 0,
       };
     }
   }
@@ -401,7 +394,7 @@ export class SessionManager {
 
       for (const key of keys) {
         const encryptedData = await this.redis.get(key);
-        
+
         if (encryptedData) {
           try {
             const decryptionResult = await this.config.cryptoService.decryptAES256GCM(
@@ -430,8 +423,8 @@ export class SessionManager {
           resource: 'SESSION_MANAGER',
           reason: 'Session cleanup completed',
           metadata: {
-            cleanedSessions: cleanedCount
-          }
+            cleanedSessions: cleanedCount,
+          },
         });
       }
     } catch (error) {
@@ -439,7 +432,7 @@ export class SessionManager {
         action: 'SESSION_CLEANUP_FAILED',
         resource: 'SESSION_MANAGER',
         reason: error instanceof Error ? error.message : 'Unknown error',
-        metadata: {}
+        metadata: {},
       });
     }
   }
@@ -460,7 +453,7 @@ export class SessionManager {
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);
     }
-    
+
     await this.redis.disconnect();
   }
 }

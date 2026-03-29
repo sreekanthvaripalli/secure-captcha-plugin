@@ -7,7 +7,7 @@ describe('Helm Chart Validation', () => {
 
   describe('Chart.yaml', () => {
     const chartPath = path.join(helmDir, 'Chart.yaml');
-    
+
     test('Chart.yaml exists', () => {
       expect(fs.existsSync(chartPath)).toBe(true);
     });
@@ -21,7 +21,7 @@ describe('Helm Chart Validation', () => {
     test('Chart has required fields', () => {
       const content = fs.readFileSync(chartPath, 'utf8');
       const parsed = yaml.load(content) as any;
-      
+
       expect(parsed.apiVersion).toBe('v2');
       expect(parsed.name).toBe('secure-captcha');
       expect(parsed.version).toBeDefined();
@@ -58,10 +58,10 @@ describe('Helm Chart Validation', () => {
       const parsed = yaml.load(content) as any;
       expect(parsed.dependencies).toBeDefined();
       expect(parsed.dependencies.length).toBeGreaterThan(0);
-      
+
       const redisDep = parsed.dependencies.find((d: any) => d.name === 'redis');
       const postgresDep = parsed.dependencies.find((d: any) => d.name === 'postgresql');
-      
+
       expect(redisDep).toBeDefined();
       expect(postgresDep).toBeDefined();
     });
@@ -69,7 +69,7 @@ describe('Helm Chart Validation', () => {
 
   describe('values.yaml', () => {
     const valuesPath = path.join(helmDir, 'values.yaml');
-    
+
     test('values.yaml exists', () => {
       expect(fs.existsSync(valuesPath)).toBe(true);
     });
@@ -238,7 +238,7 @@ describe('Helm Chart Validation', () => {
 
   describe('Templates', () => {
     const templatesDir = path.join(helmDir, 'templates');
-    
+
     test('templates directory exists', () => {
       expect(fs.existsSync(templatesDir)).toBe(true);
     });
@@ -251,7 +251,7 @@ describe('Helm Chart Validation', () => {
     test('_helpers.tpl has required helper functions', () => {
       const helpersPath = path.join(templatesDir, '_helpers.tpl');
       const content = fs.readFileSync(helpersPath, 'utf8');
-      
+
       expect(content).toContain('define "secure-captcha.name"');
       expect(content).toContain('define "secure-captcha.fullname"');
       expect(content).toContain('define "secure-captcha.labels"');
@@ -267,7 +267,7 @@ describe('Helm Chart Validation', () => {
     test('deployment.yaml template is valid', () => {
       const deploymentPath = path.join(templatesDir, 'deployment.yaml');
       const content = fs.readFileSync(deploymentPath, 'utf8');
-      
+
       expect(content).toContain('apiVersion:');
       expect(content).toContain('kind: Deployment');
       expect(content).toContain('{{ include "secure-captcha.fullname" . }}');
@@ -281,7 +281,7 @@ describe('Helm Chart Validation', () => {
     test('service.yaml template is valid', () => {
       const servicePath = path.join(templatesDir, 'service.yaml');
       const content = fs.readFileSync(servicePath, 'utf8');
-      
+
       expect(content).toContain('apiVersion: v1');
       expect(content).toContain('kind: Service');
       expect(content).toContain('{{ include "secure-captcha.serviceName" . }}');
@@ -295,7 +295,7 @@ describe('Helm Chart Validation', () => {
     test('configmap.yaml template is valid', () => {
       const configMapPath = path.join(templatesDir, 'configmap.yaml');
       const content = fs.readFileSync(configMapPath, 'utf8');
-      
+
       expect(content).toContain('apiVersion: v1');
       expect(content).toContain('kind: ConfigMap');
       expect(content).toContain('{{ include "secure-captcha.configMapName" . }}');
@@ -309,7 +309,7 @@ describe('Helm Chart Validation', () => {
     test('secret.yaml template is valid', () => {
       const secretPath = path.join(templatesDir, 'secret.yaml');
       const content = fs.readFileSync(secretPath, 'utf8');
-      
+
       expect(content).toContain('apiVersion: v1');
       expect(content).toContain('kind: Secret');
       expect(content).toContain('{{ include "secure-captcha.secretName" . }}');
@@ -323,7 +323,7 @@ describe('Helm Chart Validation', () => {
     test('ingress.yaml template is valid', () => {
       const ingressPath = path.join(templatesDir, 'ingress.yaml');
       const content = fs.readFileSync(ingressPath, 'utf8');
-      
+
       expect(content).toContain('{{- if .Values.app.ingress.enabled -}}');
       expect(content).toContain('kind: Ingress');
       expect(content).toContain('{{ include "secure-captcha.ingressName" . }}');
@@ -337,7 +337,7 @@ describe('Helm Chart Validation', () => {
     test('hpa.yaml template is valid', () => {
       const hpaPath = path.join(templatesDir, 'hpa.yaml');
       const content = fs.readFileSync(hpaPath, 'utf8');
-      
+
       expect(content).toContain('{{- if .Values.app.autoscaling.enabled }}');
       expect(content).toContain('kind: HorizontalPodAutoscaler');
       expect(content).toContain('{{ include "secure-captcha.hpaName" . }}');
@@ -351,7 +351,7 @@ describe('Helm Chart Validation', () => {
     test('serviceaccount.yaml template is valid', () => {
       const serviceAccountPath = path.join(templatesDir, 'serviceaccount.yaml');
       const content = fs.readFileSync(serviceAccountPath, 'utf8');
-      
+
       expect(content).toContain('{{- if .Values.serviceAccount.create -}}');
       expect(content).toContain('kind: ServiceAccount');
       expect(content).toContain('{{ include "secure-captcha.serviceAccountName" . }}');
@@ -365,7 +365,7 @@ describe('Helm Chart Validation', () => {
     test('rbac.yaml template is valid', () => {
       const rbacPath = path.join(templatesDir, 'rbac.yaml');
       const content = fs.readFileSync(rbacPath, 'utf8');
-      
+
       expect(content).toContain('{{- if .Values.rbac.create -}}');
       expect(content).toContain('kind: Role');
       expect(content).toContain('kind: RoleBinding');
@@ -379,7 +379,7 @@ describe('Helm Chart Validation', () => {
     test('networkpolicy.yaml template is valid', () => {
       const networkPolicyPath = path.join(templatesDir, 'networkpolicy.yaml');
       const content = fs.readFileSync(networkPolicyPath, 'utf8');
-      
+
       expect(content).toContain('{{- if .Values.networkPolicy.enabled -}}');
       expect(content).toContain('kind: NetworkPolicy');
       expect(content).toContain('{{ include "secure-captcha.networkPolicyName" . }}');
@@ -393,7 +393,7 @@ describe('Helm Chart Validation', () => {
     test('pdb.yaml template is valid', () => {
       const pdbPath = path.join(templatesDir, 'pdb.yaml');
       const content = fs.readFileSync(pdbPath, 'utf8');
-      
+
       expect(content).toContain('{{- if .Values.podDisruptionBudget.enabled -}}');
       expect(content).toContain('kind: PodDisruptionBudget');
       expect(content).toContain('{{ include "secure-captcha.pdbName" . }}');
@@ -407,7 +407,7 @@ describe('Helm Chart Validation', () => {
     test('servicemonitor.yaml template is valid', () => {
       const serviceMonitorPath = path.join(templatesDir, 'servicemonitor.yaml');
       const content = fs.readFileSync(serviceMonitorPath, 'utf8');
-      
+
       expect(content).toContain('{{- if .Values.monitoring.serviceMonitor.enabled -}}');
       expect(content).toContain('kind: ServiceMonitor');
       expect(content).toContain('{{ include "secure-captcha.serviceMonitorName" . }}');
@@ -418,10 +418,10 @@ describe('Helm Chart Validation', () => {
     test('all templates use consistent helper functions', () => {
       const templatesDir = path.join(helmDir, 'templates');
       const templateFiles = fs.readdirSync(templatesDir).filter(f => f.endsWith('.yaml'));
-      
+
       templateFiles.forEach(file => {
         const content = fs.readFileSync(path.join(templatesDir, file), 'utf8');
-        
+
         // Check that templates use the correct helper functions
         if (content.includes('metadata:')) {
           expect(content).toMatch(/{{ include "secure-captcha\./);
@@ -432,10 +432,10 @@ describe('Helm Chart Validation', () => {
     test('all templates use consistent labels', () => {
       const templatesDir = path.join(helmDir, 'templates');
       const templateFiles = fs.readdirSync(templatesDir).filter(f => f.endsWith('.yaml'));
-      
+
       templateFiles.forEach(file => {
         const content = fs.readFileSync(path.join(templatesDir, file), 'utf8');
-        
+
         if (content.includes('labels:')) {
           expect(content).toContain('{{- include "secure-captcha.labels" . | nindent 4 }}');
         }
@@ -445,10 +445,10 @@ describe('Helm Chart Validation', () => {
     test('all templates use consistent namespace', () => {
       const templatesDir = path.join(helmDir, 'templates');
       const templateFiles = fs.readdirSync(templatesDir).filter(f => f.endsWith('.yaml'));
-      
+
       templateFiles.forEach(file => {
         const content = fs.readFileSync(path.join(templatesDir, file), 'utf8');
-        
+
         if (content.includes('metadata:')) {
           expect(content).toContain('namespace: {{ .Release.Namespace }}');
         }
@@ -461,7 +461,7 @@ describe('Helm Chart Validation', () => {
       const valuesPath = path.join(helmDir, 'values.yaml');
       const content = fs.readFileSync(valuesPath, 'utf8');
       const parsed = yaml.load(content) as any;
-      
+
       expect(parsed.app.securityContext.runAsNonRoot).toBe(true);
       expect(parsed.app.securityContext.runAsUser).toBe(1001);
       expect(parsed.app.securityContext.allowPrivilegeEscalation).toBe(false);
@@ -472,7 +472,7 @@ describe('Helm Chart Validation', () => {
       const valuesPath = path.join(helmDir, 'values.yaml');
       const content = fs.readFileSync(valuesPath, 'utf8');
       const parsed = yaml.load(content) as any;
-      
+
       expect(parsed.app.resources.requests.cpu).toBeDefined();
       expect(parsed.app.resources.requests.memory).toBeDefined();
       expect(parsed.app.resources.limits.cpu).toBeDefined();
@@ -483,7 +483,7 @@ describe('Helm Chart Validation', () => {
       const valuesPath = path.join(helmDir, 'values.yaml');
       const content = fs.readFileSync(valuesPath, 'utf8');
       const parsed = yaml.load(content) as any;
-      
+
       expect(parsed.networkPolicy.enabled).toBe(true);
     });
 
@@ -491,7 +491,7 @@ describe('Helm Chart Validation', () => {
       const valuesPath = path.join(helmDir, 'values.yaml');
       const content = fs.readFileSync(valuesPath, 'utf8');
       const parsed = yaml.load(content) as any;
-      
+
       expect(parsed.rbac.create).toBe(true);
     });
 
@@ -499,7 +499,7 @@ describe('Helm Chart Validation', () => {
       const valuesPath = path.join(helmDir, 'values.yaml');
       const content = fs.readFileSync(valuesPath, 'utf8');
       const parsed = yaml.load(content) as any;
-      
+
       expect(parsed.serviceAccount.create).toBe(true);
     });
   });
@@ -509,7 +509,7 @@ describe('Helm Chart Validation', () => {
       const valuesPath = path.join(helmDir, 'values.yaml');
       const content = fs.readFileSync(valuesPath, 'utf8');
       const parsed = yaml.load(content) as any;
-      
+
       expect(parsed.prometheus.enabled).toBe(true);
     });
 
@@ -517,7 +517,7 @@ describe('Helm Chart Validation', () => {
       const valuesPath = path.join(helmDir, 'values.yaml');
       const content = fs.readFileSync(valuesPath, 'utf8');
       const parsed = yaml.load(content) as any;
-      
+
       expect(parsed.grafana.enabled).toBe(true);
     });
 
@@ -525,7 +525,7 @@ describe('Helm Chart Validation', () => {
       const valuesPath = path.join(helmDir, 'values.yaml');
       const content = fs.readFileSync(valuesPath, 'utf8');
       const parsed = yaml.load(content) as any;
-      
+
       expect(parsed.monitoring.serviceMonitor.enabled).toBe(true);
     });
   });
@@ -535,17 +535,19 @@ describe('Helm Chart Validation', () => {
       const valuesPath = path.join(helmDir, 'values.yaml');
       const content = fs.readFileSync(valuesPath, 'utf8');
       const parsed = yaml.load(content) as any;
-      
+
       expect(parsed.app.autoscaling.enabled).toBe(true);
       expect(parsed.app.autoscaling.minReplicas).toBeGreaterThanOrEqual(3);
-      expect(parsed.app.autoscaling.maxReplicas).toBeGreaterThanOrEqual(parsed.app.autoscaling.minReplicas);
+      expect(parsed.app.autoscaling.maxReplicas).toBeGreaterThanOrEqual(
+        parsed.app.autoscaling.minReplicas
+      );
     });
 
     test('values.yaml has pod disruption budget enabled', () => {
       const valuesPath = path.join(helmDir, 'values.yaml');
       const content = fs.readFileSync(valuesPath, 'utf8');
       const parsed = yaml.load(content) as any;
-      
+
       expect(parsed.podDisruptionBudget.enabled).toBe(true);
       expect(parsed.podDisruptionBudget.minAvailable).toBeDefined();
     });
@@ -554,7 +556,7 @@ describe('Helm Chart Validation', () => {
       const valuesPath = path.join(helmDir, 'values.yaml');
       const content = fs.readFileSync(valuesPath, 'utf8');
       const parsed = yaml.load(content) as any;
-      
+
       expect(parsed.app.podAntiAffinity).toBeDefined();
     });
   });
@@ -564,7 +566,7 @@ describe('Helm Chart Validation', () => {
       const valuesPath = path.join(helmDir, 'values.yaml');
       const content = fs.readFileSync(valuesPath, 'utf8');
       const parsed = yaml.load(content) as any;
-      
+
       const requiredVars = [
         'NODE_ENV',
         'PORT',
@@ -575,9 +577,9 @@ describe('Helm Chart Validation', () => {
         'POSTGRES_DB',
         'POSTGRES_USER',
         'CAPTCHA_DEFAULT_TYPE',
-        'CAPTCHA_DEFAULT_DIFFICULTY'
+        'CAPTCHA_DEFAULT_DIFFICULTY',
       ];
-      
+
       requiredVars.forEach(varName => {
         expect(parsed.config[varName]).toBeDefined();
       });
@@ -587,14 +589,14 @@ describe('Helm Chart Validation', () => {
       const valuesPath = path.join(helmDir, 'values.yaml');
       const content = fs.readFileSync(valuesPath, 'utf8');
       const parsed = yaml.load(content) as any;
-      
+
       const requiredSecrets = [
         'POSTGRES_PASSWORD',
         'JWT_SECRET',
         'SESSION_SECRET',
-        'CAPTCHA_ENCRYPTION_KEY'
+        'CAPTCHA_ENCRYPTION_KEY',
       ];
-      
+
       requiredSecrets.forEach(secretName => {
         expect(parsed.secrets[secretName]).toBeDefined();
       });

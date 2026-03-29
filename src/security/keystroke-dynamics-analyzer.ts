@@ -16,7 +16,7 @@ import {
   BotDetectionVerdict,
   BehavioralSession,
   BehavioralAnalysisConfig,
-  StatisticalSummary
+  StatisticalSummary,
 } from '../types/behavioral';
 
 export class KeystrokeDynamicsAnalyzer {
@@ -40,7 +40,7 @@ export class KeystrokeDynamicsAnalyzer {
         scroll: 0.15,
         keystroke: 0.15,
         timing: 0.1,
-        pattern: 0.05
+        pattern: 0.05,
       },
       useMachineLearning: false,
       cacheResults: true,
@@ -48,7 +48,7 @@ export class KeystrokeDynamicsAnalyzer {
       maxAnalysisPerMinute: 100,
       logLevel: 'info',
       logAnomalies: true,
-      ...config
+      ...config,
     };
 
     this.securityLogger = securityLogger;
@@ -72,7 +72,7 @@ export class KeystrokeDynamicsAnalyzer {
       } else if (event.code) {
         // Track key press times to calculate hold duration
         const key = `${event.code}-${event.modifiers.shift}-${event.modifiers.ctrl}-${event.modifiers.alt}-${event.modifiers.meta}`;
-        
+
         if (!pressTimes.has(key)) {
           pressTimes.set(key, event.timestamp);
         } else {
@@ -94,7 +94,7 @@ export class KeystrokeDynamicsAnalyzer {
           flightTimes.push(flightTime);
         }
       }
-      
+
       // Assume key release happens after hold duration
       if (event.duration !== undefined) {
         lastReleaseTime = event.timestamp + event.duration;
@@ -115,11 +115,9 @@ export class KeystrokeDynamicsAnalyzer {
     }
 
     // Calculate error rate (backspace/delete key presses)
-    const errorKeys = events.filter(e => 
-      e.key === 'Backspace' || 
-      e.key === 'Delete' || 
-      e.code === 'Backspace' || 
-      e.code === 'Delete'
+    const errorKeys = events.filter(
+      e =>
+        e.key === 'Backspace' || e.key === 'Delete' || e.code === 'Backspace' || e.code === 'Delete'
     );
     const errorRate = events.length > 0 ? errorKeys.length / events.length : 0;
 
@@ -129,9 +127,7 @@ export class KeystrokeDynamicsAnalyzer {
     const rhythmStats = this.calculateStatistics(rhythm);
 
     // Calculate rhythm consistency (lower variance = more consistent)
-    const rhythmConsistency = rhythmStats.variance > 0 
-      ? 1 / (1 + rhythmStats.variance) 
-      : 1;
+    const rhythmConsistency = rhythmStats.variance > 0 ? 1 / (1 + rhythmStats.variance) : 1;
 
     return {
       averageHoldTime: holdTimeStats.mean,
@@ -140,7 +136,7 @@ export class KeystrokeDynamicsAnalyzer {
       flightTimeVariance: flightTimeStats.variance,
       typingSpeed,
       rhythmConsistency,
-      errorRate
+      errorRate,
     };
   }
 
@@ -165,7 +161,7 @@ export class KeystrokeDynamicsAnalyzer {
         confidence: 0.85,
         description: 'Suspiciously consistent key hold times',
         evidence: { holdTimeVariance: metrics.holdTimeVariance },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
@@ -177,19 +173,20 @@ export class KeystrokeDynamicsAnalyzer {
         confidence: 0.9,
         description: 'No variation in typing rhythm',
         evidence: { rhythmConsistency: metrics.rhythmConsistency },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
     // Check for inhuman typing speed (too fast)
-    if (metrics.typingSpeed > 800) { // More than 800 CPM is suspicious
+    if (metrics.typingSpeed > 800) {
+      // More than 800 CPM is suspicious
       anomalies.push({
         type: 'too_fast',
         severity: 'high',
         confidence: 0.8,
         description: 'Inhuman typing speed detected',
         evidence: { typingSpeed: metrics.typingSpeed },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
@@ -200,11 +197,11 @@ export class KeystrokeDynamicsAnalyzer {
         severity: 'medium',
         confidence: 0.6,
         description: 'Suspiciously slow typing pattern',
-        evidence: { 
+        evidence: {
           typingSpeed: metrics.typingSpeed,
-          averageFlightTime: metrics.averageFlightTime 
+          averageFlightTime: metrics.averageFlightTime,
         },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
@@ -216,7 +213,7 @@ export class KeystrokeDynamicsAnalyzer {
         confidence: 0.85,
         description: 'Repeated keystroke timing pattern',
         evidence: { flightTimeVariance: metrics.flightTimeVariance },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
@@ -228,21 +225,22 @@ export class KeystrokeDynamicsAnalyzer {
         confidence: 0.7,
         description: 'Unnatural precision in key hold durations',
         evidence: { holdTimeVariance: metrics.holdTimeVariance },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
     // Calculate overall anomaly score
-    const anomalyScore = anomalies.length > 0
-      ? anomalies.reduce((sum, a) => sum + a.confidence, 0) / anomalies.length
-      : 0;
+    const anomalyScore =
+      anomalies.length > 0
+        ? anomalies.reduce((sum, a) => sum + a.confidence, 0) / anomalies.length
+        : 0;
 
     const humanLikelihood = 1 - anomalyScore;
 
     return {
       anomalies,
       anomalyScore,
-      humanLikelihood
+      humanLikelihood,
     };
   }
 
@@ -255,7 +253,7 @@ export class KeystrokeDynamicsAnalyzer {
     // Check cache first
     if (this.config.cacheResults) {
       const cached = this.analysisCache.get(session.sessionId);
-      if (cached && (Date.now() - cached.timestamp) < this.config.cacheTTL * 1000) {
+      if (cached && Date.now() - cached.timestamp < this.config.cacheTTL * 1000) {
         return cached;
       }
     }
@@ -293,7 +291,7 @@ export class KeystrokeDynamicsAnalyzer {
 
       // Pattern features
       patternVariability: this.calculatePatternVariability(keystrokeMetrics),
-      repetitionScore: this.calculateRepetitionScore(keystrokeMetrics)
+      repetitionScore: this.calculateRepetitionScore(keystrokeMetrics),
     };
 
     // Calculate weighted bot score
@@ -314,7 +312,7 @@ export class KeystrokeDynamicsAnalyzer {
       anomalies: anomalyResult.anomalies,
       riskFactors,
       timestamp: Date.now(),
-      processingTime: Date.now() - startTime
+      processingTime: Date.now() - startTime,
     };
 
     // Cache result
@@ -332,8 +330,8 @@ export class KeystrokeDynamicsAnalyzer {
           sessionId: session.sessionId,
           anomalies: anomalyResult.anomalies,
           botScore,
-          verdict
-        }
+          verdict,
+        },
       });
     }
 
@@ -347,10 +345,10 @@ export class KeystrokeDynamicsAnalyzer {
     // Humans have natural rhythm variations
     // Higher consistency = more bot-like
     const rhythmScore = 1 - metrics.rhythmConsistency;
-    
+
     // Adjust based on typing speed naturalness
     const speedAdjustment = metrics.typingSpeed > 100 && metrics.typingSpeed < 400 ? 0.2 : 0;
-    
+
     return Math.min(1, Math.max(0, rhythmScore + speedAdjustment));
   }
 
@@ -375,7 +373,9 @@ export class KeystrokeDynamicsAnalyzer {
    * Calculate response time naturalness
    */
   private calculateResponseTimeNaturalness(session: BehavioralSession): number {
-    if (session.keystrokePattern.events.length < 2) return 0.5;
+    if (session.keystrokePattern.events.length < 2) {
+      return 0.5;
+    }
 
     // Calculate time between page load and first keystroke
     const firstKeystroke = session.keystrokePattern.events[0];
@@ -438,15 +438,14 @@ export class KeystrokeDynamicsAnalyzer {
     const weights = this.config.featureWeights;
 
     // Calculate weighted feature score (higher = more bot-like)
-    const featureScore = (
+    const featureScore =
       (1 - features.keystrokeRhythm) * weights.keystroke +
       (1 - features.typingSpeedNaturalness) * weights.timing +
       (1 - features.responseTimeNaturalness) * weights.timing +
-      (1 - features.patternVariability) * weights.pattern
-    );
+      (1 - features.patternVariability) * weights.pattern;
 
     // Combine with anomaly score
-    const botScore = (featureScore * 0.7) + (anomalyResult.anomalyScore * 0.3);
+    const botScore = featureScore * 0.7 + anomalyResult.anomalyScore * 0.3;
 
     return Math.min(1, Math.max(0, botScore));
   }
@@ -520,7 +519,7 @@ export class KeystrokeDynamicsAnalyzer {
         quartiles: [0, 0, 0],
         iqr: 0,
         skewness: 0,
-        kurtosis: 0
+        kurtosis: 0,
       };
     }
 
@@ -531,9 +530,8 @@ export class KeystrokeDynamicsAnalyzer {
     const mean = values.reduce((sum, v) => sum + v, 0) / n;
 
     // Calculate median
-    const median = n % 2 === 0
-      ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2
-      : sorted[Math.floor(n / 2)];
+    const median =
+      n % 2 === 0 ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2 : sorted[Math.floor(n / 2)];
 
     // Calculate mode
     const freq: Record<number, number> = {};
@@ -558,14 +556,16 @@ export class KeystrokeDynamicsAnalyzer {
     const iqr = q3 - q1;
 
     // Calculate skewness
-    const skewness = standardDeviation > 0
-      ? values.reduce((sum, v) => sum + Math.pow((v - mean) / standardDeviation, 3), 0) / n
-      : 0;
+    const skewness =
+      standardDeviation > 0
+        ? values.reduce((sum, v) => sum + Math.pow((v - mean) / standardDeviation, 3), 0) / n
+        : 0;
 
     // Calculate kurtosis
-    const kurtosis = standardDeviation > 0
-      ? values.reduce((sum, v) => sum + Math.pow((v - mean) / standardDeviation, 4), 0) / n - 3
-      : 0;
+    const kurtosis =
+      standardDeviation > 0
+        ? values.reduce((sum, v) => sum + Math.pow((v - mean) / standardDeviation, 4), 0) / n - 3
+        : 0;
 
     return {
       mean,
@@ -579,7 +579,7 @@ export class KeystrokeDynamicsAnalyzer {
       quartiles: [q1, q2, q3],
       iqr,
       skewness,
-      kurtosis
+      kurtosis,
     };
   }
 
@@ -594,7 +594,7 @@ export class KeystrokeDynamicsAnalyzer {
       flightTimeVariance: 0,
       typingSpeed: 0,
       rhythmConsistency: 0,
-      errorRate: 0
+      errorRate: 0,
     };
   }
 
@@ -616,7 +616,7 @@ export class KeystrokeDynamicsAnalyzer {
         totalDistance: 0,
         averageVelocity: 0,
         maxVelocity: 0,
-        minVelocity: 0
+        minVelocity: 0,
       },
       keystrokePattern: {
         sessionId,
@@ -625,7 +625,7 @@ export class KeystrokeDynamicsAnalyzer {
         averageFlightTime: 0,
         typingSpeed: 0,
         errorRate: 0,
-        rhythm: []
+        rhythm: [],
       },
       metrics: {
         movement: {
@@ -646,7 +646,7 @@ export class KeystrokeDynamicsAnalyzer {
           angleVariance: 0,
           directionChanges: 0,
           averageJerk: 0,
-          jerkVariance: 0
+          jerkVariance: 0,
         },
         click: {
           totalClicks: 0,
@@ -654,17 +654,17 @@ export class KeystrokeDynamicsAnalyzer {
           clickDurationVariance: 0,
           doubleClickRate: 0,
           clickAccuracy: 0,
-          clickIntervalVariance: 0
+          clickIntervalVariance: 0,
         },
         scroll: {
           totalScrolls: 0,
           averageScrollSpeed: 0,
           scrollSpeedVariance: 0,
           scrollDirectionConsistency: 0,
-          smoothScrollingScore: 0
+          smoothScrollingScore: 0,
         },
-        keystroke: this.getEmptyKeystrokeMetrics()
-      }
+        keystroke: this.getEmptyKeystrokeMetrics(),
+      },
     };
 
     this.sessions.set(sessionId, session);
@@ -683,7 +683,9 @@ export class KeystrokeDynamicsAnalyzer {
    */
   updateSession(sessionId: string, events: KeystrokeEvent[]): void {
     const session = this.sessions.get(sessionId);
-    if (!session) return;
+    if (!session) {
+      return;
+    }
 
     // Add events to pattern
     session.keystrokePattern.events.push(...events);
@@ -698,7 +700,9 @@ export class KeystrokeDynamicsAnalyzer {
    */
   async endSession(sessionId: string): Promise<BotDetectionResult | null> {
     const session = this.sessions.get(sessionId);
-    if (!session) return null;
+    if (!session) {
+      return null;
+    }
 
     session.endTime = Date.now();
 
@@ -741,7 +745,7 @@ export class KeystrokeDynamicsAnalyzer {
     return {
       activeSessions: this.sessions.size,
       cachedResults: this.analysisCache.size,
-      totalAnalyses: this.analysisCache.size
+      totalAnalyses: this.analysisCache.size,
     };
   }
 }

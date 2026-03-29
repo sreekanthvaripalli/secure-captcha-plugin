@@ -2,7 +2,7 @@
  * Security type definitions
  */
 
-export type SecurityEventType = 
+export type SecurityEventType =
   | 'captcha_generated'
   | 'captcha_validated'
   | 'validation_failed'

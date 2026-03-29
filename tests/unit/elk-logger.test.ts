@@ -1,4 +1,10 @@
-import { ELKLogger, ELKConfig, LogContext, getELKLogger, resetELKLogger } from '../../src/services/elk-logger';
+import {
+  ELKLogger,
+  ELKConfig,
+  LogContext,
+  getELKLogger,
+  resetELKLogger,
+} from '../../src/services/elk-logger';
 import { SecurityEventDetails } from '../../src/types/security';
 
 describe('ELK Logger', () => {
@@ -13,21 +19,21 @@ describe('ELK Logger', () => {
         node: 'http://localhost:9200',
         index: 'test-logs',
         indexPrefix: 'test',
-        indexSuffixPattern: 'YYYY.MM.DD'
+        indexSuffixPattern: 'YYYY.MM.DD',
       },
       logLevel: 'debug',
       enableConsole: true,
       enableFile: false,
-      enableElasticsearch: false
+      enableElasticsearch: false,
     };
     logger = new ELKLogger(mockConfig);
-    
+
     // Mock the transport to capture log calls
     mockTransport = {
       log: jest.fn(),
-      close: jest.fn()
+      close: jest.fn(),
     };
-    
+
     // Replace the logger's transports with our mock
     (logger as any).logger.transports.forEach((t: any) => {
       t.log = mockTransport.log;
@@ -108,7 +114,7 @@ describe('ELK Logger', () => {
       const context: LogContext = {
         requestId: 'test-123',
         ip: '127.0.0.1',
-        endpoint: '/api/test'
+        endpoint: '/api/test',
       };
       logger.logRequest(context);
       expect(mockTransport.log).toHaveBeenCalled();
@@ -122,7 +128,7 @@ describe('ELK Logger', () => {
         ip: '192.168.1.1',
         userAgent: 'Mozilla/5.0',
         endpoint: '/api/captcha/generate',
-        method: 'POST'
+        method: 'POST',
       };
       logger.logRequest(context);
       expect(mockTransport.log).toHaveBeenCalled();
@@ -132,7 +138,7 @@ describe('ELK Logger', () => {
       const context: LogContext = {
         requestId: 'req-123',
         statusCode: 200,
-        responseTime: 45
+        responseTime: 45,
       };
       logger.logResponse(context);
       expect(mockTransport.log).toHaveBeenCalled();
@@ -144,7 +150,7 @@ describe('ELK Logger', () => {
       const error = new Error('Test error');
       const context: LogContext = {
         requestId: 'req-123',
-        endpoint: '/api/test'
+        endpoint: '/api/test',
       };
       logger.logError(error, context);
       expect(mockTransport.log).toHaveBeenCalled();
@@ -163,11 +169,11 @@ describe('ELK Logger', () => {
         action: 'captcha_generated',
         resource: 'text',
         reason: 'User requested captcha',
-        metadata: { difficulty: 'medium' }
+        metadata: { difficulty: 'medium' },
       };
       const context: LogContext = {
         requestId: 'req-123',
-        ip: '192.168.1.1'
+        ip: '192.168.1.1',
       };
       logger.logSecurityEvent(event, context);
       expect(mockTransport.log).toHaveBeenCalled();
@@ -178,7 +184,7 @@ describe('ELK Logger', () => {
         action: 'validation_failed',
         resource: 'captcha',
         reason: 'Invalid response',
-        metadata: {}
+        metadata: {},
       };
       logger.logSecurityEvent(event);
       expect(mockTransport.log).toHaveBeenCalled();
@@ -189,7 +195,7 @@ describe('ELK Logger', () => {
     test('should log performance metrics', () => {
       const context: LogContext = {
         requestId: 'req-123',
-        endpoint: '/api/captcha/generate'
+        endpoint: '/api/captcha/generate',
       };
       logger.logPerformance('captcha_generation_time', 45, context);
       expect(mockTransport.log).toHaveBeenCalled();
@@ -205,7 +211,7 @@ describe('ELK Logger', () => {
     test('should log audit events', () => {
       const context: LogContext = {
         requestId: 'req-123',
-        userId: 'user-456'
+        userId: 'user-456',
       };
       logger.logAudit('user_login', { method: 'password' }, context);
       expect(mockTransport.log).toHaveBeenCalled();
@@ -221,7 +227,7 @@ describe('ELK Logger', () => {
     test('should log captcha generation', () => {
       const context: LogContext = {
         requestId: 'req-123',
-        sessionId: 'sess-456'
+        sessionId: 'sess-456',
       };
       logger.logCaptchaGeneration('text', 'medium', 45, context);
       expect(mockTransport.log).toHaveBeenCalled();
@@ -230,7 +236,7 @@ describe('ELK Logger', () => {
     test('should log captcha validation success', () => {
       const context: LogContext = {
         requestId: 'req-123',
-        sessionId: 'sess-456'
+        sessionId: 'sess-456',
       };
       logger.logCaptchaValidation('text', true, 12, context);
       expect(mockTransport.log).toHaveBeenCalled();
@@ -239,7 +245,7 @@ describe('ELK Logger', () => {
     test('should log captcha validation failure', () => {
       const context: LogContext = {
         requestId: 'req-123',
-        sessionId: 'sess-456'
+        sessionId: 'sess-456',
       };
       logger.logCaptchaValidation('text', false, 15, context);
       expect(mockTransport.log).toHaveBeenCalled();
@@ -250,7 +256,7 @@ describe('ELK Logger', () => {
     test('should log session creation', () => {
       const context: LogContext = {
         requestId: 'req-123',
-        ip: '192.168.1.1'
+        ip: '192.168.1.1',
       };
       logger.logSession('CREATE', 'sess-456', context);
       expect(mockTransport.log).toHaveBeenCalled();
@@ -270,7 +276,7 @@ describe('ELK Logger', () => {
   describe('Cache Logging', () => {
     test('should log cache hits', () => {
       const context: LogContext = {
-        requestId: 'req-123'
+        requestId: 'req-123',
       };
       logger.logCache('HIT', 'captcha:123', context);
       expect(mockTransport.log).toHaveBeenCalled();
@@ -291,7 +297,7 @@ describe('ELK Logger', () => {
     test('should log rate limit violations', () => {
       const context: LogContext = {
         requestId: 'req-123',
-        endpoint: '/api/captcha/generate'
+        endpoint: '/api/captcha/generate',
       };
       logger.logRateLimit('192.168.1.1', '/api/captcha/generate', 100, 0, context);
       expect(mockTransport.log).toHaveBeenCalled();
@@ -325,12 +331,12 @@ describe('ELK Logger', () => {
           node: 'http://localhost:9200',
           index: 'test',
           indexPrefix: 'test',
-          indexSuffixPattern: 'YYYY.MM.DD'
+          indexSuffixPattern: 'YYYY.MM.DD',
         },
         logLevel: 'info',
         enableConsole: true,
         enableFile: false,
-        enableElasticsearch: false
+        enableElasticsearch: false,
       });
       expect(defaultLogger).toBeDefined();
     });
@@ -344,8 +350,8 @@ describe('ELK Logger', () => {
           indexSuffixPattern: 'YYYY.MM.DD',
           auth: {
             username: 'user',
-            password: 'pass'
-          }
+            password: 'pass',
+          },
         },
         logLevel: 'error',
         enableConsole: false,
@@ -353,7 +359,7 @@ describe('ELK Logger', () => {
         enableElasticsearch: true,
         filePath: './custom.log',
         maxFileSize: 5000000,
-        maxFiles: 10
+        maxFiles: 10,
       };
       const customLogger = new ELKLogger(customConfig);
       expect(customLogger).toBeDefined();

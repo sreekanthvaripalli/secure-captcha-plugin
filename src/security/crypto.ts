@@ -14,7 +14,7 @@ import {
   SessionToken,
   CryptographicConfig,
   SecurityEvent,
-  CryptographicStats
+  CryptographicStats,
 } from '../types/security';
 
 export class CryptoService {
@@ -30,23 +30,23 @@ export class CryptoService {
         keySize: 256,
         ivLength: 12,
         tagLength: 16,
-        ...config?.encryption
+        ...config?.encryption,
       },
       hashing: {
         algorithm: 'SHA-256',
         saltLength: 32,
-        ...config?.hashing
+        ...config?.hashing,
       },
       signing: {
         algorithm: 'HMAC-SHA256',
         keySize: 256,
-        ...config?.signing
+        ...config?.signing,
       },
       random: {
         algorithm: 'crypto.randomBytes',
         minEntropy: 128,
-        ...config?.random
-      }
+        ...config?.random,
+      },
     };
 
     this.stats = {
@@ -59,7 +59,7 @@ export class CryptoService {
       hmacOperations: 0,
       keyRotations: 0,
       lastKeyRotation: new Date(),
-      securityEvents: []
+      securityEvents: [],
     };
 
     this.currentKey = this.generateSecureKey();
@@ -94,12 +94,11 @@ export class CryptoService {
       const result: EncryptionResult = {
         encryptedData: encrypted.toString('hex'),
         iv: iv.toString('hex'),
-        authTag: authTag.toString('hex')
+        authTag: authTag.toString('hex'),
       };
 
       this.updateStats(true, 'encrypt', Number(process.hrtime.bigint() - startTime) / 1000000);
       return result;
-
     } catch (error) {
       this.updateStats(false, 'encrypt', Number(process.hrtime.bigint() - startTime) / 1000000);
       throw error;
@@ -113,7 +112,12 @@ export class CryptoService {
     const startTime = process.hrtime.bigint();
 
     try {
-      if (!encryptedData || !encryptedData.encryptedData || !encryptedData.iv || !encryptedData.authTag) {
+      if (
+        !encryptedData ||
+        !encryptedData.encryptedData ||
+        !encryptedData.iv ||
+        !encryptedData.authTag
+      ) {
         throw new Error('Invalid encrypted data format');
       }
 
@@ -132,22 +136,21 @@ export class CryptoService {
 
       const decrypted = Buffer.concat([
         decipher.update(Buffer.from(encryptedData.encryptedData, 'hex')),
-        decipher.final()
+        decipher.final(),
       ]);
 
       const result: DecryptionResult = {
         decryptedData: decrypted.toString('utf8'),
-        success: true
+        success: true,
       };
 
       this.updateStats(true, 'decrypt', Number(process.hrtime.bigint() - startTime) / 1000000);
       return result;
-
     } catch (error) {
       const result: DecryptionResult = {
         decryptedData: '',
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown decryption error'
+        error: error instanceof Error ? error.message : 'Unknown decryption error',
       };
 
       this.updateStats(false, 'decrypt', Number(process.hrtime.bigint() - startTime) / 1000000);
@@ -170,23 +173,22 @@ export class CryptoService {
         modulusLength,
         publicKeyEncoding: {
           type: 'spki',
-          format: 'pem'
+          format: 'pem',
         },
         privateKeyEncoding: {
           type: 'pkcs8',
-          format: 'pem'
-        }
+          format: 'pem',
+        },
       });
 
       const result: KeyPair = {
         publicKey,
         privateKey,
-        modulusLength
+        modulusLength,
       };
 
       this.updateStats(true, 'rsa_keygen', Number(process.hrtime.bigint() - startTime) / 1000000);
       return result;
-
     } catch (error) {
       this.updateStats(false, 'rsa_keygen', Number(process.hrtime.bigint() - startTime) / 1000000);
       throw error;
@@ -211,17 +213,16 @@ export class CryptoService {
 
       const result: HMACResult = {
         success: true,
-        hash
+        hash,
       };
 
       this.updateStats(true, 'hmac', Number(process.hrtime.bigint() - startTime) / 1000000);
       return result;
-
     } catch (error) {
       const result: HMACResult = {
         success: false,
         hash: '',
-        error: error instanceof Error ? error.message : 'Unknown HMAC error'
+        error: error instanceof Error ? error.message : 'Unknown HMAC error',
       };
 
       this.updateStats(false, 'hmac', Number(process.hrtime.bigint() - startTime) / 1000000);
@@ -237,10 +238,7 @@ export class CryptoService {
       }
 
       // Constant-time comparison to prevent timing attacks
-      return crypto.timingSafeEqual(
-        Buffer.from(result.hash, 'hex'),
-        Buffer.from(hash, 'hex')
-      );
+      return crypto.timingSafeEqual(Buffer.from(result.hash, 'hex'), Buffer.from(hash, 'hex'));
     } catch {
       return false;
     }
@@ -257,12 +255,13 @@ export class CryptoService {
         throw new Error('Valid options with positive length are required');
       }
 
-      let charset = options.charset || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      
+      let charset =
+        options.charset || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
       if (options.excludeSimilar) {
         charset = charset.replace(/[0oO1lI]/g, '');
       }
-      
+
       if (options.excludeAmbiguous) {
         charset = charset.replace(/[{}[\]()/\\]/g, '');
       }
@@ -276,7 +275,6 @@ export class CryptoService {
 
       this.updateStats(true, 'random', Number(process.hrtime.bigint() - startTime) / 1000000);
       return result;
-
     } catch (error) {
       this.updateStats(false, 'random', Number(process.hrtime.bigint() - startTime) / 1000000);
       throw error;
@@ -292,7 +290,9 @@ export class CryptoService {
     try {
       const sessionId = uuidv4();
       const createdAt = new Date();
-      const expiresAt = new Date(createdAt.getTime() + (sessionData?.expiresIn as number || 300000));
+      const expiresAt = new Date(
+        createdAt.getTime() + ((sessionData?.expiresIn as number) || 300000)
+      );
 
       const result: SessionToken = {
         sessionId,
@@ -300,13 +300,12 @@ export class CryptoService {
         expiresAt,
         securityMetadata: {
           entropy: 128,
-          generationTime: Number(process.hrtime.bigint() - startTime) / 1000000
-        }
+          generationTime: Number(process.hrtime.bigint() - startTime) / 1000000,
+        },
       };
 
       this.updateStats(true, 'session', Number(process.hrtime.bigint() - startTime) / 1000000);
       return result;
-
     } catch (error) {
       this.updateStats(false, 'session', Number(process.hrtime.bigint() - startTime) / 1000000);
       throw error;
@@ -328,23 +327,22 @@ export class CryptoService {
         namedCurve: curve,
         publicKeyEncoding: {
           type: 'spki',
-          format: 'pem'
+          format: 'pem',
         },
         privateKeyEncoding: {
           type: 'pkcs8',
-          format: 'pem'
-        }
+          format: 'pem',
+        },
       });
 
       const result = {
         publicKey,
         privateKey,
-        curve
+        curve,
       };
 
       this.updateStats(true, 'ecdh_keygen', Number(process.hrtime.bigint() - startTime) / 1000000);
       return result;
-
     } catch (error) {
       this.updateStats(false, 'ecdh_keygen', Number(process.hrtime.bigint() - startTime) / 1000000);
       throw error;
@@ -367,7 +365,6 @@ export class CryptoService {
 
       this.updateStats(true, 'ecdh_derive', Number(process.hrtime.bigint() - startTime) / 1000000);
       return result;
-
     } catch (error) {
       this.updateStats(false, 'ecdh_derive', Number(process.hrtime.bigint() - startTime) / 1000000);
       throw error;
@@ -393,23 +390,22 @@ export class CryptoService {
     try {
       // Generate ECDH key pair
       const keyPair = await this.generateECDHKeyPair(config.curve);
-      
+
       // For demonstration, we'll create a mock shared secret
       // In real implementation, this would be computed with a peer's public key
       const sharedSecret = this.generateSecureKey();
-      
+
       const expiresAt = new Date(Date.now() + config.rotationInterval);
 
       const result = {
         publicKey: keyPair.publicKey,
         privateKey: keyPair.privateKey,
         sharedSecret,
-        expiresAt
+        expiresAt,
       };
 
       this.updateStats(true, 'pfs_setup', Number(process.hrtime.bigint() - startTime) / 1000000);
       return result;
-
     } catch (error) {
       this.updateStats(false, 'pfs_setup', Number(process.hrtime.bigint() - startTime) / 1000000);
       throw error;
@@ -430,22 +426,29 @@ export class CryptoService {
     try {
       // Generate new ECDH key pair
       const newKeyPair = await this.generateECDHKeyPair();
-      
+
       // Store old public key for reference (in real implementation)
       const oldPublicKey = 'old_public_key_placeholder';
-      
+
       const result = {
         success: true,
         newPublicKey: newKeyPair.publicKey,
         oldPublicKey,
-        rotationTime: new Date()
+        rotationTime: new Date(),
       };
 
-      this.updateStats(true, 'ecdh_rotation', Number(process.hrtime.bigint() - startTime) / 1000000);
+      this.updateStats(
+        true,
+        'ecdh_rotation',
+        Number(process.hrtime.bigint() - startTime) / 1000000
+      );
       return result;
-
     } catch (error) {
-      this.updateStats(false, 'ecdh_rotation', Number(process.hrtime.bigint() - startTime) / 1000000);
+      this.updateStats(
+        false,
+        'ecdh_rotation',
+        Number(process.hrtime.bigint() - startTime) / 1000000
+      );
       throw error;
     }
   }
@@ -471,14 +474,17 @@ export class CryptoService {
         success: true,
         newKey: this.currentKey,
         oldKeys: [oldKey],
-        rotationTime: new Date()
+        rotationTime: new Date(),
       };
 
       this.updateStats(true, 'key_rotation', Number(process.hrtime.bigint() - startTime) / 1000000);
       return result;
-
     } catch (error) {
-      this.updateStats(false, 'key_rotation', Number(process.hrtime.bigint() - startTime) / 1000000);
+      this.updateStats(
+        false,
+        'key_rotation',
+        Number(process.hrtime.bigint() - startTime) / 1000000
+      );
       throw error;
     }
   }
@@ -568,7 +574,8 @@ export class CryptoService {
         break;
     }
 
-    const totalTime = this.stats.averageOperationTime * (this.stats.totalOperations - 1) + executionTime;
+    const totalTime =
+      this.stats.averageOperationTime * (this.stats.totalOperations - 1) + executionTime;
     this.stats.averageOperationTime = totalTime / this.stats.totalOperations;
   }
 }

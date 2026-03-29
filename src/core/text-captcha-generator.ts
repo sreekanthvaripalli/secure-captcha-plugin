@@ -39,30 +39,30 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
 
   constructor(configService: SecurityConfigurationService) {
     super(configService);
-    
+
     // Default configuration
     this.config = {
       length: {
         easy: 4,
         medium: 6,
-        hard: 8
+        hard: 8,
       },
       charset: 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789', // Excludes similar characters
       fontSize: {
         easy: 48,
         medium: 42,
-        hard: 36
+        hard: 36,
       },
       noiseLevel: {
         easy: 0.5,
         medium: 1.0,
-        hard: 1.5
+        hard: 1.5,
       },
       distortionLevel: {
         easy: 0.3,
         medium: 0.6,
-        hard: 0.9
-      }
+        hard: 0.9,
+      },
     };
   }
 
@@ -88,20 +88,20 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
 
     const difficulty = input.difficulty;
     const textLength = this.config.length[difficulty];
-    
+
     // Generate cryptographically secure random text
     const text = this.generateSecureRandom(textLength, this.config.charset);
-    
+
     // Generate image with the text
     const imageBuffer = await this.generateImage(text, difficulty);
-    
+
     // Convert image to base64 for transmission
     const base64Image = imageBuffer.toString('base64');
     const challenge = `data:image/png;base64,${base64Image}`;
-    
+
     // Generate session ID
     const sessionId = this.generateSecureRandom(32);
-    
+
     // Log security event
     this.logSecurityEvent('captcha_generated' as SecurityEventType, sessionId, {
       action: 'generate',
@@ -112,8 +112,8 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
         difficulty,
         textLength: text.length,
         hasNoise: true,
-        hasDistortion: true
-      }
+        hasDistortion: true,
+      },
     });
 
     return {
@@ -129,16 +129,16 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
         behavioralData: {
           mouseMovements: [],
           keystrokeTimings: [],
-          interactionPatterns: []
+          interactionPatterns: [],
         },
         deviceInfo: {
           browser: 'unknown',
           os: 'unknown',
           screenResolution: 'unknown',
           timezone: 'unknown',
-          language: 'unknown'
-        }
-      }
+          language: 'unknown',
+        },
+      },
     };
   }
 
@@ -154,8 +154,8 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
       reason: 'Text captcha validation',
       metadata: {
         type: 'text',
-        responseLength: response.length
-      }
+        responseLength: response.length,
+      },
     });
 
     // Placeholder: In production, this would verify against the stored answer
@@ -173,34 +173,37 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
 
     // Create SVG with text and effects
     const svg = this.createSVG(text, fontSize, noiseLevel, distortionLevel);
-    
+
     // Convert SVG to PNG using Sharp
-    const imageBuffer = await sharp(Buffer.from(svg))
-      .png()
-      .toBuffer();
-    
+    const imageBuffer = await sharp(Buffer.from(svg)).png().toBuffer();
+
     return imageBuffer;
   }
 
   /**
    * Create SVG with text, noise, and distortion effects
    */
-  private createSVG(text: string, fontSize: number, noiseLevel: number, distortionLevel: number): string {
+  private createSVG(
+    text: string,
+    fontSize: number,
+    noiseLevel: number,
+    distortionLevel: number
+  ): string {
     const width = 200;
     const height = 80;
-    
+
     // Generate random colors
     const bgColor = this.generateRandomColor(200, 255);
-    
+
     // Create noise lines
     const noiseLines = this.generateNoiseLines(noiseLevel, width, height);
-    
+
     // Create distortion effect
     const distortion = this.generateDistortion(distortionLevel);
-    
+
     // Create text with individual character positioning
     const textElements = this.createTextElements(text, fontSize, width, height, distortion);
-    
+
     return `
       <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -235,22 +238,28 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
   /**
    * Create text elements with individual character positioning
    */
-  private createTextElements(text: string, fontSize: number, width: number, height: number, distortion: number): string {
+  private createTextElements(
+    text: string,
+    fontSize: number,
+    width: number,
+    height: number,
+    distortion: number
+  ): string {
     let elements = '';
     const charWidth = fontSize * 0.6;
-    const startX = (width - (text.length * charWidth)) / 2;
-    
+    const startX = (width - text.length * charWidth) / 2;
+
     for (let i = 0; i < text.length; i++) {
       const char = text[i];
-      const x = startX + (i * charWidth);
+      const x = startX + i * charWidth;
       const y = height / 2 + fontSize / 3;
-      
+
       // Add random rotation and position variation
       const rotation = (Math.random() - 0.5) * distortion * 30;
       const yOffset = (Math.random() - 0.5) * distortion * 10;
-      
+
       const color = this.generateRandomColor(0, 100);
-      
+
       elements += `
         <text 
           x="${x}" 
@@ -264,7 +273,7 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
         >${char}</text>
       `;
     }
-    
+
     return elements;
   }
 
@@ -274,7 +283,7 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
   private generateNoiseLines(noiseLevel: number, width: number, height: number): string {
     let lines = '';
     const numLines = Math.floor(noiseLevel * 10);
-    
+
     for (let i = 0; i < numLines; i++) {
       const x1 = Math.random() * width;
       const y1 = Math.random() * height;
@@ -282,7 +291,7 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
       const y2 = Math.random() * height;
       const color = this.generateRandomColor(100, 200);
       const strokeWidth = Math.random() * 2 + 1;
-      
+
       lines += `
         <line 
           x1="${x1}" y1="${y1}" 
@@ -293,7 +302,7 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
         />
       `;
     }
-    
+
     return lines;
   }
 
@@ -312,7 +321,7 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
     return {
       r: Math.floor(min + Math.random() * range),
       g: Math.floor(min + Math.random() * range),
-      b: Math.floor(min + Math.random() * range)
+      b: Math.floor(min + Math.random() * range),
     };
   }
 

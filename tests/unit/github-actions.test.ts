@@ -101,7 +101,6 @@ describe('GitHub Actions Workflows', () => {
     });
 
     test('lint job uses Node.js matrix strategy', () => {
-      expect(lintWorkflow.jobs.lint.strategy.matrix['node-version']).toContain('18.x');
       expect(lintWorkflow.jobs.lint.strategy.matrix['node-version']).toContain('20.x');
     });
 
@@ -130,7 +129,7 @@ describe('GitHub Actions Workflows', () => {
       const steps = lintWorkflow.jobs.lint.steps;
       const eslintStep = steps.find((s: any) => s.name === 'Run ESLint');
       expect(eslintStep).toBeDefined();
-      expect(eslintStep.run).toBe('npm run lint');
+      expect(eslintStep.run).toBe('npm run lint:fix');
     });
 
     test('lint job checks Prettier formatting', () => {
@@ -203,7 +202,7 @@ describe('GitHub Actions Workflows', () => {
       const steps = testWorkflow.jobs.test.steps;
       const coverageStep = steps.find((s: any) => s.name === 'Upload coverage reports');
       expect(coverageStep).toBeDefined();
-      expect(coverageStep.uses).toBe('codecov/codecov-action@v3');
+      expect(coverageStep.uses).toBe('codecov/codecov-action@v4');
     });
 
     test('test job has correct environment variables', () => {
@@ -243,7 +242,7 @@ describe('GitHub Actions Workflows', () => {
       const steps = buildWorkflow.jobs.build.steps;
       const uploadStep = steps.find((s: any) => s.name === 'Upload build artifacts');
       expect(uploadStep).toBeDefined();
-      expect(uploadStep.uses).toBe('actions/upload-artifact@v3');
+      expect(uploadStep.uses).toBe('actions/upload-artifact@v4');
     });
 
     test('docker job sets up Docker Buildx', () => {
@@ -327,7 +326,7 @@ describe('GitHub Actions Workflows', () => {
       const steps = securityWorkflow.jobs.security.steps;
       const uploadStep = steps.find((s: any) => s.name === 'Upload security reports');
       expect(uploadStep).toBeDefined();
-      expect(uploadStep.uses).toBe('actions/upload-artifact@v3');
+      expect(uploadStep.uses).toBe('actions/upload-artifact@v4');
     });
 
     test('container-scan job builds Docker image', () => {
@@ -346,9 +345,11 @@ describe('GitHub Actions Workflows', () => {
 
     test('container-scan job uploads SARIF results', () => {
       const steps = securityWorkflow.jobs['container-scan'].steps;
-      const uploadStep = steps.find((s: any) => s.name === 'Upload Trivy scan results to GitHub Security tab');
+      const uploadStep = steps.find(
+        (s: any) => s.name === 'Upload Trivy scan results to GitHub Security tab'
+      );
       expect(uploadStep).toBeDefined();
-      expect(uploadStep.uses).toBe('github/codeql-action/upload-sarif@v2');
+      expect(uploadStep.uses).toBe('github/codeql-action/upload-sarif@v4');
     });
   });
 
@@ -474,16 +475,18 @@ describe('GitHub Actions Workflows', () => {
   describe('Workflow Consistency', () => {
     test('all workflows use consistent checkout action version', () => {
       const workflowFiles = ['lint.yml', 'test.yml', 'build.yml', 'security.yml', 'deploy.yml'];
-      
+
       workflowFiles.forEach(file => {
         const content = fs.readFileSync(path.join(workflowsDir, file), 'utf8');
         const workflow = yaml.load(content) as any;
-        
+
         // Find all checkout steps
         const jobs = Object.values(workflow.jobs) as any[];
         jobs.forEach(job => {
           if (job.steps) {
-            const checkoutSteps = job.steps.filter((s: any) => s.uses?.includes('actions/checkout'));
+            const checkoutSteps = job.steps.filter((s: any) =>
+              s.uses?.includes('actions/checkout')
+            );
             checkoutSteps.forEach((step: any) => {
               expect(step.uses).toBe('actions/checkout@v4');
             });
@@ -494,16 +497,18 @@ describe('GitHub Actions Workflows', () => {
 
     test('all workflows use consistent setup-node action version', () => {
       const workflowFiles = ['lint.yml', 'test.yml', 'build.yml', 'security.yml', 'deploy.yml'];
-      
+
       workflowFiles.forEach(file => {
         const content = fs.readFileSync(path.join(workflowsDir, file), 'utf8');
         const workflow = yaml.load(content) as any;
-        
+
         // Find all setup-node steps
         const jobs = Object.values(workflow.jobs) as any[];
         jobs.forEach(job => {
           if (job.steps) {
-            const setupNodeSteps = job.steps.filter((s: any) => s.uses?.includes('actions/setup-node'));
+            const setupNodeSteps = job.steps.filter((s: any) =>
+              s.uses?.includes('actions/setup-node')
+            );
             setupNodeSteps.forEach((step: any) => {
               expect(step.uses).toBe('actions/setup-node@v4');
             });
@@ -514,11 +519,11 @@ describe('GitHub Actions Workflows', () => {
 
     test('all workflows run on ubuntu-latest', () => {
       const workflowFiles = ['lint.yml', 'test.yml', 'build.yml', 'security.yml', 'deploy.yml'];
-      
+
       workflowFiles.forEach(file => {
         const content = fs.readFileSync(path.join(workflowsDir, file), 'utf8');
         const workflow = yaml.load(content) as any;
-        
+
         const jobs = Object.values(workflow.jobs) as any[];
         jobs.forEach(job => {
           expect(job['runs-on']).toBe('ubuntu-latest');

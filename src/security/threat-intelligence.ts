@@ -8,7 +8,7 @@ import { SecurityEventDetails } from '../types/security';
 
 // Threat Intelligence Types
 export type ThreatLevel = 'low' | 'medium' | 'high' | 'critical';
-export type ThreatCategory = 
+export type ThreatCategory =
   | 'bot'
   | 'scanner'
   | 'spam'
@@ -106,20 +106,20 @@ export interface ThreatIntelligenceConfig {
   enableIPReputation: boolean;
   ipReputationCacheTTL: number; // seconds
   ipReputationSources: string[];
-  
+
   // Bot Signatures
   enableBotSignatures: boolean;
   botSignatureCacheTTL: number; // seconds
-  
+
   // Attack Patterns
   enableAttackPatterns: boolean;
   attackPatternCacheTTL: number; // seconds
-  
+
   // Threat Feeds
   enableThreatFeeds: boolean;
   threatFeedUpdateInterval: number; // minutes
   maxIndicatorsPerFeed: number;
-  
+
   // General
   enableRealTimeUpdates: boolean;
   enableLogging: boolean;
@@ -155,21 +155,21 @@ export interface ThreatIntelligenceStats {
 export class ThreatIntelligence {
   private readonly config: ThreatIntelligenceConfig;
   private readonly securityLogger: SecurityLogger;
-  
+
   // Caches
   private readonly ipReputationCache: Map<string, IPReputation> = new Map();
   private readonly botSignatureCache: Map<string, BotSignature> = new Map();
   private readonly attackPatternCache: Map<string, AttackPattern> = new Map();
   private readonly threatIndicatorCache: Map<string, ThreatIndicator> = new Map();
-  
+
   // Data stores
   private readonly botSignatures: Map<string, BotSignature> = new Map();
   private readonly attackPatterns: Map<string, AttackPattern> = new Map();
   private readonly threatFeeds: Map<string, ThreatFeed> = new Map();
   private readonly threatIndicators: Map<string, ThreatIndicator> = new Map();
-  
+
   // Statistics
-  private stats: ThreatIntelligenceStats = {
+  private readonly stats: ThreatIntelligenceStats = {
     totalIndicators: 0,
     indicatorsByType: {},
     indicatorsByCategory: {},
@@ -179,13 +179,10 @@ export class ThreatIntelligence {
     threatFeeds: 0,
     cacheHits: 0,
     cacheMisses: 0,
-    lastUpdate: Date.now()
+    lastUpdate: Date.now(),
   };
 
-  constructor(
-    config: Partial<ThreatIntelligenceConfig>,
-    securityLogger: SecurityLogger
-  ) {
+  constructor(config: Partial<ThreatIntelligenceConfig>, securityLogger: SecurityLogger) {
     this.config = {
       enableIPReputation: true,
       ipReputationCacheTTL: 3600,
@@ -201,7 +198,7 @@ export class ThreatIntelligence {
       enableLogging: true,
       confidenceThreshold: 0.7,
       maxCacheSize: 100000,
-      ...config
+      ...config,
     };
 
     this.securityLogger = securityLogger;
@@ -214,13 +211,13 @@ export class ThreatIntelligence {
   private initializeDefaultData(): void {
     // Initialize default bot signatures
     this.initializeBotSignatures();
-    
+
     // Initialize default attack patterns
     this.initializeAttackPatterns();
-    
+
     // Initialize default threat feeds
     this.initializeThreatFeeds();
-    
+
     this.updateStats();
   }
 
@@ -240,7 +237,7 @@ export class ThreatIntelligence {
         userAgent: 'Googlebot',
         confidence: 0.95,
         source: 'internal',
-        isActive: true
+        isActive: true,
       },
       {
         name: 'Bingbot',
@@ -252,7 +249,7 @@ export class ThreatIntelligence {
         userAgent: 'bingbot',
         confidence: 0.95,
         source: 'internal',
-        isActive: true
+        isActive: true,
       },
       {
         name: 'Scrapy',
@@ -263,7 +260,7 @@ export class ThreatIntelligence {
         description: 'Scrapy web scraping framework',
         confidence: 0.9,
         source: 'internal',
-        isActive: true
+        isActive: true,
       },
       {
         name: 'Python Requests',
@@ -274,7 +271,7 @@ export class ThreatIntelligence {
         description: 'Python requests library',
         confidence: 0.85,
         source: 'internal',
-        isActive: true
+        isActive: true,
       },
       {
         name: 'curl',
@@ -285,7 +282,7 @@ export class ThreatIntelligence {
         description: 'curl command line tool',
         confidence: 0.8,
         source: 'internal',
-        isActive: true
+        isActive: true,
       },
       {
         name: 'wget',
@@ -296,7 +293,7 @@ export class ThreatIntelligence {
         description: 'wget download utility',
         confidence: 0.8,
         source: 'internal',
-        isActive: true
+        isActive: true,
       },
       // Suspicious patterns
       {
@@ -308,7 +305,7 @@ export class ThreatIntelligence {
         description: 'Headless Chrome browser (often used for automation)',
         confidence: 0.9,
         source: 'internal',
-        isActive: true
+        isActive: true,
       },
       {
         name: 'PhantomJS',
@@ -319,7 +316,7 @@ export class ThreatIntelligence {
         description: 'PhantomJS headless browser',
         confidence: 0.95,
         source: 'internal',
-        isActive: true
+        isActive: true,
       },
       {
         name: 'Selenium',
@@ -330,7 +327,7 @@ export class ThreatIntelligence {
         description: 'Selenium WebDriver',
         confidence: 0.9,
         source: 'internal',
-        isActive: true
+        isActive: true,
       },
       {
         name: 'Puppeteer',
@@ -341,8 +338,8 @@ export class ThreatIntelligence {
         description: 'Puppeteer headless browser',
         confidence: 0.9,
         source: 'internal',
-        isActive: true
-      }
+        isActive: true,
+      },
     ];
 
     defaultSignatures.forEach(sig => {
@@ -351,7 +348,7 @@ export class ThreatIntelligence {
         ...sig,
         id,
         createdAt: Date.now(),
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       };
       this.botSignatures.set(id, signature);
     });
@@ -368,18 +365,14 @@ export class ThreatIntelligence {
       {
         name: 'SQL Injection - UNION',
         type: 'injection',
-        patterns: [
-          'UNION\\s+SELECT',
-          'UNION\\s+ALL\\s+SELECT',
-          'UNION\\s+DISTINCT'
-        ],
+        patterns: ['UNION\\s+SELECT', 'UNION\\s+ALL\\s+SELECT', 'UNION\\s+DISTINCT'],
         severity: 'critical',
         description: 'SQL injection attempt using UNION',
         mitigation: 'Use parameterized queries and input validation',
         cwe: 'CWE-89',
         cvss: 9.8,
         source: 'internal',
-        isActive: true
+        isActive: true,
       },
       {
         name: 'SQL Injection - OR/AND',
@@ -388,7 +381,7 @@ export class ThreatIntelligence {
           "'\\s*OR\\s*'1'\\s*=\\s*'1",
           "'\\s*OR\\s*1\\s*=\\s*1",
           "'\\s*AND\\s*'1'\\s*=\\s*'1",
-          "'\\s*AND\\s*1\\s*=\\s*1"
+          "'\\s*AND\\s*1\\s*=\\s*1",
         ],
         severity: 'critical',
         description: 'SQL injection attempt using OR/AND conditions',
@@ -396,41 +389,32 @@ export class ThreatIntelligence {
         cwe: 'CWE-89',
         cvss: 9.8,
         source: 'internal',
-        isActive: true
+        isActive: true,
       },
       {
         name: 'SQL Injection - Comment',
         type: 'injection',
-        patterns: [
-          '--\\s*$',
-          '/\\*.*\\*/',
-          '#\\s*$'
-        ],
+        patterns: ['--\\s*$', '/\\*.*\\*/', '#\\s*$'],
         severity: 'high',
         description: 'SQL injection attempt using comments',
         mitigation: 'Use parameterized queries and input validation',
         cwe: 'CWE-89',
         cvss: 8.6,
         source: 'internal',
-        isActive: true
+        isActive: true,
       },
       // XSS patterns
       {
         name: 'XSS - Script Tag',
         type: 'xss',
-        patterns: [
-          '<script[^>]*>',
-          '<\\/script>',
-          'javascript:',
-          'vbscript:'
-        ],
+        patterns: ['<script[^>]*>', '<\\/script>', 'javascript:', 'vbscript:'],
         severity: 'high',
         description: 'Cross-site scripting attempt using script tags',
         mitigation: 'Implement Content Security Policy and output encoding',
         cwe: 'CWE-79',
         cvss: 7.5,
         source: 'internal',
-        isActive: true
+        isActive: true,
       },
       {
         name: 'XSS - Event Handlers',
@@ -440,7 +424,7 @@ export class ThreatIntelligence {
           'onerror\\s*=',
           'onload\\s*=',
           'onclick\\s*=',
-          'onmouseover\\s*='
+          'onmouseover\\s*=',
         ],
         severity: 'high',
         description: 'Cross-site scripting attempt using event handlers',
@@ -448,7 +432,7 @@ export class ThreatIntelligence {
         cwe: 'CWE-79',
         cvss: 7.5,
         source: 'internal',
-        isActive: true
+        isActive: true,
       },
       // Path traversal
       {
@@ -458,7 +442,7 @@ export class ThreatIntelligence {
           '\\.\\.\\/\\.\\.\\/\\.\\.\\/',
           '\\.\\.\\\\\\.\\.\\\\\\.\\.\\\\',
           '%2e%2e%2f',
-          '%2e%2e%5c'
+          '%2e%2e%5c',
         ],
         severity: 'high',
         description: 'Path traversal attempt',
@@ -466,7 +450,7 @@ export class ThreatIntelligence {
         cwe: 'CWE-22',
         cvss: 7.5,
         source: 'internal',
-        isActive: true
+        isActive: true,
       },
       // Command injection
       {
@@ -476,7 +460,7 @@ export class ThreatIntelligence {
           ';\\s*(ls|dir|cat|type|rm|del)',
           '\\|\\s*(ls|dir|cat|type|rm|del)',
           '`[^`]*`',
-          '\\$\\([^)]*\\)'
+          '\\$\\([^)]*\\)',
         ],
         severity: 'critical',
         description: 'Command injection attempt',
@@ -484,25 +468,21 @@ export class ThreatIntelligence {
         cwe: 'CWE-78',
         cvss: 9.8,
         source: 'internal',
-        isActive: true
+        isActive: true,
       },
       // Brute force patterns
       {
         name: 'Brute Force - Multiple Failed Logins',
         type: 'bruteforce',
-        patterns: [
-          'failed_login',
-          'invalid_password',
-          'authentication_failed'
-        ],
+        patterns: ['failed_login', 'invalid_password', 'authentication_failed'],
         severity: 'high',
         description: 'Potential brute force attack detected',
         mitigation: 'Implement rate limiting and account lockout',
         cwe: 'CWE-307',
         cvss: 7.5,
         source: 'internal',
-        isActive: true
-      }
+        isActive: true,
+      },
     ];
 
     defaultPatterns.forEach(pattern => {
@@ -511,7 +491,7 @@ export class ThreatIntelligence {
         ...pattern,
         id,
         createdAt: Date.now(),
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       };
       this.attackPatterns.set(id, attackPattern);
     });
@@ -531,7 +511,7 @@ export class ThreatIntelligence {
         format: 'json',
         updateInterval: 60,
         isActive: true,
-        metadata: { source: 'internal' }
+        metadata: { source: 'internal' },
       },
       {
         name: 'Known Malicious IPs',
@@ -540,8 +520,8 @@ export class ThreatIntelligence {
         format: 'text',
         updateInterval: 120,
         isActive: true,
-        metadata: { source: 'internal' }
-      }
+        metadata: { source: 'internal' },
+      },
     ];
 
     defaultFeeds.forEach(feed => {
@@ -550,7 +530,7 @@ export class ThreatIntelligence {
         ...feed,
         id,
         lastUpdated: Date.now(),
-        indicators: []
+        indicators: [],
       };
       this.threatFeeds.set(id, threatFeed);
     });
@@ -589,7 +569,7 @@ export class ThreatIntelligence {
       critical: 0,
       high: 25,
       medium: 50,
-      low: 75
+      low: 75,
     };
 
     const categories = new Set<ThreatCategory>();
@@ -600,7 +580,7 @@ export class ThreatIntelligence {
     indicators.forEach(indicator => {
       categories.add(indicator.category);
       sources.add(indicator.source);
-      
+
       const reputation = threatLevels[indicator.threatLevel];
       if (reputation < minReputation) {
         minReputation = reputation;
@@ -623,7 +603,7 @@ export class ThreatIntelligence {
       lastSeen: Date.now(),
       reportCount: indicators.length,
       sources: Array.from(sources),
-      metadata: { indicators: indicators.map(i => i.id) }
+      metadata: { indicators: indicators.map(i => i.id) },
     };
 
     // Cache the result
@@ -635,7 +615,7 @@ export class ThreatIntelligence {
         ip,
         reputation: reputation.reputation,
         threatLevel: reputation.threatLevel,
-        categories: reputation.categories
+        categories: reputation.categories,
       });
     }
 
@@ -653,21 +633,22 @@ export class ThreatIntelligence {
     const matches: BotSignature[] = [];
 
     this.botSignatures.forEach(signature => {
-      if (!signature.isActive) return;
+      if (!signature.isActive) {
+        return;
+      }
 
       let isMatch = false;
 
       switch (signature.patternType) {
         case 'regex':
-          const regex = signature.pattern instanceof RegExp 
-            ? signature.pattern 
-            : new RegExp(signature.pattern, 'i');
+          const regex =
+            signature.pattern instanceof RegExp
+              ? signature.pattern
+              : new RegExp(signature.pattern, 'i');
           isMatch = regex.test(userAgent);
           break;
         case 'string':
-          isMatch = userAgent.toLowerCase().includes(
-            (signature.pattern as string).toLowerCase()
-          );
+          isMatch = userAgent.toLowerCase().includes((signature.pattern as string).toLowerCase());
           break;
         case 'header':
           // Header-based matching would require full request headers
@@ -687,7 +668,7 @@ export class ThreatIntelligence {
       this.logThreatEvent('bot_signature_match', {
         userAgent,
         matchedSignatures: matches.map(s => s.name),
-        threatLevel: matches[0].threatLevel
+        threatLevel: matches[0].threatLevel,
       });
     }
 
@@ -705,7 +686,9 @@ export class ThreatIntelligence {
     const matches: AttackPattern[] = [];
 
     this.attackPatterns.forEach(pattern => {
-      if (!pattern.isActive) return;
+      if (!pattern.isActive) {
+        return;
+      }
 
       for (const regexPattern of pattern.patterns) {
         try {
@@ -726,7 +709,7 @@ export class ThreatIntelligence {
       this.logThreatEvent('attack_pattern_match', {
         input: input.substring(0, 100), // Log only first 100 chars
         matchedPatterns: matches.map(p => p.name),
-        severity: matches[0].severity
+        severity: matches[0].severity,
       });
     }
 
@@ -754,7 +737,9 @@ export class ThreatIntelligence {
       const ipReputation = await this.checkIPReputation(data.ip);
       if (ipReputation && ipReputation.reputation < 50) {
         ipReputation.categories.forEach(cat => categories.add(cat));
-        recommendations.push(`Block or rate limit IP ${data.ip} (reputation: ${ipReputation.reputation})`);
+        recommendations.push(
+          `Block or rate limit IP ${data.ip} (reputation: ${ipReputation.reputation})`
+        );
       }
     }
 
@@ -786,14 +771,24 @@ export class ThreatIntelligence {
 
     if (matchedPatterns.length > 0) {
       const maxSeverity = matchedPatterns.reduce((max, p) => {
-        const severityOrder: Record<ThreatLevel, number> = { low: 1, medium: 2, high: 3, critical: 4 };
+        const severityOrder: Record<ThreatLevel, number> = {
+          low: 1,
+          medium: 2,
+          high: 3,
+          critical: 4,
+        };
         return severityOrder[p.severity] > severityOrder[max] ? p.severity : max;
       }, 'low' as ThreatLevel);
       threatLevel = maxSeverity;
       confidence = 0.9;
     } else if (matchedSignatures.length > 0) {
       const maxThreat = matchedSignatures.reduce((max, s) => {
-        const severityOrder: Record<ThreatLevel, number> = { low: 1, medium: 2, high: 3, critical: 4 };
+        const severityOrder: Record<ThreatLevel, number> = {
+          low: 1,
+          medium: 2,
+          high: 3,
+          critical: 4,
+        };
         return severityOrder[s.threatLevel] > severityOrder[max] ? s.threatLevel : max;
       }, 'low' as ThreatLevel);
       threatLevel = maxThreat;
@@ -814,15 +809,17 @@ export class ThreatIntelligence {
       metadata: {
         ip: data.ip,
         userAgent: data.userAgent,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     };
   }
 
   /**
    * Add threat indicator
    */
-  addThreatIndicator(indicator: Omit<ThreatIndicator, 'id' | 'firstSeen' | 'lastSeen'>): ThreatIndicator {
+  addThreatIndicator(
+    indicator: Omit<ThreatIndicator, 'id' | 'firstSeen' | 'lastSeen'>
+  ): ThreatIndicator {
     const id = this.generateId('indicator');
     const now = Date.now();
 
@@ -830,7 +827,7 @@ export class ThreatIntelligence {
       ...indicator,
       id,
       firstSeen: now,
-      lastSeen: now
+      lastSeen: now,
     };
 
     this.threatIndicators.set(id, threatIndicator);
@@ -850,7 +847,7 @@ export class ThreatIntelligence {
       ...signature,
       id,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     };
 
     this.botSignatures.set(id, botSignature);
@@ -870,7 +867,7 @@ export class ThreatIntelligence {
       ...pattern,
       id,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     };
 
     this.attackPatterns.set(id, attackPattern);
@@ -892,11 +889,11 @@ export class ThreatIntelligence {
       // In a real implementation, this would fetch from the feed URL
       // For now, we'll simulate an update
       feed.lastUpdated = Date.now();
-      
+
       this.logThreatEvent('threat_feed_updated', {
         feedId,
         feedName: feed.name,
-        indicatorCount: feed.indicators.length
+        indicatorCount: feed.indicators.length,
       });
 
       return true;
@@ -904,7 +901,7 @@ export class ThreatIntelligence {
       this.logThreatEvent('threat_feed_update_failed', {
         feedId,
         feedName: feed.name,
-        error: String(error)
+        error: String(error),
       });
       return false;
     }
@@ -962,25 +959,25 @@ export class ThreatIntelligence {
    */
   private updateStats(): void {
     this.stats.totalIndicators = this.threatIndicators.size;
-    
+
     // Count by type
     this.stats.indicatorsByType = {};
     this.threatIndicators.forEach(indicator => {
-      this.stats.indicatorsByType[indicator.type] = 
+      this.stats.indicatorsByType[indicator.type] =
         (this.stats.indicatorsByType[indicator.type] || 0) + 1;
     });
 
     // Count by category
     this.stats.indicatorsByCategory = {};
     this.threatIndicators.forEach(indicator => {
-      this.stats.indicatorsByCategory[indicator.category] = 
+      this.stats.indicatorsByCategory[indicator.category] =
         (this.stats.indicatorsByCategory[indicator.category] || 0) + 1;
     });
 
     // Count by threat level
     this.stats.indicatorsByThreatLevel = {};
     this.threatIndicators.forEach(indicator => {
-      this.stats.indicatorsByThreatLevel[indicator.threatLevel] = 
+      this.stats.indicatorsByThreatLevel[indicator.threatLevel] =
         (this.stats.indicatorsByThreatLevel[indicator.threatLevel] || 0) + 1;
     });
 
@@ -991,13 +988,15 @@ export class ThreatIntelligence {
    * Log threat event
    */
   private logThreatEvent(action: string, metadata: Record<string, unknown>): void {
-    if (!this.config.enableLogging) return;
+    if (!this.config.enableLogging) {
+      return;
+    }
 
     const event: SecurityEventDetails = {
       action,
       resource: 'threat_intelligence',
       reason: `Threat intelligence event: ${action}`,
-      metadata
+      metadata,
     };
 
     this.securityLogger.logSecurityEvent(event);

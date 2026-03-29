@@ -129,7 +129,7 @@ export class DeviceFingerprintAnalyzer {
       cacheResults: true,
       cacheTTL: 3600,
       logAnomalies: true,
-      ...config
+      ...config,
     };
 
     this.securityLogger = securityLogger;
@@ -155,7 +155,7 @@ export class DeviceFingerprintAnalyzer {
     // Check cache
     if (this.config.cacheResults) {
       const cached = this.fingerprintCache.get(fingerprint.hash);
-      if (cached && (Date.now() - cached.timestamp) < this.config.cacheTTL * 1000) {
+      if (cached && Date.now() - cached.timestamp < this.config.cacheTTL * 1000) {
         return cached;
       }
     }
@@ -173,7 +173,7 @@ export class DeviceFingerprintAnalyzer {
       riskScore,
       anomalies,
       timestamp: Date.now(),
-      processingTime: Date.now() - startTime
+      processingTime: Date.now() - startTime,
     };
 
     // Cache result
@@ -190,8 +190,8 @@ export class DeviceFingerprintAnalyzer {
         metadata: {
           fingerprintId: fingerprint.id,
           anomalies,
-          riskScore
-        }
+          riskScore,
+        },
       });
     }
 
@@ -211,10 +211,18 @@ export class DeviceFingerprintAnalyzer {
     network?: Partial<NetworkFingerprint>;
   }): Promise<DeviceFingerprint> {
     const browser = this.normalizeBrowserFingerprint(data.browser);
-    const canvas = this.config.enableCanvas ? this.normalizeCanvasFingerprint(data.canvas) : this.getEmptyCanvasFingerprint();
-    const webgl = this.config.enableWebGL ? this.normalizeWebGLFingerprint(data.webgl) : this.getEmptyWebGLFingerprint();
-    const audio = this.config.enableAudio ? this.normalizeAudioFingerprint(data.audio) : this.getEmptyAudioFingerprint();
-    const fonts = this.config.enableFonts ? this.normalizeFontFingerprint(data.fonts) : this.getEmptyFontFingerprint();
+    const canvas = this.config.enableCanvas
+      ? this.normalizeCanvasFingerprint(data.canvas)
+      : this.getEmptyCanvasFingerprint();
+    const webgl = this.config.enableWebGL
+      ? this.normalizeWebGLFingerprint(data.webgl)
+      : this.getEmptyWebGLFingerprint();
+    const audio = this.config.enableAudio
+      ? this.normalizeAudioFingerprint(data.audio)
+      : this.getEmptyAudioFingerprint();
+    const fonts = this.config.enableFonts
+      ? this.normalizeFontFingerprint(data.fonts)
+      : this.getEmptyFontFingerprint();
     const hardware = this.normalizeHardwareFingerprint(data.hardware);
     const network = this.normalizeNetworkFingerprint(data.network);
 
@@ -226,7 +234,7 @@ export class DeviceFingerprintAnalyzer {
       audio: audio.hash,
       fonts: fonts.hash,
       hardware,
-      network
+      network,
     });
 
     const hash = crypto.createHash('sha256').update(componentsString).digest('hex');
@@ -241,11 +249,11 @@ export class DeviceFingerprintAnalyzer {
         audio,
         fonts,
         hardware,
-        network
+        network,
       },
       hash,
       confidence: this.calculateConfidence(browser, canvas, webgl, audio, fonts, hardware),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 
@@ -267,7 +275,7 @@ export class DeviceFingerprintAnalyzer {
       pixelRatio: data.pixelRatio ?? 1,
       touchSupport: data.touchSupport ?? false,
       plugins: data.plugins || [],
-      mimeTypes: data.mimeTypes || []
+      mimeTypes: data.mimeTypes || [],
     };
   }
 
@@ -283,7 +291,7 @@ export class DeviceFingerprintAnalyzer {
       dataUrl: data.dataUrl,
       hash: data.hash || this.generateHash(data.dataUrl),
       width: data.width ?? 200,
-      height: data.height ?? 50
+      height: data.height ?? 50,
     };
   }
 
@@ -303,7 +311,7 @@ export class DeviceFingerprintAnalyzer {
       extensions: data.extensions || [],
       maxTextureSize: data.maxTextureSize ?? 0,
       maxViewportDims: data.maxViewportDims ?? [0, 0],
-      hash: data.hash || this.generateHash(JSON.stringify(data))
+      hash: data.hash || this.generateHash(JSON.stringify(data)),
     };
   }
 
@@ -318,7 +326,7 @@ export class DeviceFingerprintAnalyzer {
     return {
       sampleRate: data.sampleRate,
       channelCount: data.channelCount ?? 2,
-      hash: data.hash || this.generateHash(JSON.stringify(data))
+      hash: data.hash || this.generateHash(JSON.stringify(data)),
     };
   }
 
@@ -332,7 +340,7 @@ export class DeviceFingerprintAnalyzer {
 
     return {
       detectedFonts: data.detectedFonts,
-      hash: data.hash || this.generateHash(JSON.stringify(data.detectedFonts))
+      hash: data.hash || this.generateHash(JSON.stringify(data.detectedFonts)),
     };
   }
 
@@ -344,7 +352,7 @@ export class DeviceFingerprintAnalyzer {
       hardwareConcurrency: data.hardwareConcurrency ?? 4,
       deviceMemory: data.deviceMemory,
       maxTouchPoints: data.maxTouchPoints ?? 0,
-      platform: data.platform || 'unknown'
+      platform: data.platform || 'unknown',
     };
   }
 
@@ -356,7 +364,7 @@ export class DeviceFingerprintAnalyzer {
       connectionType: data?.connectionType,
       downlink: data?.downlink,
       effectiveType: data?.effectiveType,
-      rtt: data?.rtt
+      rtt: data?.rtt,
     };
   }
 
@@ -372,7 +380,7 @@ export class DeviceFingerprintAnalyzer {
         type: 'missing_component',
         severity: 'high',
         description: 'User agent is missing or unknown',
-        evidence: { userAgent: fingerprint.components.browser.userAgent }
+        evidence: { userAgent: fingerprint.components.browser.userAgent },
       });
     }
 
@@ -382,7 +390,7 @@ export class DeviceFingerprintAnalyzer {
         type: 'missing_component',
         severity: 'medium',
         description: 'Canvas fingerprint is empty',
-        evidence: { canvasHash: fingerprint.components.canvas.hash }
+        evidence: { canvasHash: fingerprint.components.canvas.hash },
       });
     }
 
@@ -392,7 +400,7 @@ export class DeviceFingerprintAnalyzer {
         type: 'suspicious_value',
         severity: 'medium',
         description: 'WebGL vendor is unknown',
-        evidence: { webglVendor: fingerprint.components.webgl.vendor }
+        evidence: { webglVendor: fingerprint.components.webgl.vendor },
       });
     }
 
@@ -402,7 +410,7 @@ export class DeviceFingerprintAnalyzer {
         type: 'known_bot_pattern',
         severity: 'critical',
         description: 'Fingerprint matches known bot pattern',
-        evidence: { fingerprintId: fingerprint.id }
+        evidence: { fingerprintId: fingerprint.id },
       });
     }
 
@@ -412,7 +420,7 @@ export class DeviceFingerprintAnalyzer {
         type: 'inconsistent_data',
         severity: 'high',
         description: 'Fingerprint contains inconsistent data',
-        evidence: { fingerprintId: fingerprint.id }
+        evidence: { fingerprintId: fingerprint.id },
       });
     }
 
@@ -451,22 +459,38 @@ export class DeviceFingerprintAnalyzer {
     let total = 0;
 
     // Compare browser
-    if (fp1.components.browser.platform === fp2.components.browser.platform) matches++;
-    if (fp1.components.browser.language === fp2.components.browser.language) matches++;
-    if (fp1.components.browser.screenResolution === fp2.components.browser.screenResolution) matches++;
+    if (fp1.components.browser.platform === fp2.components.browser.platform) {
+      matches++;
+    }
+    if (fp1.components.browser.language === fp2.components.browser.language) {
+      matches++;
+    }
+    if (fp1.components.browser.screenResolution === fp2.components.browser.screenResolution) {
+      matches++;
+    }
     total += 3;
 
     // Compare hardware
-    if (fp1.components.hardware.hardwareConcurrency === fp2.components.hardware.hardwareConcurrency) matches++;
-    if (fp1.components.hardware.platform === fp2.components.hardware.platform) matches++;
+    if (
+      fp1.components.hardware.hardwareConcurrency === fp2.components.hardware.hardwareConcurrency
+    ) {
+      matches++;
+    }
+    if (fp1.components.hardware.platform === fp2.components.hardware.platform) {
+      matches++;
+    }
     total += 2;
 
     // Compare canvas
-    if (fp1.components.canvas.hash === fp2.components.canvas.hash) matches++;
+    if (fp1.components.canvas.hash === fp2.components.canvas.hash) {
+      matches++;
+    }
     total++;
 
     // Compare WebGL
-    if (fp1.components.webgl.hash === fp2.components.webgl.hash) matches++;
+    if (fp1.components.webgl.hash === fp2.components.webgl.hash) {
+      matches++;
+    }
     total++;
 
     return total > 0 ? matches / total : 0;
@@ -475,7 +499,10 @@ export class DeviceFingerprintAnalyzer {
   /**
    * Calculate risk score
    */
-  private calculateRiskScore(fingerprint: DeviceFingerprint, anomalies: FingerprintAnomaly[]): number {
+  private calculateRiskScore(
+    fingerprint: DeviceFingerprint,
+    anomalies: FingerprintAnomaly[]
+  ): number {
     let riskScore = 0;
 
     // Base risk from anomalies
@@ -502,9 +529,15 @@ export class DeviceFingerprintAnalyzer {
     }
 
     // Risk from missing components
-    if (fingerprint.components.canvas.hash === '') riskScore += 0.1;
-    if (fingerprint.components.webgl.hash === '') riskScore += 0.1;
-    if (fingerprint.components.audio.hash === '') riskScore += 0.05;
+    if (fingerprint.components.canvas.hash === '') {
+      riskScore += 0.1;
+    }
+    if (fingerprint.components.webgl.hash === '') {
+      riskScore += 0.1;
+    }
+    if (fingerprint.components.audio.hash === '') {
+      riskScore += 0.05;
+    }
 
     return Math.min(1.0, riskScore);
   }
@@ -524,28 +557,42 @@ export class DeviceFingerprintAnalyzer {
     let components = 0;
 
     // Browser confidence
-    if (browser.userAgent !== 'unknown') confidence += 0.2;
-    if (browser.platform !== 'unknown') confidence += 0.1;
+    if (browser.userAgent !== 'unknown') {
+      confidence += 0.2;
+    }
+    if (browser.platform !== 'unknown') {
+      confidence += 0.1;
+    }
     components += 0.3;
 
     // Canvas confidence
-    if (canvas.hash !== '') confidence += 0.2;
+    if (canvas.hash !== '') {
+      confidence += 0.2;
+    }
     components += 0.2;
 
     // WebGL confidence
-    if (webgl.vendor !== 'unknown') confidence += 0.2;
+    if (webgl.vendor !== 'unknown') {
+      confidence += 0.2;
+    }
     components += 0.2;
 
     // Audio confidence
-    if (audio.hash !== '') confidence += 0.1;
+    if (audio.hash !== '') {
+      confidence += 0.1;
+    }
     components += 0.1;
 
     // Fonts confidence
-    if (fonts.detectedFonts.length > 0) confidence += 0.1;
+    if (fonts.detectedFonts.length > 0) {
+      confidence += 0.1;
+    }
     components += 0.1;
 
     // Hardware confidence
-    if (hardware.hardwareConcurrency > 0) confidence += 0.1;
+    if (hardware.hardwareConcurrency > 0) {
+      confidence += 0.1;
+    }
     components += 0.1;
 
     return components > 0 ? confidence / components : 0;
@@ -561,14 +608,18 @@ export class DeviceFingerprintAnalyzer {
     }
 
     // Check for automation tools
-    if (fingerprint.components.browser.plugins.length === 0 &&
-        fingerprint.components.browser.mimeTypes.length === 0) {
+    if (
+      fingerprint.components.browser.plugins.length === 0 &&
+      fingerprint.components.browser.mimeTypes.length === 0
+    ) {
       return true;
     }
 
     // Check for suspicious screen resolution
-    if (fingerprint.components.browser.screenResolution === '0x0' ||
-        fingerprint.components.browser.screenResolution === '1x1') {
+    if (
+      fingerprint.components.browser.screenResolution === '0x0' ||
+      fingerprint.components.browser.screenResolution === '1x1'
+    ) {
       return true;
     }
 
@@ -581,7 +632,8 @@ export class DeviceFingerprintAnalyzer {
   private hasInconsistentData(fingerprint: DeviceFingerprint): boolean {
     // Check timezone offset consistency
     const expectedOffset = fingerprint.components.browser.timezoneOffset;
-    if (Math.abs(expectedOffset) > 720) { // More than 12 hours
+    if (Math.abs(expectedOffset) > 720) {
+      // More than 12 hours
       return true;
     }
 
@@ -602,7 +654,7 @@ export class DeviceFingerprintAnalyzer {
     let hash = 0;
     for (let i = 0; i < data.length; i++) {
       const char = data.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash;
     }
     return Math.abs(hash).toString(16);
@@ -616,7 +668,7 @@ export class DeviceFingerprintAnalyzer {
       dataUrl: '',
       hash: '',
       width: 0,
-      height: 0
+      height: 0,
     };
   }
 
@@ -632,7 +684,7 @@ export class DeviceFingerprintAnalyzer {
       extensions: [],
       maxTextureSize: 0,
       maxViewportDims: [0, 0],
-      hash: ''
+      hash: '',
     };
   }
 
@@ -643,7 +695,7 @@ export class DeviceFingerprintAnalyzer {
     return {
       sampleRate: 0,
       channelCount: 0,
-      hash: ''
+      hash: '',
     };
   }
 
@@ -653,7 +705,7 @@ export class DeviceFingerprintAnalyzer {
   private getEmptyFontFingerprint(): FontFingerprint {
     return {
       detectedFonts: [],
-      hash: ''
+      hash: '',
     };
   }
 
@@ -688,7 +740,7 @@ export class DeviceFingerprintAnalyzer {
     return {
       cachedFingerprints: this.fingerprintCache.size,
       knownFingerprints: this.knownFingerprints.size,
-      totalAnalyses: this.fingerprintCache.size
+      totalAnalyses: this.fingerprintCache.size,
     };
   }
 }

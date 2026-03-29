@@ -14,7 +14,7 @@ import {
   BotDetectionFeatures,
   Anomaly,
   MovementMetrics,
-  KeystrokeMetrics
+  KeystrokeMetrics,
 } from '../types/behavioral';
 
 export interface MLModelConfig {
@@ -84,7 +84,7 @@ export class BotDetectionML {
       usePretrainedModel: false,
       retrainInterval: 24,
       confidenceThreshold: 0.7,
-      ...config
+      ...config,
     };
 
     this.securityLogger = securityLogger;
@@ -110,15 +110,15 @@ export class BotDetectionML {
         metadata: {
           modelPath: this.config.modelPath,
           featureDimensions: this.config.featureDimensions,
-          hiddenLayers: this.config.hiddenLayers
-        }
+          hiddenLayers: this.config.hiddenLayers,
+        },
       });
     } catch (error) {
       this.securityLogger.logSecurityEvent({
         action: 'ml_model_initialization_failed',
         resource: 'bot_detection_ml',
         reason: `Failed to initialize ML model: ${error}`,
-        metadata: { error: String(error) }
+        metadata: { error: String(error) },
       });
       throw error;
     }
@@ -138,14 +138,14 @@ export class BotDetectionML {
         action: 'pretrained_model_loaded',
         resource: 'bot_detection_ml',
         reason: 'Pretrained model loaded successfully',
-        metadata: { modelPath: this.config.modelPath }
+        metadata: { modelPath: this.config.modelPath },
       });
     } catch (error) {
       this.securityLogger.logSecurityEvent({
         action: 'pretrained_model_load_failed',
         resource: 'bot_detection_ml',
         reason: `Failed to load pretrained model: ${error}`,
-        metadata: { error: String(error) }
+        metadata: { error: String(error) },
       });
       throw error;
     }
@@ -158,41 +158,47 @@ export class BotDetectionML {
     const model = tf.sequential();
 
     // Input layer
-    model.add(tf.layers.dense({
-      units: this.config.hiddenLayers[0],
-      activation: 'relu',
-      inputShape: [this.config.featureDimensions],
-      kernelInitializer: 'heNormal',
-      kernelRegularizer: tf.regularizers.l2({ l2: 0.001 })
-    }));
+    model.add(
+      tf.layers.dense({
+        units: this.config.hiddenLayers[0],
+        activation: 'relu',
+        inputShape: [this.config.featureDimensions],
+        kernelInitializer: 'heNormal',
+        kernelRegularizer: tf.regularizers.l2({ l2: 0.001 }),
+      })
+    );
 
     model.add(tf.layers.batchNormalization());
     model.add(tf.layers.dropout({ rate: 0.3 }));
 
     // Hidden layers
     for (let i = 1; i < this.config.hiddenLayers.length; i++) {
-      model.add(tf.layers.dense({
-        units: this.config.hiddenLayers[i],
-        activation: 'relu',
-        kernelInitializer: 'heNormal',
-        kernelRegularizer: tf.regularizers.l2({ l2: 0.001 })
-      }));
+      model.add(
+        tf.layers.dense({
+          units: this.config.hiddenLayers[i],
+          activation: 'relu',
+          kernelInitializer: 'heNormal',
+          kernelRegularizer: tf.regularizers.l2({ l2: 0.001 }),
+        })
+      );
 
       model.add(tf.layers.batchNormalization());
       model.add(tf.layers.dropout({ rate: 0.2 }));
     }
 
     // Output layer (binary classification: human vs bot)
-    model.add(tf.layers.dense({
-      units: 1,
-      activation: 'sigmoid'
-    }));
+    model.add(
+      tf.layers.dense({
+        units: 1,
+        activation: 'sigmoid',
+      })
+    );
 
     // Compile model
     model.compile({
       optimizer: tf.train.adam(this.config.learningRate),
       loss: 'binaryCrossentropy',
-      metrics: ['accuracy']
+      metrics: ['accuracy'],
     });
 
     this.model = model;
@@ -203,7 +209,7 @@ export class BotDetectionML {
    */
   extractFeatures(session: BehavioralSession): number[] {
     const cacheKey = session.sessionId;
-    
+
     // Check cache
     if (this.featureCache.has(cacheKey)) {
       return this.featureCache.get(cacheKey)!;
@@ -235,7 +241,7 @@ export class BotDetectionML {
     while (features.length < this.config.featureDimensions) {
       features.push(0);
     }
-    
+
     const normalizedFeatures = features.slice(0, this.config.featureDimensions);
 
     // Cache features
@@ -281,7 +287,7 @@ export class BotDetectionML {
 
       // Derived features
       metrics.pathEfficiency > 0.95 ? 1 : 0, // Suspiciously linear
-      metrics.velocityVariance < 0.001 ? 1 : 0 // No velocity variation
+      metrics.velocityVariance < 0.001 ? 1 : 0, // No velocity variation
     ];
   }
 
@@ -314,8 +320,8 @@ export class BotDetectionML {
       metrics.holdTimeVariance < 5 ? 1 : 0, // Inhuman precision
 
       // Additional derived features
-      (metrics.averageHoldTime > 50 && metrics.averageHoldTime < 200) ? 0 : 1, // Unnatural hold time
-      (metrics.typingSpeed > 60 && metrics.typingSpeed < 400) ? 0 : 1 // Unnatural typing speed
+      metrics.averageHoldTime > 50 && metrics.averageHoldTime < 200 ? 0 : 1, // Unnatural hold time
+      metrics.typingSpeed > 60 && metrics.typingSpeed < 400 ? 0 : 1, // Unnatural typing speed
     ];
   }
 
@@ -340,7 +346,7 @@ export class BotDetectionML {
 
       // Derived features
       metrics.clickDurationVariance < 100 ? 1 : 0, // No click variation
-      metrics.clickIntervalVariance < 10000 ? 1 : 0 // No interval variation
+      metrics.clickIntervalVariance < 10000 ? 1 : 0, // No interval variation
     ];
   }
 
@@ -359,7 +365,7 @@ export class BotDetectionML {
       this.normalizeValue(metrics.averageScrollSpeed, 0, 1000),
       this.normalizeValue(metrics.scrollSpeedVariance, 0, 100000),
       metrics.scrollDirectionConsistency, // Already 0-1
-      metrics.smoothScrollingScore // Already 0-1
+      metrics.smoothScrollingScore, // Already 0-1
     ];
   }
 
@@ -369,13 +375,12 @@ export class BotDetectionML {
   private extractTimingFeatures(session: BehavioralSession): number[] {
     const now = Date.now();
     const sessionDuration = (session.endTime || now) - session.startTime;
-    const responseTime = session.dataPoints.length > 0
-      ? session.dataPoints[0].timestamp - session.startTime
-      : 0;
+    const responseTime =
+      session.dataPoints.length > 0 ? session.dataPoints[0].timestamp - session.startTime : 0;
 
     return [
       this.normalizeValue(sessionDuration, 0, 600000), // Max 10 minutes
-      this.normalizeValue(responseTime, 0, 10000) // Max 10 seconds
+      this.normalizeValue(responseTime, 0, 10000), // Max 10 seconds
     ];
   }
 
@@ -383,7 +388,9 @@ export class BotDetectionML {
    * Normalize value to 0-1 range
    */
   private normalizeValue(value: number, min: number, max: number): number {
-    if (max === min) return 0.5;
+    if (max === min) {
+      return 0.5;
+    }
     return Math.max(0, Math.min(1, (value - min) / (max - min)));
   }
 
@@ -423,7 +430,7 @@ export class BotDetectionML {
       humanProbability,
       confidence,
       features,
-      processingTime: Date.now() - startTime
+      processingTime: Date.now() - startTime,
     };
   }
 
@@ -444,19 +451,16 @@ export class BotDetectionML {
     const mlWeight = 0.5;
     const ruleWeight = 0.5;
 
-    const combinedBotScore = 
-      (mlPrediction.botProbability * mlWeight) +
-      (mouseAnalysis.botScore * ruleWeight * 0.6) +
-      (keystrokeAnalysis.botScore * ruleWeight * 0.4);
+    const combinedBotScore =
+      mlPrediction.botProbability * mlWeight +
+      mouseAnalysis.botScore * ruleWeight * 0.6 +
+      keystrokeAnalysis.botScore * ruleWeight * 0.4;
 
     // Determine verdict
     const verdict = this.determineVerdict(combinedBotScore, mlPrediction.confidence);
 
     // Combine anomalies
-    const anomalies: Anomaly[] = [
-      ...mouseAnalysis.anomalies,
-      ...keystrokeAnalysis.anomalies
-    ];
+    const anomalies: Anomaly[] = [...mouseAnalysis.anomalies, ...keystrokeAnalysis.anomalies];
 
     // Add ML-specific anomalies
     if (mlPrediction.botProbability > 0.8) {
@@ -466,16 +470,12 @@ export class BotDetectionML {
         confidence: mlPrediction.confidence,
         description: 'ML model detected bot-like patterns',
         evidence: { botProbability: mlPrediction.botProbability },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
     // Identify risk factors
-    const riskFactors = this.identifyRiskFactors(
-      mlPrediction,
-      mouseAnalysis,
-      keystrokeAnalysis
-    );
+    const riskFactors = this.identifyRiskFactors(mlPrediction, mouseAnalysis, keystrokeAnalysis);
 
     // Calculate feature scores for result
     const features: BotDetectionFeatures = {
@@ -490,10 +490,22 @@ export class BotDetectionML {
       scrollSmoothness: mouseAnalysis.features.scrollSmoothness,
       keystrokeRhythm: keystrokeAnalysis.features.keystrokeRhythm,
       typingSpeedNaturalness: keystrokeAnalysis.features.typingSpeedNaturalness,
-      responseTimeNaturalness: (mouseAnalysis.features.responseTimeNaturalness + keystrokeAnalysis.features.responseTimeNaturalness) / 2,
-      sessionDurationNaturalness: (mouseAnalysis.features.sessionDurationNaturalness + keystrokeAnalysis.features.sessionDurationNaturalness) / 2,
-      patternVariability: (mouseAnalysis.features.patternVariability + keystrokeAnalysis.features.patternVariability) / 2,
-      repetitionScore: Math.max(mouseAnalysis.features.repetitionScore, keystrokeAnalysis.features.repetitionScore)
+      responseTimeNaturalness:
+        (mouseAnalysis.features.responseTimeNaturalness +
+          keystrokeAnalysis.features.responseTimeNaturalness) /
+        2,
+      sessionDurationNaturalness:
+        (mouseAnalysis.features.sessionDurationNaturalness +
+          keystrokeAnalysis.features.sessionDurationNaturalness) /
+        2,
+      patternVariability:
+        (mouseAnalysis.features.patternVariability +
+          keystrokeAnalysis.features.patternVariability) /
+        2,
+      repetitionScore: Math.max(
+        mouseAnalysis.features.repetitionScore,
+        keystrokeAnalysis.features.repetitionScore
+      ),
     };
 
     const result: BotDetectionResult = {
@@ -505,7 +517,7 @@ export class BotDetectionML {
       anomalies,
       riskFactors,
       timestamp: Date.now(),
-      processingTime: Date.now() - startTime
+      processingTime: Date.now() - startTime,
     };
 
     // Log detection result
@@ -519,8 +531,8 @@ export class BotDetectionML {
         botScore: combinedBotScore,
         confidence: mlPrediction.confidence,
         anomalyCount: anomalies.length,
-        processingTime: result.processingTime
-      }
+        processingTime: result.processingTime,
+      },
     });
 
     return result;
@@ -610,18 +622,18 @@ export class BotDetectionML {
                   loss: logs?.loss,
                   accuracy: logs?.acc,
                   valLoss: logs?.val_loss,
-                  valAccuracy: logs?.val_acc
-                }
+                  valAccuracy: logs?.val_acc,
+                },
               });
             }
-          }
-        }
+          },
+        },
       });
 
       // Calculate metrics
       const predictions = this.model.predict(featuresTensor) as tf.Tensor;
       const predictionsData = await predictions.data();
-      const predictedLabels = Array.from(predictionsData).map(p => p > 0.5 ? 1 : 0);
+      const predictedLabels = Array.from(predictionsData).map(p => (p > 0.5 ? 1 : 0));
 
       const metrics = this.calculateMetrics(trainingData.labels, predictedLabels);
       this.modelMetrics = metrics;
@@ -640,8 +652,8 @@ export class BotDetectionML {
         metadata: {
           trainingTime: Date.now() - startTime,
           samples: trainingData.features.length,
-          metrics
-        }
+          metrics,
+        },
       });
 
       return metrics;
@@ -650,7 +662,7 @@ export class BotDetectionML {
         action: 'ml_training_failed',
         resource: 'bot_detection_ml',
         reason: `Model training failed: ${error}`,
-        metadata: { error: String(error) }
+        metadata: { error: String(error) },
       });
       throw error;
     }
@@ -660,19 +672,27 @@ export class BotDetectionML {
    * Calculate model performance metrics
    */
   private calculateMetrics(actual: number[], predicted: number[]): ModelMetrics {
-    let tp = 0, fp = 0, tn = 0, fn = 0;
+    let tp = 0,
+      fp = 0,
+      tn = 0,
+      fn = 0;
 
     for (let i = 0; i < actual.length; i++) {
-      if (actual[i] === 1 && predicted[i] === 1) tp++;
-      else if (actual[i] === 0 && predicted[i] === 1) fp++;
-      else if (actual[i] === 0 && predicted[i] === 0) tn++;
-      else if (actual[i] === 1 && predicted[i] === 0) fn++;
+      if (actual[i] === 1 && predicted[i] === 1) {
+        tp++;
+      } else if (actual[i] === 0 && predicted[i] === 1) {
+        fp++;
+      } else if (actual[i] === 0 && predicted[i] === 0) {
+        tn++;
+      } else if (actual[i] === 1 && predicted[i] === 0) {
+        fn++;
+      }
     }
 
     const accuracy = (tp + tn) / actual.length;
     const precision = tp / (tp + fp) || 0;
     const recall = tp / (tp + fn) || 0;
-    const f1Score = 2 * (precision * recall) / (precision + recall) || 0;
+    const f1Score = (2 * (precision * recall)) / (precision + recall) || 0;
 
     // Simple AUC calculation (approximation)
     const tpr = recall;
@@ -685,7 +705,10 @@ export class BotDetectionML {
       recall,
       f1Score,
       auc,
-      confusionMatrix: [[tn, fp], [fn, tp]]
+      confusionMatrix: [
+        [tn, fp],
+        [fn, tp],
+      ],
     };
   }
 
@@ -699,19 +722,19 @@ export class BotDetectionML {
 
     try {
       await this.model.save(`file://${path}`);
-      
+
       this.securityLogger.logSecurityEvent({
         action: 'ml_model_saved',
         resource: 'bot_detection_ml',
         reason: 'Model saved successfully',
-        metadata: { path }
+        metadata: { path },
       });
     } catch (error) {
       this.securityLogger.logSecurityEvent({
         action: 'ml_model_save_failed',
         resource: 'bot_detection_ml',
         reason: `Failed to save model: ${error}`,
-        metadata: { error: String(error) }
+        metadata: { error: String(error) },
       });
       throw error;
     }
@@ -721,8 +744,10 @@ export class BotDetectionML {
    * Check if model needs retraining
    */
   needsRetraining(): boolean {
-    if (!this.lastTrainingTime) return true;
-    
+    if (!this.lastTrainingTime) {
+      return true;
+    }
+
     const hoursSinceTraining = (Date.now() - this.lastTrainingTime) / (1000 * 60 * 60);
     return hoursSinceTraining >= this.config.retrainInterval;
   }
@@ -754,7 +779,7 @@ export class BotDetectionML {
       modelLoaded: this.model !== null,
       featureCacheSize: this.featureCache.size,
       lastTrainingTime: this.lastTrainingTime || null,
-      modelMetrics: this.modelMetrics
+      modelMetrics: this.modelMetrics,
     };
   }
 

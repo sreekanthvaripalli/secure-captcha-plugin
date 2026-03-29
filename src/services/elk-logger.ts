@@ -41,8 +41,8 @@ export interface ELKConfig {
 }
 
 export class ELKLogger {
-  private logger: winston.Logger;
-  private config: ELKConfig;
+  private readonly logger: winston.Logger;
+  private readonly config: ELKConfig;
 
   constructor(config: ELKConfig) {
     this.config = config;
@@ -64,7 +64,7 @@ export class ELKLogger {
               const metaStr = Object.keys(meta).length ? JSON.stringify(meta, null, 2) : '';
               return `${timestamp} [${level.toUpperCase()}]: ${message} ${metaStr}`;
             })
-          )
+          ),
         })
       );
     }
@@ -77,10 +77,7 @@ export class ELKLogger {
           level: this.config.logLevel,
           maxsize: this.config.maxFileSize || 10 * 1024 * 1024, // 10MB
           maxFiles: this.config.maxFiles || 5,
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.json()
-          )
+          format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
         })
       );
     }
@@ -94,12 +91,9 @@ export class ELKLogger {
         indexSuffixPattern: this.config.elasticsearch.indexSuffixPattern,
         clientOpts: {
           node: this.config.elasticsearch.node,
-          auth: this.config.elasticsearch.auth
+          auth: this.config.elasticsearch.auth,
         },
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.json()
-        )
+        format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
       });
       transports.push(esTransport);
     }
@@ -109,7 +103,7 @@ export class ELKLogger {
       defaultMeta: { service: 'secure-captcha-plugin' },
       transports,
       exceptionHandlers: transports,
-      rejectionHandlers: transports
+      rejectionHandlers: transports,
     });
   }
 
@@ -120,7 +114,7 @@ export class ELKLogger {
     this.logger.info('HTTP Request', {
       type: 'REQUEST',
       ...context,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -128,7 +122,7 @@ export class ELKLogger {
     this.logger.info('HTTP Response', {
       type: 'RESPONSE',
       ...context,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -141,10 +135,10 @@ export class ELKLogger {
       error: {
         name: error.name,
         message: error.message,
-        stack: error.stack
+        stack: error.stack,
       },
       ...context,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -158,7 +152,7 @@ export class ELKLogger {
       eventType: event.action,
       details: event,
       ...context,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -172,7 +166,7 @@ export class ELKLogger {
       value,
       unit: 'ms',
       ...context,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -185,7 +179,7 @@ export class ELKLogger {
       action,
       details,
       ...context,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -204,7 +198,7 @@ export class ELKLogger {
       difficulty,
       responseTime,
       ...context,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -223,7 +217,7 @@ export class ELKLogger {
       isValid,
       responseTime,
       ...context,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -240,24 +234,20 @@ export class ELKLogger {
       action,
       sessionId,
       ...context,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
   /**
    * Log cache event
    */
-  logCache(
-    action: 'HIT' | 'MISS' | 'SET' | 'DELETE',
-    key: string,
-    context?: LogContext
-  ): void {
+  logCache(action: 'HIT' | 'MISS' | 'SET' | 'DELETE', key: string, context?: LogContext): void {
     this.logger.debug('Cache Event', {
       type: 'CACHE',
       action,
       key,
       ...context,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -279,7 +269,7 @@ export class ELKLogger {
       current,
       remaining: limit - current,
       ...context,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -294,11 +284,11 @@ export class ELKLogger {
    * Close logger and all transports
    */
   async close(): Promise<void> {
-    await new Promise<void>((resolve) => {
+    await new Promise<void>(resolve => {
       const timeout = setTimeout(() => {
         resolve();
       }, 1000);
-      
+
       this.logger.on('finish', () => {
         clearTimeout(timeout);
         resolve();
@@ -318,12 +308,12 @@ export const defaultELKConfig: ELKConfig = {
     auth: process.env.ELASTICSEARCH_USERNAME
       ? {
           username: process.env.ELASTICSEARCH_USERNAME,
-          password: process.env.ELASTICSEARCH_PASSWORD || ''
+          password: process.env.ELASTICSEARCH_PASSWORD || '',
         }
       : undefined,
     ssl: {
-      rejectUnauthorized: process.env.ELASTICSEARCH_SSL_VERIFY !== 'false'
-    }
+      rejectUnauthorized: process.env.ELASTICSEARCH_SSL_VERIFY !== 'false',
+    },
   },
   logLevel: process.env.LOG_LEVEL || 'info',
   enableConsole: process.env.LOG_CONSOLE !== 'false',
@@ -331,7 +321,7 @@ export const defaultELKConfig: ELKConfig = {
   enableElasticsearch: process.env.LOG_ELASTICSEARCH === 'true',
   filePath: process.env.LOG_FILE_PATH || './logs/app.log',
   maxFileSize: parseInt(process.env.LOG_MAX_FILE_SIZE || '10485760'), // 10MB
-  maxFiles: parseInt(process.env.LOG_MAX_FILES || '5')
+  maxFiles: parseInt(process.env.LOG_MAX_FILES || '5'),
 };
 
 // Singleton instance

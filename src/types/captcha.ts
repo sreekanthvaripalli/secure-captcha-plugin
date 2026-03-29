@@ -2,14 +2,14 @@
  * Captcha type definitions
  */
 
-export type CaptchaType = 
-  | 'text' 
-  | 'math' 
-  | 'logic' 
-  | 'image' 
-  | 'audio' 
-  | 'behavioral' 
-  | 'invisible' 
+export type CaptchaType =
+  | 'text'
+  | 'math'
+  | 'logic'
+  | 'image'
+  | 'audio'
+  | 'behavioral'
+  | 'invisible'
   | 'multi-layer';
 
 export type CaptchaDifficulty = 'easy' | 'medium' | 'hard';

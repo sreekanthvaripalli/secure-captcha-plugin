@@ -20,7 +20,7 @@ describe('AnomalyDetector', () => {
     patternDeviationThreshold: 0.3,
     adaptiveThresholdLearningRate: 0.1,
     minSamplesForAdaptive: 50,
-    anomalyScoreThreshold: 0.7
+    anomalyScoreThreshold: 0.7,
   };
 
   beforeEach(() => {
@@ -29,7 +29,7 @@ describe('AnomalyDetector', () => {
       enableFileLogging: false,
       logFilePath: '/tmp/test.log',
       maxLogFileSize: 1024,
-      maxLogFiles: 5
+      maxLogFiles: 5,
     }) as jest.Mocked<SecurityLogger>;
 
     anomalyDetector = new AnomalyDetector(defaultConfig, mockSecurityLogger);
@@ -51,7 +51,7 @@ describe('AnomalyDetector', () => {
     it('should initialize with custom config', () => {
       const customConfig: Partial<AnomalyDetectionConfig> = {
         statisticalThreshold: 3.0,
-        patternDeviationThreshold: 0.5
+        patternDeviationThreshold: 0.5,
       };
 
       const customDetector = new AnomalyDetector(customConfig, mockSecurityLogger);
@@ -70,7 +70,7 @@ describe('AnomalyDetector', () => {
         movements: [
           { x: 100, y: 200, timestamp: Date.now() - 4000 },
           { x: 150, y: 250, timestamp: Date.now() - 3000 },
-          { x: 200, y: 300, timestamp: Date.now() - 2000 }
+          { x: 200, y: 300, timestamp: Date.now() - 2000 },
         ],
         clicks: [],
         scrolls: [],
@@ -79,20 +79,38 @@ describe('AnomalyDetector', () => {
         totalDistance: 70.71,
         averageVelocity: 0.014,
         maxVelocity: 0.02,
-        minVelocity: 0.01
+        minVelocity: 0.01,
       },
       keystrokePattern: {
         sessionId: 'test-session-123',
         events: [
-          { key: 'a', code: 'KeyA', timestamp: Date.now() - 4000, duration: 80, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-          { key: 'b', code: 'KeyB', timestamp: Date.now() - 3000, duration: 90, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-          { key: 'c', code: 'KeyC', timestamp: Date.now() - 2000, duration: 85, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+          {
+            key: 'a',
+            code: 'KeyA',
+            timestamp: Date.now() - 4000,
+            duration: 80,
+            modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+          },
+          {
+            key: 'b',
+            code: 'KeyB',
+            timestamp: Date.now() - 3000,
+            duration: 90,
+            modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+          },
+          {
+            key: 'c',
+            code: 'KeyC',
+            timestamp: Date.now() - 2000,
+            duration: 85,
+            modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+          },
         ],
         averageHoldTime: 85,
         averageFlightTime: 100,
         typingSpeed: 200,
         errorRate: 0.05,
-        rhythm: [100, 120, 90]
+        rhythm: [100, 120, 90],
       },
       metrics: {
         movement: {
@@ -113,7 +131,7 @@ describe('AnomalyDetector', () => {
           angleVariance: 0.1,
           directionChanges: 2,
           averageJerk: 0.0001,
-          jerkVariance: 0.00001
+          jerkVariance: 0.00001,
         },
         click: {
           totalClicks: 0,
@@ -121,14 +139,14 @@ describe('AnomalyDetector', () => {
           clickDurationVariance: 0,
           doubleClickRate: 0,
           clickAccuracy: 1.0,
-          clickIntervalVariance: 0
+          clickIntervalVariance: 0,
         },
         scroll: {
           totalScrolls: 0,
           averageScrollSpeed: 0,
           scrollSpeedVariance: 0,
           scrollDirectionConsistency: 1.0,
-          smoothScrollingScore: 1.0
+          smoothScrollingScore: 1.0,
         },
         keystroke: {
           averageHoldTime: 85,
@@ -137,10 +155,10 @@ describe('AnomalyDetector', () => {
           flightTimeVariance: 200,
           typingSpeed: 200,
           rhythmConsistency: 0.8,
-          errorRate: 0.05
-        }
+          errorRate: 0.05,
+        },
       },
-      ...overrides
+      ...overrides,
     });
 
     it('should perform anomaly detection on a session', async () => {
@@ -200,7 +218,7 @@ describe('AnomalyDetector', () => {
           movements: Array.from({ length: 20 }, (_, i) => ({
             x: i * 10,
             y: i * 10,
-            timestamp: Date.now() - 5000 + i * 250
+            timestamp: Date.now() - 5000 + i * 250,
           })),
           clicks: [],
           scrolls: [],
@@ -209,7 +227,7 @@ describe('AnomalyDetector', () => {
           totalDistance: 282.84,
           averageVelocity: 0.056,
           maxVelocity: 0.1,
-          minVelocity: 0.01
+          minVelocity: 0.01,
         },
         keystrokePattern: {
           sessionId: 'test-session-123',
@@ -218,13 +236,13 @@ describe('AnomalyDetector', () => {
             code: 'KeyA',
             timestamp: Date.now() - 5000 + i * 500,
             duration: 80 + i * 5,
-            modifiers: { shift: false, ctrl: false, alt: false, meta: false }
+            modifiers: { shift: false, ctrl: false, alt: false, meta: false },
           })),
           averageHoldTime: 85,
           averageFlightTime: 100,
           typingSpeed: 200,
           errorRate: 0.05,
-          rhythm: [100, 120, 90, 110, 105, 115, 95, 125, 130, 120]
+          rhythm: [100, 120, 90, 110, 105, 115, 95, 125, 130, 120],
         },
         metrics: {
           movement: {
@@ -245,7 +263,7 @@ describe('AnomalyDetector', () => {
             angleVariance: 0.05,
             directionChanges: 10,
             averageJerk: 0.0002,
-            jerkVariance: 0.00002
+            jerkVariance: 0.00002,
           },
           click: {
             totalClicks: 0,
@@ -253,14 +271,14 @@ describe('AnomalyDetector', () => {
             clickDurationVariance: 0,
             doubleClickRate: 0,
             clickAccuracy: 1.0,
-            clickIntervalVariance: 0
+            clickIntervalVariance: 0,
           },
           scroll: {
             totalScrolls: 0,
             averageScrollSpeed: 0,
             scrollSpeedVariance: 0,
             scrollDirectionConsistency: 1.0,
-            smoothScrollingScore: 1.0
+            smoothScrollingScore: 1.0,
           },
           keystroke: {
             averageHoldTime: 85,
@@ -269,9 +287,9 @@ describe('AnomalyDetector', () => {
             flightTimeVariance: 200,
             typingSpeed: 200,
             rhythmConsistency: 0.8,
-            errorRate: 0.05
-          }
-        }
+            errorRate: 0.05,
+          },
+        },
       };
 
       const result = await anomalyDetector.detectAnomalies(session);
@@ -302,7 +320,7 @@ describe('AnomalyDetector', () => {
           movements: [
             { x: 100, y: 200, timestamp: Date.now() - 4000 },
             { x: 150, y: 250, timestamp: Date.now() - 3000 },
-            { x: 200, y: 300, timestamp: Date.now() - 2000 }
+            { x: 200, y: 300, timestamp: Date.now() - 2000 },
           ],
           clicks: [],
           scrolls: [],
@@ -311,20 +329,38 @@ describe('AnomalyDetector', () => {
           totalDistance: 70.71,
           averageVelocity: 0.014,
           maxVelocity: 0.02,
-          minVelocity: 0.01
+          minVelocity: 0.01,
         },
         keystrokePattern: {
           sessionId: 'test-session-123',
           events: [
-            { key: 'a', code: 'KeyA', timestamp: Date.now() - 4000, duration: 80, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-            { key: 'b', code: 'KeyB', timestamp: Date.now() - 3000, duration: 90, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-            { key: 'c', code: 'KeyC', timestamp: Date.now() - 2000, duration: 85, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+            {
+              key: 'a',
+              code: 'KeyA',
+              timestamp: Date.now() - 4000,
+              duration: 80,
+              modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+            },
+            {
+              key: 'b',
+              code: 'KeyB',
+              timestamp: Date.now() - 3000,
+              duration: 90,
+              modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+            },
+            {
+              key: 'c',
+              code: 'KeyC',
+              timestamp: Date.now() - 2000,
+              duration: 85,
+              modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+            },
           ],
           averageHoldTime: 85,
           averageFlightTime: 100,
           typingSpeed: 200,
           errorRate: 0.05,
-          rhythm: [100, 120, 90]
+          rhythm: [100, 120, 90],
         },
         metrics: {
           movement: {
@@ -345,7 +381,7 @@ describe('AnomalyDetector', () => {
             angleVariance: 0.1,
             directionChanges: 2,
             averageJerk: 0.0001,
-            jerkVariance: 0.00001
+            jerkVariance: 0.00001,
           },
           click: {
             totalClicks: 0,
@@ -353,14 +389,14 @@ describe('AnomalyDetector', () => {
             clickDurationVariance: 0,
             doubleClickRate: 0,
             clickAccuracy: 1.0,
-            clickIntervalVariance: 0
+            clickIntervalVariance: 0,
           },
           scroll: {
             totalScrolls: 0,
             averageScrollSpeed: 0,
             scrollSpeedVariance: 0,
             scrollDirectionConsistency: 1.0,
-            smoothScrollingScore: 1.0
+            smoothScrollingScore: 1.0,
           },
           keystroke: {
             averageHoldTime: 85,
@@ -369,9 +405,9 @@ describe('AnomalyDetector', () => {
             flightTimeVariance: 200,
             typingSpeed: 200,
             rhythmConsistency: 0.8,
-            errorRate: 0.05
-          }
-        }
+            errorRate: 0.05,
+          },
+        },
       };
 
       const result = await anomalyDetector.detectAnomalies(session);
@@ -400,7 +436,7 @@ describe('AnomalyDetector', () => {
           sessionId: 'test-session-123',
           movements: [
             { x: 100, y: 200, timestamp: Date.now() - 4000 },
-            { x: 150, y: 250, timestamp: Date.now() - 3000 }
+            { x: 150, y: 250, timestamp: Date.now() - 3000 },
           ],
           clicks: [],
           scrolls: [],
@@ -409,19 +445,31 @@ describe('AnomalyDetector', () => {
           totalDistance: 70.71,
           averageVelocity: 0.014,
           maxVelocity: 0.02,
-          minVelocity: 0.01
+          minVelocity: 0.01,
         },
         keystrokePattern: {
           sessionId: 'test-session-123',
           events: [
-            { key: 'a', code: 'KeyA', timestamp: Date.now() - 4000, duration: 80, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-            { key: 'b', code: 'KeyB', timestamp: Date.now() - 3000, duration: 90, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+            {
+              key: 'a',
+              code: 'KeyA',
+              timestamp: Date.now() - 4000,
+              duration: 80,
+              modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+            },
+            {
+              key: 'b',
+              code: 'KeyB',
+              timestamp: Date.now() - 3000,
+              duration: 90,
+              modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+            },
           ],
           averageHoldTime: 85,
           averageFlightTime: 100,
           typingSpeed: 200,
           errorRate: 0.05,
-          rhythm: [100, 120]
+          rhythm: [100, 120],
         },
         metrics: {
           movement: {
@@ -442,7 +490,7 @@ describe('AnomalyDetector', () => {
             angleVariance: 0.1,
             directionChanges: 2,
             averageJerk: 0.0001,
-            jerkVariance: 0.00001
+            jerkVariance: 0.00001,
           },
           click: {
             totalClicks: 0,
@@ -450,14 +498,14 @@ describe('AnomalyDetector', () => {
             clickDurationVariance: 0,
             doubleClickRate: 0,
             clickAccuracy: 1.0,
-            clickIntervalVariance: 0
+            clickIntervalVariance: 0,
           },
           scroll: {
             totalScrolls: 0,
             averageScrollSpeed: 0,
             scrollSpeedVariance: 0,
             scrollDirectionConsistency: 1.0,
-            smoothScrollingScore: 1.0
+            smoothScrollingScore: 1.0,
           },
           keystroke: {
             averageHoldTime: 85,
@@ -466,9 +514,9 @@ describe('AnomalyDetector', () => {
             flightTimeVariance: 200,
             typingSpeed: 200,
             rhythmConsistency: 0.8,
-            errorRate: 0.05
-          }
-        }
+            errorRate: 0.05,
+          },
+        },
       };
 
       const result = await anomalyDetector.detectAnomalies(session);
@@ -499,7 +547,7 @@ describe('AnomalyDetector', () => {
           sessionId: 'test-session-123',
           movements: [
             { x: 100, y: 200, timestamp: Date.now() - 4000 },
-            { x: 150, y: 250, timestamp: Date.now() - 3000 }
+            { x: 150, y: 250, timestamp: Date.now() - 3000 },
           ],
           clicks: [],
           scrolls: [],
@@ -508,19 +556,31 @@ describe('AnomalyDetector', () => {
           totalDistance: 70.71,
           averageVelocity: 0.014,
           maxVelocity: 0.02,
-          minVelocity: 0.01
+          minVelocity: 0.01,
         },
         keystrokePattern: {
           sessionId: 'test-session-123',
           events: [
-            { key: 'a', code: 'KeyA', timestamp: Date.now() - 4000, duration: 80, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-            { key: 'b', code: 'KeyB', timestamp: Date.now() - 3000, duration: 90, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+            {
+              key: 'a',
+              code: 'KeyA',
+              timestamp: Date.now() - 4000,
+              duration: 80,
+              modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+            },
+            {
+              key: 'b',
+              code: 'KeyB',
+              timestamp: Date.now() - 3000,
+              duration: 90,
+              modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+            },
           ],
           averageHoldTime: 85,
           averageFlightTime: 100,
           typingSpeed: 200,
           errorRate: 0.05,
-          rhythm: [100, 120]
+          rhythm: [100, 120],
         },
         metrics: {
           movement: {
@@ -541,7 +601,7 @@ describe('AnomalyDetector', () => {
             angleVariance: 0.1,
             directionChanges: 2,
             averageJerk: 0.0001,
-            jerkVariance: 0.00001
+            jerkVariance: 0.00001,
           },
           click: {
             totalClicks: 0,
@@ -549,14 +609,14 @@ describe('AnomalyDetector', () => {
             clickDurationVariance: 0,
             doubleClickRate: 0,
             clickAccuracy: 1.0,
-            clickIntervalVariance: 0
+            clickIntervalVariance: 0,
           },
           scroll: {
             totalScrolls: 0,
             averageScrollSpeed: 0,
             scrollSpeedVariance: 0,
             scrollDirectionConsistency: 1.0,
-            smoothScrollingScore: 1.0
+            smoothScrollingScore: 1.0,
           },
           keystroke: {
             averageHoldTime: 85,
@@ -565,9 +625,9 @@ describe('AnomalyDetector', () => {
             flightTimeVariance: 200,
             typingSpeed: 200,
             rhythmConsistency: 0.8,
-            errorRate: 0.05
-          }
-        }
+            errorRate: 0.05,
+          },
+        },
       };
 
       const result = await anomalyDetector.detectAnomalies(session);
@@ -594,7 +654,7 @@ describe('AnomalyDetector', () => {
           totalDistance: 0,
           averageVelocity: 0,
           maxVelocity: 0,
-          minVelocity: 0
+          minVelocity: 0,
         },
         keystrokePattern: {
           sessionId: 'minimal-session',
@@ -603,7 +663,7 @@ describe('AnomalyDetector', () => {
           averageFlightTime: 0,
           typingSpeed: 0,
           errorRate: 0,
-          rhythm: []
+          rhythm: [],
         },
         metrics: {
           movement: {
@@ -624,7 +684,7 @@ describe('AnomalyDetector', () => {
             angleVariance: 0,
             directionChanges: 0,
             averageJerk: 0,
-            jerkVariance: 0
+            jerkVariance: 0,
           },
           click: {
             totalClicks: 0,
@@ -632,14 +692,14 @@ describe('AnomalyDetector', () => {
             clickDurationVariance: 0,
             doubleClickRate: 0,
             clickAccuracy: 0,
-            clickIntervalVariance: 0
+            clickIntervalVariance: 0,
           },
           scroll: {
             totalScrolls: 0,
             averageScrollSpeed: 0,
             scrollSpeedVariance: 0,
             scrollDirectionConsistency: 0,
-            smoothScrollingScore: 0
+            smoothScrollingScore: 0,
           },
           keystroke: {
             averageHoldTime: 0,
@@ -648,13 +708,13 @@ describe('AnomalyDetector', () => {
             flightTimeVariance: 0,
             typingSpeed: 0,
             rhythmConsistency: 0,
-            errorRate: 0
-          }
-        }
+            errorRate: 0,
+          },
+        },
       };
 
       const result = await anomalyDetector.detectAnomalies(minimalSession);
-      
+
       expect(result).toBeDefined();
       expect(result.anomalies).toBeDefined();
       expect(result.anomalyScore).toBeGreaterThanOrEqual(0);
@@ -670,7 +730,7 @@ describe('AnomalyDetector', () => {
           sessionId: 'test-session-123',
           movements: [
             { x: 100, y: 200, timestamp: Date.now() - 4000 },
-            { x: 150, y: 250, timestamp: Date.now() - 3000 }
+            { x: 150, y: 250, timestamp: Date.now() - 3000 },
           ],
           clicks: [],
           scrolls: [],
@@ -679,19 +739,31 @@ describe('AnomalyDetector', () => {
           totalDistance: 70.71,
           averageVelocity: 0.014,
           maxVelocity: 0.02,
-          minVelocity: 0.01
+          minVelocity: 0.01,
         },
         keystrokePattern: {
           sessionId: 'test-session-123',
           events: [
-            { key: 'a', code: 'KeyA', timestamp: Date.now() - 4000, duration: 80, modifiers: { shift: false, ctrl: false, alt: false, meta: false } },
-            { key: 'b', code: 'KeyB', timestamp: Date.now() - 3000, duration: 90, modifiers: { shift: false, ctrl: false, alt: false, meta: false } }
+            {
+              key: 'a',
+              code: 'KeyA',
+              timestamp: Date.now() - 4000,
+              duration: 80,
+              modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+            },
+            {
+              key: 'b',
+              code: 'KeyB',
+              timestamp: Date.now() - 3000,
+              duration: 90,
+              modifiers: { shift: false, ctrl: false, alt: false, meta: false },
+            },
           ],
           averageHoldTime: 85,
           averageFlightTime: 100,
           typingSpeed: 200,
           errorRate: 0.05,
-          rhythm: [100, 120]
+          rhythm: [100, 120],
         },
         metrics: {
           movement: {
@@ -712,7 +784,7 @@ describe('AnomalyDetector', () => {
             angleVariance: 0.1,
             directionChanges: 2,
             averageJerk: 0.0001,
-            jerkVariance: 0.00001
+            jerkVariance: 0.00001,
           },
           click: {
             totalClicks: 0,
@@ -720,14 +792,14 @@ describe('AnomalyDetector', () => {
             clickDurationVariance: 0,
             doubleClickRate: 0,
             clickAccuracy: 1.0,
-            clickIntervalVariance: 0
+            clickIntervalVariance: 0,
           },
           scroll: {
             totalScrolls: 0,
             averageScrollSpeed: 0,
             scrollSpeedVariance: 0,
             scrollDirectionConsistency: 1.0,
-            smoothScrollingScore: 1.0
+            smoothScrollingScore: 1.0,
           },
           keystroke: {
             averageHoldTime: 85,
@@ -736,9 +808,9 @@ describe('AnomalyDetector', () => {
             flightTimeVariance: 200,
             typingSpeed: 200,
             rhythmConsistency: 0.8,
-            errorRate: 0.05
-          }
-        }
+            errorRate: 0.05,
+          },
+        },
       };
 
       await anomalyDetector.detectAnomalies(session);
@@ -746,7 +818,7 @@ describe('AnomalyDetector', () => {
       expect(mockSecurityLogger.logSecurityEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'anomaly_detection_completed',
-          resource: 'anomaly_detector'
+          resource: 'anomaly_detector',
         })
       );
     });
