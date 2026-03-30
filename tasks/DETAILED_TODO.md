@@ -1089,18 +1089,37 @@ This document provides granular, trackable tasks for building an enterprise-grad
 - Tests cover: Constructor, generate() middleware, validate() middleware, protect() middleware, getTypes() endpoint, getService(), custom response formatter, custom error messages
 
 #### 5.1.4 NestJS Module
-- [ ] **Create NestJS Module**
-  - [ ] Module definition
-  - [ ] Service provider
-  - [ ] Guard implementation
-  - [ ] Decorator creation
-  - [ ] TypeScript types
+- [x] **Create NestJS Module** ✅ **COMPLETE**
+  - [x] Module definition ✅
+  - [x] Service provider ✅
+  - [x] Guard implementation ✅
+  - [x] Decorator creation ✅
+  - [x] TypeScript types ✅
 
-- [ ] **Write NestJS Tests** ⏸️ **POSTPONED TO PHASE 6**
-  - [ ] Test module
-  - [ ] Test service
-  - [ ] Test guard
-  - [ ] Test decorators
+- [x] **Write NestJS Tests** ✅ **COMPLETE**
+  - [x] Test module ✅
+  - [x] Test service ✅
+  - [x] Test guard ✅
+  - [x] Test decorators ✅
+
+**Implementation Notes:**
+- Created comprehensive `NestJsCaptchaModule` in `src/plugins/nestjs-captcha.ts`
+- Features include:
+  - **Module Definition**: Dynamic module with `register()` and `registerAsync()` methods
+  - **Service Provider**: `NestJsCaptchaService` wrapping core CaptchaService with NestJS integration
+  - **Guard Implementation**: `CaptchaGuard()` factory function creating mixin guard class
+  - **Decorator Creation**: `UseCaptchaGuard()` and `CaptchaOptions()` decorators
+  - **Middleware**: `CaptchaMiddleware` for handling CAPTCHA generation and validation requests
+  - **TypeScript Support**: Full TypeScript types with module augmentation
+  - **Configuration Options**: types, defaultDifficulty, sessionTimeout, maxAttempts, enableBehavioralAnalysis, enableDeviceFingerprinting, errorMessages, skip, sessionIdGenerator, responseFormatter
+  - **Error Handling**: Comprehensive error handling with custom error messages
+  - **Request Decoration**: Attaches CAPTCHA data to request object
+- Updated `src/plugins/index.ts` to export NestJS module
+- Created 45 comprehensive unit tests in `tests/unit/nestjs-captcha.test.ts`
+- All 45 tests passing
+- Tests cover: Module registration, Service constructor, generate() method, validate() method, getAvailableTypes(), Middleware, Guard canActivate(), Decorators
+- Fixed mock implementation issues by restoring mock methods after jest.clearAllMocks()
+- Added type assertions for mock objects to bypass TypeScript type checking
 
 ### Week 2: Frontend Components (May 26-30, 2026)
 
