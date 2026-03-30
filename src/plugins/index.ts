@@ -43,8 +43,27 @@ export {
   createNestJsCaptchaModule,
 } from './nestjs-captcha';
 
+// React Component Library
+export {
+  CaptchaProvider,
+  CaptchaWidget,
+  CaptchaContainer,
+  CaptchaButton,
+  CaptchaInput,
+  useCaptcha,
+  defaultTheme,
+  CaptchaTheme,
+  CaptchaOptions as ReactCaptchaOptions,
+  CaptchaState,
+  CaptchaContextValue,
+  CaptchaWidgetProps,
+  CaptchaProviderProps,
+  UseCaptchaReturn,
+} from './react-captcha';
+
 // Default exports
 export { default as ExpressCaptcha } from './express-captcha';
 export { default as FastifyCaptcha } from './fastify-captcha';
 export { default as KoaCaptcha } from './koa-captcha';
 export { default as NestJsCaptcha } from './nestjs-captcha';
+export { default as ReactCaptcha } from './react-captcha';
