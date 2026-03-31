@@ -519,7 +519,7 @@ class CircuitBreaker {
 | **Angular** | Component | < 5 minutes | ✅ Complete (requires manual import) |
 | **Svelte** | Component | < 5 minutes | ✅ Complete |
 | **WordPress** | Plugin | < 5 minutes | ✅ Complete |
-| **Drupal** | Module | < 5 minutes | 🚧 In Progress |
+| **Drupal** | Module | < 5 minutes | ✅ Complete |
 
 ### API Support
 
@@ -678,6 +678,30 @@ echo do_shortcode('[secure_captcha type="math" difficulty="medium"]');
 1. Copy `wordpress/secure-captcha/` to `wp-content/plugins/`
 2. Activate plugin in WordPress admin
 3. Configure at Settings > Secure CAPTCHA
+
+#### Drupal
+```php
+// Add to any form using hook_form_alter()
+$form['secure_captcha'] = [
+  '#type' => 'secure_captcha',
+];
+
+// Or use the block plugin via admin UI
+```
+
+**Drupal Module Features:**
+- Admin settings page at `/admin/config/people/secure-captcha`
+- Custom form element (`#type => 'secure_captcha'`)
+- Block plugin for any region
+- Automatic form protection via hook_form_alter()
+- AJAX controller for generate/validate
+- Permissions: Administer and bypass
+
+**Installation:**
+1. Copy `drupal/secure_captcha/` to `modules/custom/`
+2. Enable: `drush en secure_captcha`
+3. Configure at `/admin/config/people/secure-captcha`
+4. Select forms to protect (login, registration, comments, contact)
 
 ---
 

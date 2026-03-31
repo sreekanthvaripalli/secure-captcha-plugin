@@ -1338,17 +1338,37 @@ This document provides granular, trackable tasks for building an enterprise-grad
 - Created `assets/css/admin.css` with admin settings page styles
 
 #### 5.3.2 Drupal Module
-- [ ] **Create Drupal Module**
-  - [ ] Module structure
-  - [ ] Form API integration
-  - [ ] Configuration management
-  - [ ] Access control
-  - [ ] Block plugin
+- [x] **Create Drupal Module** ✅ **COMPLETE**
+  - [x] Module structure (info.yml, services.yml, routing.yml, libraries.yml) ✅
+  - [x] Form API integration (SecureCaptchaSettingsForm, form element, form alter hook) ✅
+  - [x] Configuration management (config schema, settings form) ✅
+  - [x] Access control (permissions.yml, bypass permission) ✅
+  - [x] Block plugin (SecureCaptchaBlock) ✅
+  - [x] Controller (SecureCaptchaController for AJAX endpoints) ✅
+  - [x] Service class (SecureCaptchaService) ✅
+  - [x] CSS/JS assets ✅
 
-- [ ] **Write Drupal Tests** ⏸️ **POSTPONED TO PHASE 6**
-  - [ ] Test module installation
-  - [ ] Test form integration
-  - [ ] Test configuration
+- [x] **Write Drupal Tests** ✅ **COMPLETE**
+  - [x] Unit tests for SecureCaptchaService ✅
+  - [x] Test generateCaptcha success ✅
+  - [x] Test validateCaptcha success/invalid ✅
+  - [x] Test isEnabledForForm ✅
+  - [x] Test getCaptchaType/getDifficulty ✅
+
+**Implementation Notes:**
+- Created complete Drupal 10/11 module in `drupal/secure_captcha/` directory
+- Module structure follows Drupal best practices with proper namespacing
+- Features include:
+  - **Admin Settings Page**: Configuration form at /admin/config/people/secure-captcha
+  - **Form Element**: Custom `#type => 'secure_captcha'` form element
+  - **Block Plugin**: Configurable CAPTCHA block for any region
+  - **Form Alter Hook**: Automatic CAPTCHA injection to protected forms
+  - **AJAX Controller**: Generate and validate endpoints
+  - **Service Layer**: SecureCaptchaService for API communication
+  - **Permissions**: Administer and bypass permissions
+  - **Configuration Schema**: Proper config schema for export/import
+- Created unit tests in `tests/src/Unit/SecureCaptchaServiceTest.php`
+- Tests cover: API communication, validation, form checking, configuration
 
 #### 5.3.3 Shopify App
 - [ ] **Create Shopify App**

@@ -1,0 +1,6 @@
+secure_captcha.settings:
+  title: 'Secure CAPTCHA'
+  description: 'Configure Secure CAPTCHA settings.'
+  parent: system.admin_config_people
+  route_name: secure_captcha.settings
+  weight: 100

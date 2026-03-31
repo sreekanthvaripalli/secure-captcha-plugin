@@ -1,0 +1,10 @@
+name: 'Secure CAPTCHA'
+type: module
+description: 'Enterprise-grade CAPTCHA protection for Drupal forms. Integrates with the Secure CAPTCHA API for advanced bot detection.'
+package: 'Security'
+core_version_requirement: ^10 || ^11
+php: 8.1
+dependencies:
+  - drupal:block
+  - drupal:system
+configure: secure_captcha.settings

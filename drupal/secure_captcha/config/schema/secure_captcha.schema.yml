@@ -1,0 +1,24 @@
+secure_captcha.settings:
+  type: config_object
+  label: 'Secure CAPTCHA settings'
+  mapping:
+    enabled:
+      type: boolean
+      label: 'Enable Secure CAPTCHA'
+    captcha_type:
+      type: string
+      label: 'CAPTCHA type'
+    difficulty:
+      type: string
+      label: 'Difficulty level'
+    api_url:
+      type: string
+      label: 'API URL'
+    api_key:
+      type: string
+      label: 'API key'
+    protected_forms:
+      type: sequence
+      label: 'Protected forms'
+      sequence:
+        type: string

@@ -1,0 +1,21 @@
+secure_captcha.settings:
+  path: '/admin/config/people/secure-captcha'
+  defaults:
+    _form: '\Drupal\secure_captcha\Form\SecureCaptchaSettingsForm'
+    _title: 'Secure CAPTCHA Settings'
+  requirements:
+    _permission: 'administer secure captcha'
+
+secure_captcha.generate:
+  path: '/secure-captcha/generate'
+  defaults:
+    _controller: '\Drupal\secure_captcha\Controller\SecureCaptchaController::generate'
+  requirements:
+    _access: 'TRUE'
+
+secure_captcha.validate:
+  path: '/secure-captcha/validate'
+  defaults:
+    _controller: '\Drupal\secure_captcha\Controller\SecureCaptchaController::validate'
+  requirements:
+    _access: 'TRUE'

@@ -1,0 +1,11 @@
+drupal.secure_captcha:
+  version: 1.x
+  css:
+    theme:
+      css/secure_captcha.css: {}
+  js:
+    js/secure_captcha.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings

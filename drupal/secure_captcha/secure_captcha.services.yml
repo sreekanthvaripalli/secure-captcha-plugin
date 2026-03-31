@@ -1,0 +1,8 @@
+services:
+  secure_captcha.service:
+    class: Drupal\secure_captcha\SecureCaptchaService
+    arguments:
+      - '@http_client'
+      - '@config.factory'
+      - '@logger.factory'
+      - '@string_translation'

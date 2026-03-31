@@ -1,0 +1,76 @@
+<?php
+/**
+ * @file
+ * Contains secure_captcha.module.
+ *
+ * Implements hook_form_alter() to add CAPTCHA to protected forms.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Adds Secure CAPTCHA to protected forms.
+ */
+function secure_captcha_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
+  $captcha_service = \Drupal::service('secure_captcha.service');
+
+  // Check if CAPTCHA is enabled for this form.
+  if (!$captcha_service->isEnabledForForm($form_id)) {
+    return;
+  }
+
+  // Check if user has permission to bypass CAPTCHA.
+  if (\Drupal::currentUser()->hasPermission('bypass secure captcha')) {
+    return;
+  }
+
+  // Add CAPTCHA element to the form.
+  $form['secure_captcha'] = [
+    '#type' => 'secure_captcha',
+    '#captcha_type' => $captcha_service->getCaptchaType(),
+    '#difficulty' => $captcha_service->getDifficulty(),
+    '#weight' => 100,
+  ];
+
+  // Add custom submit handler to validate CAPTCHA.
+  // The element validation handles this, but we add a form-level
+  // validation as a fallback.
+  $form['#validate'][] = 'secure_captcha_form_validate';
+}
+
+/**
+ * Form validation handler for Secure CAPTCHA.
+ *
+ * @param array $form
+ *   The form array.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
+ */
+function secure_captcha_form_validate(array $form, FormStateInterface $form_state) {
+  if (isset($form_state->getValue(['secure_captcha', 'session_id'])) &&
+      isset($form_state->getValue(['secure_captcha', 'response']))) {
+    $session_id = $form_state->getValue(['secure_captcha', 'session_id']);
+    $response = $form_state->getValue(['secure_captcha', 'response']);
+    $type = $form['secure_captcha']['#captcha_type'] ?? 'text';
+
+    $captcha_service = \Drupal::service('secure_captcha.service');
+    $valid = $captcha_service->validateCaptcha($session_id, $response, $type);
+
+    if (!$valid) {
+      $form_state->setErrorByName('secure_captcha', t('The CAPTCHA response was incorrect. Please try again.'));
+    }
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function secure_captcha_theme($existing, $type, $theme, $path) {
+  return [
+    'secure_captcha_element' => [
+      'render element' => 'element',
+    ],
+  ];
+}

@@ -1,0 +1,9 @@
+administer secure captcha:
+  title: 'Administer Secure CAPTCHA'
+  description: 'Configure Secure CAPTCHA settings and manage protection.'
+  restrict access: true
+
+bypass secure captcha:
+  title: 'Bypass Secure CAPTCHA'
+  description: 'Skip CAPTCHA validation on protected forms.'
+  restrict access: true
