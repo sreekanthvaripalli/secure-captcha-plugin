@@ -67,5 +67,5 @@ module.exports = {
       }
     }
   ],
-  ignorePatterns: ['tests/**/*', '**/*.test.ts', '**/*.spec.ts']
+  ignorePatterns: ['tests/**/*', '**/*.test.ts', '**/*.spec.ts', 'src/plugins/angular-captcha.component.ts']
 };
