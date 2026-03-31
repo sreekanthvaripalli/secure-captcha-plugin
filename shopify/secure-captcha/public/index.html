@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure CAPTCHA - Shopify App</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f6f6f7; color: #202223; }
+    .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+    .header { background: #008060; color: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+    .header h1 { font-size: 24px; margin-bottom: 8px; }
+    .header p { opacity: 0.9; }
+    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .card h2 { font-size: 18px; margin-bottom: 12px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-weight: 500; margin-bottom: 4px; }
+    .form-group input, .form-group select { width: 100%; padding: 8px 12px; border: 1px solid #d0d4d9; border-radius: 4px; font-size: 14px; }
+    .btn { background: #008060; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    .btn:hover { background: #006e52; }
+    .status { padding: 12px; border-radius: 4px; margin-bottom: 16px; }
+    .status.success { background: #e3f1df; color: #1a5c1a; }
+    .status.error { background: #fde8e8; color: #8b0000; }
+    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+    .feature { padding: 16px; background: #f6f6f7; border-radius: 8px; }
+    .feature h3 { font-size: 14px; margin-bottom: 8px; }
+    .feature p { font-size: 13px; color: #6d7175; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Secure CAPTCHA</h1>
+      <p>Enterprise-grade CAPTCHA protection for your Shopify store</p>
+    </div>
+
+    <div class="card">
+      <h2>Installation</h2>
+      <p>To install Secure CAPTCHA on your store, enter your shop domain below:</p>
+      <form action="/" method="get" style="margin-top: 16px;">
+        <div class="form-group">
+          <label for="shop">Shop Domain</label>
+          <input type="text" id="shop" name="shop" placeholder="your-store.myshopify.com" required>
+        </div>
+        <button type="submit" class="btn">Install App</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Features</h2>
+      <div class="features">
+        <div class="feature">
+          <h3>🛡️ Checkout Protection</h3>
+          <p>Add CAPTCHA to checkout forms to prevent bot orders</p>
+        </div>
+        <div class="feature">
+          <h3>📝 Contact Forms</h3>
+          <p>Protect contact and inquiry forms from spam</p>
+        </div>
+        <div class="feature">
+          <h3>👤 Account Creation</h3>
+          <p>Prevent fake account registrations</p>
+        </div>
+        <div class="feature">
+          <h3>📊 Analytics</h3>
+          <p>Track blocked bots and CAPTCHA performance</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Configuration</h2>
+      <p>After installation, configure CAPTCHA settings in your Shopify admin:</p>
+      <ul style="margin: 12px 0 12px 20px; line-height: 1.6;">
+        <li>Go to <strong>Settings → Apps and sales channels</strong></li>
+        <li>Click on <strong>Secure CAPTCHA</strong></li>
+        <li>Configure CAPTCHA type and difficulty</li>
+        <li>Select which forms to protect</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Support</h2>
+      <p>Need help? Contact us at <a href="mailto:support@secure-captcha.com">support@secure-captcha.com</a></p>
+    </div>
+  </div>
+</body>
+</html>

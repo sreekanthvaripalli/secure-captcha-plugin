@@ -520,6 +520,7 @@ class CircuitBreaker {
 | **Svelte** | Component | < 5 minutes | ✅ Complete |
 | **WordPress** | Plugin | < 5 minutes | ✅ Complete |
 | **Drupal** | Module | < 5 minutes | ✅ Complete |
+| **Shopify** | App | < 5 minutes | ✅ Complete |
 
 ### API Support
 
@@ -702,6 +703,31 @@ $form['secure_captcha'] = [
 2. Enable: `drush en secure_captcha`
 3. Configure at `/admin/config/people/secure-captcha`
 4. Select forms to protect (login, registration, comments, contact)
+
+#### Shopify
+```javascript
+// Add to theme.liquid or checkout.liquid
+<script src="{{ 'captcha-widget.js' | asset_url }}"></script>
+<script>
+  window.SECURE_CAPTCHA_API_URL = 'https://your-app-url.com/api';
+  window.SECURE_CAPTCHA_TYPE = 'text';
+  window.SECURE_CAPTCHA_DIFFICULTY = 'medium';
+</script>
+```
+
+**Shopify App Features:**
+- Embedded app with Shopify App SDK
+- Admin dashboard for configuration
+- Webhook handlers (app/uninstalled, orders/create)
+- CAPTCHA widget for checkout, contact, and account forms
+- API proxy for generate/validate endpoints
+
+**Installation:**
+1. Clone the app: `cd shopify/secure-captcha`
+2. Install dependencies: `npm install`
+3. Configure environment: `cp .env.example .env`
+4. Start the app: `npm run dev`
+5. Install on your store via ngrok URL
 
 ---
 
