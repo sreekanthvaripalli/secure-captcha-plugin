@@ -172,18 +172,26 @@ describe('ImageCaptchaGenerator', () => {
         difficulty: 'easy',
       };
 
-      // Generate multiple times to increase chance of getting object identification puzzle
-      let hasObjectIdentification = false;
-      for (let i = 0; i < 20; i++) {
-        const response = await generator.generate(input);
-        if (response.challenge.includes('How many')) {
-          hasObjectIdentification = true;
-          break;
+      // Mock Math.random to always select object-identification puzzle type (index 0)
+      const originalRandom = Math.random;
+      let callCount = 0;
+      Math.random = jest.fn().mockImplementation(() => {
+        callCount++;
+        // First call is for selectPuzzleType (0.1 / 4 = 0, selects first type)
+        if (callCount === 1) {
+          return 0.1;
         }
-      }
+        // Subsequent calls can use original random
+        return originalRandom();
+      });
 
-      // Object identification puzzles should be generated
-      expect(hasObjectIdentification).toBe(true);
+      const response = await generator.generate(input);
+
+      // Restore original Math.random
+      Math.random = originalRandom;
+
+      // Object identification puzzles should contain "How many"
+      expect(response.challenge).toContain('How many');
     });
 
     test('should generate pattern matching puzzles', async () => {

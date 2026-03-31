@@ -3216,28 +3216,29 @@ gh run view <run-id> --log
 
 ### Test Status
 
-**All 1,289 tests passing** ✅
+**All 1,282 tests passing** ✅
 
-- **Test Suites**: 33 passed, 33 total
-- **Tests**: 1,289 passed, 1,289 total
+- **Test Suites**: 34 passed, 34 total
+- **Tests**: 1,282 passed, 1,282 total
 - **Snapshots**: 0 total
-- **Time**: ~46 seconds
+- **Time**: ~40 seconds
 
 ### Recent Test Fixes (March 31, 2026)
 
-Fixed unit test failures in the React component library:
+Fixed lint errors and test issues:
 
-1. **Jest Configuration Fix** (`jest.config.js`)
+1. **Vue.js Plugin Lint Fixes** (`src/plugins/vue-captcha.ts`)
+   - Added explicit return type `Record<string, string>` to `typeButtonStyle` function
+   - Added explicit return type `Record<string, string | number>` to `getButtonStyle` function
+   - Fixed TypeScript strict mode compliance
+
+2. **Jest Configuration Fix** (`jest.config.js`)
    - Updated React project transform pattern from `'^.+\\.tsx$'` to `'^.+\\.[tj]sx?$'`
    - Ensures both `.ts` and `.tsx` files are properly transformed by ts-jest
 
-2. **Test Fix: `should show attempts counter after validation attempt`**
+3. **React Test Fixes**
    - Added mock for failed validation response to ensure attempts counter is visible
-   - The counter only displays when `!state.isValidated`
-
-3. **Test Fix: `should validate captcha successfully`**
-   - Added missing `session-id` element to the TestComponent
-   - Test was expecting element that wasn't being rendered
+   - Added missing `session-id` element to TestComponent
 
 ### Running Tests
 

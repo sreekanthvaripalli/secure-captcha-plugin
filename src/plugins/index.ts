@@ -61,9 +61,30 @@ export {
   UseCaptchaReturn,
 } from './react-captcha';
 
+// Vue.js Plugin
+export {
+  VueCaptcha,
+  CaptchaProvider as VueCaptchaProvider,
+  CaptchaWidget as VueCaptchaWidget,
+  CaptchaContainer as VueCaptchaContainer,
+  CaptchaButton as VueCaptchaButton,
+  CaptchaInput as VueCaptchaInput,
+  useCaptcha as useVueCaptcha,
+  defaultTheme as vueDefaultTheme,
+  CAPTCHA_CONTEXT_KEY,
+  CaptchaTheme as VueCaptchaTheme,
+  CaptchaOptions as VueCaptchaOptions,
+  CaptchaState as VueCaptchaState,
+  CaptchaContextValue as VueCaptchaContextValue,
+  CaptchaWidgetProps as VueCaptchaWidgetProps,
+  UseCaptchaReturn as UseVueCaptchaReturn,
+  VueCaptchaPluginOptions,
+} from './vue-captcha';
+
 // Default exports
 export { default as ExpressCaptcha } from './express-captcha';
 export { default as FastifyCaptcha } from './fastify-captcha';
 export { default as KoaCaptcha } from './koa-captcha';
 export { default as NestJsCaptcha } from './nestjs-captcha';
 export { default as ReactCaptcha } from './react-captcha';
+export { default as VueCaptchaPlugin } from './vue-captcha';

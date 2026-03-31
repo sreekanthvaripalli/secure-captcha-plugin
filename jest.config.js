@@ -37,6 +37,7 @@ module.exports = {
     {
       displayName: 'node',
       testMatch: ['**/*.test.ts'],
+      testPathIgnorePatterns: ['/node_modules/', 'vue-captcha.test.ts'],
       testEnvironment: 'node',
       setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
       transform: {
@@ -54,6 +55,22 @@ module.exports = {
       setupFilesAfterEnv: ['<rootDir>/tests/setup-react.ts'],
       transform: {
         '^.+\\.[tj]sx?$': ['ts-jest', {
+          tsconfig: 'tsconfig.test.json',
+          diagnostics: true,
+          useESM: true
+        }]
+      }
+    },
+    {
+      displayName: 'vue',
+      testMatch: ['**/vue-captcha.test.ts'],
+      testEnvironment: 'jsdom',
+      testEnvironmentOptions: {
+        customExportConditions: ['node', 'node-addons'],
+      },
+      setupFilesAfterEnv: ['<rootDir>/tests/setup-vue.ts'],
+      transform: {
+        '^.+\\.ts$': ['ts-jest', {
           tsconfig: 'tsconfig.test.json',
           diagnostics: true,
           useESM: true
