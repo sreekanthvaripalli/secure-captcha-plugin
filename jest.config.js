@@ -41,12 +41,15 @@ module.exports = {
       testEnvironment: 'node',
       setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
       transform: {
-        '^.+\\.ts$': ['ts-jest', {
+        '^.+\\.(ts|js|mjs)$': ['ts-jest', {
           tsconfig: 'tsconfig.test.json',
           diagnostics: true,
           useESM: true
         }]
-      }
+      },
+      transformIgnorePatterns: [
+        'node_modules/(?!(uuid|@angular)/)'
+      ],
     },
     {
       displayName: 'react',
@@ -91,10 +94,15 @@ module.exports = {
     '^@types/(.*)$': '<rootDir>/src/types/$1',
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
     '^@tensorflow/tfjs-node$': '<rootDir>/__mocks__/@tensorflow/tfjs-node.js',
-    '^uuid$': '<rootDir>/__mocks__/uuid.js'
+    '^uuid$': '<rootDir>/__mocks__/uuid.js',
+    '^@angular/core$': '<rootDir>/__mocks__/@angular/core.js',
+    '^@angular/core/testing$': '<rootDir>/__mocks__/@angular/core/testing.js',
+    '^@angular/platform-browser$': '<rootDir>/__mocks__/@angular/platform-browser.js',
+    '^@angular/common$': '<rootDir>/__mocks__/@angular/common.js',
+    '^@angular/forms$': '<rootDir>/__mocks__/@angular/forms.js',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(uuid)/)'
+    'node_modules/(?!(uuid|@angular)/)'
   ],
   globals: {
     'ts-jest': {

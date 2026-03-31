@@ -81,6 +81,23 @@ export {
   VueCaptchaPluginOptions,
 } from './vue-captcha';
 
+// Svelte Component
+export {
+  createCaptchaStore,
+  captchaAction,
+  defaultTheme as svelteDefaultTheme,
+  getContainerStyle,
+  getButtonStyle,
+  getInputStyle,
+  getChallengeStyle,
+  getTypeButtonStyle,
+  CaptchaTheme as SvelteCaptchaTheme,
+  CaptchaOptions as SvelteCaptchaOptions,
+  CaptchaState as SvelteCaptchaState,
+  CaptchaStore as SvelteCaptchaStore,
+  CaptchaWidgetProps as SvelteCaptchaWidgetProps,
+} from './svelte-captcha';
+
 // Default exports
 export { default as ExpressCaptcha } from './express-captcha';
 export { default as FastifyCaptcha } from './fastify-captcha';
@@ -88,3 +105,4 @@ export { default as KoaCaptcha } from './koa-captcha';
 export { default as NestJsCaptcha } from './nestjs-captcha';
 export { default as ReactCaptcha } from './react-captcha';
 export { default as VueCaptchaPlugin } from './vue-captcha';
+export { default as SvelteCaptcha } from './svelte-captcha';
