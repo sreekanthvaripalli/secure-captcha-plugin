@@ -526,7 +526,7 @@ class CircuitBreaker {
 
 | API Type | Protocol | Documentation |
 |----------|----------|---------------|
-| **RESTful** | HTTP/HTTPS | OpenAPI 3.0 |
+| **RESTful** | HTTP/HTTPS | [OpenAPI 3.0](docs/openapi.yaml), [Swagger UI](docs/swagger/index.html), [Postman](docs/postman/secure-captcha-api.postman_collection.json) |
 | **GraphQL** | HTTP/HTTPS | Schema-first |
 | **WebSocket** | WS/WSS | Real-time events |
 | **Webhooks** | HTTP/HTTPS | Event-driven |

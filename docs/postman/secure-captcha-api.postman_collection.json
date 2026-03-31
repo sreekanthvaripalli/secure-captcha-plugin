@@ -1,0 +1,627 @@
+{
+  "info": {
+    "name": "Secure CAPTCHA Plugin API",
+    "description": "Enterprise-grade CAPTCHA protection API with multi-layer security, behavioral analysis, and comprehensive threat detection.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "description": "Health check and status endpoints",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Returns the health status of the API server including version, uptime, and memory usage. This endpoint does not require authentication."
+          },
+          "response": [
+            {
+              "name": "Healthy Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/health",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"healthy\",\n  \"timestamp\": \"2026-03-31T12:00:00.000Z\",\n  \"version\": \"1.0.0\",\n  \"uptime\": 86400,\n  \"memory\": {\n    \"rss\": 52428800,\n    \"heapTotal\": 20971520,\n    \"heapUsed\": 15728640,\n    \"external\": 1048576\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Metrics",
+      "description": "Prometheus metrics and monitoring",
+      "item": [
+        {
+          "name": "Get Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/metrics",
+              "host": ["{{baseUrl}}"],
+              "path": ["metrics"]
+            },
+            "description": "Returns application metrics in Prometheus format. Includes request rates, latency, error rates, and custom CAPTCHA metrics."
+          },
+          "response": [
+            {
+              "name": "Metrics Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/metrics",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["metrics"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "# HELP http_requests_total Total number of HTTP requests\n# TYPE http_requests_total counter\nhttp_requests_total{method=\"GET\",path=\"/api/v1/health\",status=\"200\"} 1500\n# HELP http_request_duration_seconds HTTP request duration in seconds\n# TYPE http_request_duration_seconds histogram\nhttp_request_duration_seconds_bucket{le=\"0.1\"} 1200\nhttp_request_duration_seconds_bucket{le=\"0.5\"} 1450\nhttp_request_duration_seconds_bucket{le=\"1\"} 1490\nhttp_request_duration_seconds_bucket{le=\"+Inf\"} 1500"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CAPTCHA",
+      "description": "CAPTCHA generation and validation",
+      "item": [
+        {
+          "name": "Generate Text CAPTCHA (Easy)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('sessionId', jsonData.data.sessionId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"text\",\n  \"difficulty\": \"easy\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/captcha/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["captcha", "generate"]
+            },
+            "description": "Generates an easy text CAPTCHA challenge."
+          },
+          "response": [
+            {
+              "name": "Text CAPTCHA Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"text\",\n  \"difficulty\": \"easy\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/captcha/generate",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["captcha", "generate"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"sessionId\": \"abc123-def456-ghi789\",\n    \"challenge\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUg...\",\n    \"type\": \"text\",\n    \"difficulty\": \"easy\",\n    \"expiresIn\": 300\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Generate Math CAPTCHA (Medium)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('sessionId', jsonData.data.sessionId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"math\",\n  \"difficulty\": \"medium\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/captcha/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["captcha", "generate"]
+            },
+            "description": "Generates a medium difficulty math CAPTCHA challenge."
+          },
+          "response": [
+            {
+              "name": "Math CAPTCHA Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"math\",\n  \"difficulty\": \"medium\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/captcha/generate",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["captcha", "generate"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"sessionId\": \"abc123-def456-ghi789\",\n    \"challenge\": \"What is 5 + 3?\",\n    \"type\": \"math\",\n    \"difficulty\": \"medium\",\n    \"expiresIn\": 300\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Generate Logic CAPTCHA (Hard)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('sessionId', jsonData.data.sessionId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"logic\",\n  \"difficulty\": \"hard\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/captcha/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["captcha", "generate"]
+            },
+            "description": "Generates a hard difficulty logic puzzle CAPTCHA."
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Image CAPTCHA (Medium)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('sessionId', jsonData.data.sessionId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"image\",\n  \"difficulty\": \"medium\",\n  \"options\": {\n    \"categories\": [\"animals\", \"vehicles\"]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/captcha/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["captcha", "generate"]
+            },
+            "description": "Generates an image-based CAPTCHA with specified categories."
+          },
+          "response": []
+        },
+        {
+          "name": "Generate CAPTCHA - Invalid Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"invalid_type\",\n  \"difficulty\": \"easy\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/captcha/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["captcha", "generate"]
+            },
+            "description": "Test error handling for invalid CAPTCHA type."
+          },
+          "response": [
+            {
+              "name": "Invalid Type Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"invalid_type\",\n  \"difficulty\": \"easy\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/captcha/generate",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["captcha", "generate"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INVALID_CAPTCHA_TYPE\",\n    \"message\": \"Unsupported captcha type: invalid_type\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Generate CAPTCHA - Missing Fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"difficulty\": \"easy\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/captcha/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["captcha", "generate"]
+            },
+            "description": "Test error handling for missing required fields."
+          },
+          "response": [
+            {
+              "name": "Missing Fields Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"difficulty\": \"easy\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/captcha/generate",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["captcha", "generate"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INVALID_REQUEST\",\n    \"message\": \"Captcha type is required\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Validate CAPTCHA - Success",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"response\": \"correct_answer\",\n  \"type\": \"text\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/captcha/validate",
+              "host": ["{{baseUrl}}"],
+              "path": ["captcha", "validate"]
+            },
+            "description": "Validates a correct CAPTCHA response."
+          },
+          "response": [
+            {
+              "name": "Valid Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sessionId\": \"abc123-def456-ghi789\",\n  \"response\": \"correct_answer\",\n  \"type\": \"text\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/captcha/validate",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["captcha", "validate"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"valid\": true,\n    \"securityScore\": 95,\n    \"message\": \"CAPTCHA validated successfully\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Validate CAPTCHA - Incorrect Answer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"response\": \"wrong_answer\",\n  \"type\": \"text\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/captcha/validate",
+              "host": ["{{baseUrl}}"],
+              "path": ["captcha", "validate"]
+            },
+            "description": "Tests validation with an incorrect answer."
+          },
+          "response": [
+            {
+              "name": "Invalid Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sessionId\": \"abc123-def456-ghi789\",\n  \"response\": \"wrong_answer\",\n  \"type\": \"text\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/captcha/validate",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["captcha", "validate"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"valid\": false,\n    \"securityScore\": 10,\n    \"message\": \"Incorrect answer\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Validate CAPTCHA - Missing Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"response\": \"some_answer\",\n  \"type\": \"text\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/captcha/validate",
+              "host": ["{{baseUrl}}"],
+              "path": ["captcha", "validate"]
+            },
+            "description": "Tests validation without session ID."
+          },
+          "response": [
+            {
+              "name": "Missing Session Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"response\": \"some_answer\",\n  \"type\": \"text\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/captcha/validate",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["captcha", "validate"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INVALID_REQUEST\",\n    \"message\": \"Session ID is required\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Validate CAPTCHA - Session Expired",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"expired-session-id\",\n  \"response\": \"some_answer\",\n  \"type\": \"text\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/captcha/validate",
+              "host": ["{{baseUrl}}"],
+              "path": ["captcha", "validate"]
+            },
+            "description": "Tests validation with an expired session."
+          },
+          "response": [
+            {
+              "name": "Session Expired Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sessionId\": \"expired-session-id\",\n  \"response\": \"some_answer\",\n  \"type\": \"text\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/captcha/validate",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["captcha", "validate"]
+                }
+              },
+              "status": "Gone",
+              "code": 410,
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"SESSION_EXPIRED\",\n    \"message\": \"CAPTCHA session has expired\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Configuration",
+      "description": "API configuration and metadata",
+      "item": [
+        {
+          "name": "Get Available CAPTCHA Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/captcha/types",
+              "host": ["{{baseUrl}}"],
+              "path": ["captcha", "types"]
+            },
+            "description": "Returns a list of all available CAPTCHA types and their supported difficulty levels."
+          },
+          "response": [
+            {
+              "name": "CAPTCHA Types Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/captcha/types",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["captcha", "types"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"types\": [\n      {\n        \"type\": \"text\",\n        \"name\": \"Text Captcha\",\n        \"difficulties\": [\"easy\", \"medium\", \"hard\"]\n      },\n      {\n        \"type\": \"math\",\n        \"name\": \"Math Captcha\",\n        \"difficulties\": [\"easy\", \"medium\", \"hard\"]\n      },\n      {\n        \"type\": \"logic\",\n        \"name\": \"Logic Captcha\",\n        \"difficulties\": [\"easy\", \"medium\", \"hard\"]\n      },\n      {\n        \"type\": \"image\",\n        \"name\": \"Image Captcha\",\n        \"difficulties\": [\"easy\", \"medium\", \"hard\"]\n      }\n    ]\n  }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
