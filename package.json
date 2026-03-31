@@ -50,6 +50,7 @@
     "@nestjs/core": "^11.1.17",
     "@nestjs/platform-express": "^11.1.17",
     "@tensorflow/tfjs-node": "^4.22.0",
+    "@testing-library/dom": "^10.4.1",
     "@types/pg": "^8.20.0",
     "bcrypt": "^5.1.1",
     "bull": "^4.12.0",
@@ -75,17 +76,17 @@
     "winston-elasticsearch": "^0.19.0"
   },
   "devDependencies": {
-    "@angular/common": "^17.3.12",
-    "@angular/compiler": "^17.3.12",
-    "@angular/compiler-cli": "^17.3.12",
-    "@angular/core": "^17.3.12",
-    "@angular/forms": "^17.3.12",
-    "@angular/platform-browser": "^17.3.12",
-    "@angular/platform-browser-dynamic": "^17.3.12",
+    "@angular/common": "^19.2.18",
+    "@angular/compiler": "^19.2.18",
+    "@angular/compiler-cli": "^19.2.18",
+    "@angular/core": "^19.2.18",
+    "@angular/forms": "^19.2.18",
+    "@angular/platform-browser": "^19.2.18",
+    "@angular/platform-browser-dynamic": "^19.2.18",
     "@nestjs/testing": "^11.1.17",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^14.1.2",
-    "@testing-library/user-event": "^14.5.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/bcrypt": "^5.0.2",
     "@types/compression": "^1.8.1",
     "@types/cors": "^2.8.17",
@@ -118,9 +119,9 @@
     "supertest": "^6.3.4",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3",
+    "typescript": "^5.8.3",
     "vue": "^3.4.15",
-    "zone.js": "^0.14.10"
+    "zone.js": "^0.15.0"
   },
   "lint-staged": {
     "*.ts": [
@@ -137,9 +138,9 @@
   },
   "homepage": "https://github.com/sreekanthvaripalli/secure-captcha-plugin#readme",
   "peerDependencies": {
-    "@angular/common": "^17.0.0 || ^18.0.0",
-    "@angular/core": "^17.0.0 || ^18.0.0",
-    "@angular/forms": "^17.0.0 || ^18.0.0"
+    "@angular/common": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "@angular/core": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "@angular/forms": "^17.0.0 || ^18.0.0 || ^19.0.0"
   },
   "peerDependenciesMeta": {
     "@angular/common": {

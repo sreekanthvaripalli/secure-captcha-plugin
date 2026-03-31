@@ -98,6 +98,21 @@ export {
   CaptchaWidgetProps as SvelteCaptchaWidgetProps,
 } from './svelte-captcha';
 
+// Vanilla JavaScript SDK
+export {
+  CaptchaClient,
+  CaptchaWidget as VanillaCaptchaWidget,
+  createCaptchaWidget,
+  initCaptchaWidgets,
+  defaultTheme as vanillaDefaultTheme,
+  CaptchaTheme as VanillaCaptchaTheme,
+  CaptchaOptions as VanillaCaptchaOptions,
+  CaptchaState as VanillaCaptchaState,
+  CaptchaWidgetConfig,
+  CaptchaClientOptions,
+  CaptchaEventHandlers,
+} from './vanilla-js-sdk';
+
 // Default exports
 export { default as ExpressCaptcha } from './express-captcha';
 export { default as FastifyCaptcha } from './fastify-captcha';
@@ -106,3 +121,4 @@ export { default as NestJsCaptcha } from './nestjs-captcha';
 export { default as ReactCaptcha } from './react-captcha';
 export { default as VueCaptchaPlugin } from './vue-captcha';
 export { default as SvelteCaptcha } from './svelte-captcha';
+export { default as VanillaCaptcha } from './vanilla-js-sdk';

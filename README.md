@@ -618,6 +618,45 @@ import { CaptchaWidget } from 'secure-captcha-plugin/react';
 />
 ```
 
+#### Vanilla JavaScript
+```html
+<!-- HTML -->
+<div id="captcha-container"></div>
+
+<script type="module">
+  import { createCaptchaWidget } from 'secure-captcha-plugin/vanilla';
+
+  const captcha = createCaptchaWidget({
+    container: '#captcha-container',
+    type: 'math',
+    difficulty: 'medium',
+    handlers: {
+      onValidate: (result) => {
+        if (result.valid) {
+          console.log('CAPTCHA verified!');
+        }
+      }
+    }
+  });
+</script>
+```
+
+#### Auto-Initialize with Data Attributes
+```html
+<div data-captcha
+     data-captcha-type="math"
+     data-captcha-difficulty="medium"
+     data-captcha-primary-color="#6366f1">
+</div>
+
+<script type="module">
+  import { initCaptchaWidgets } from 'secure-captcha-plugin/vanilla';
+  
+  // Automatically finds all [data-captcha] elements
+  const widgets = initCaptchaWidgets();
+</script>
+```
+
 #### WordPress
 ```php
 // Add to any form
@@ -3216,12 +3255,12 @@ gh run view <run-id> --log
 
 ### Test Status
 
-**All 1,337 tests passing** ✅
+**All 1,381 tests passing** ✅
 
-- **Test Suites**: 36 passed, 36 total
-- **Tests**: 1,337 passed, 1,337 total
+- **Test Suites**: 37 passed, 37 total
+- **Tests**: 1,381 passed, 1,381 total
 - **Snapshots**: 0 total
-- **Time**: ~55 seconds
+- **Time**: ~41 seconds
 
 ### Recent Test Fixes (March 31, 2026)
 
@@ -3244,6 +3283,11 @@ Fixed lint errors and test issues:
    - Implemented complete Svelte component with store, action, and helper functions
    - Added 30+ comprehensive unit tests
    - All Svelte tests passing
+
+5. **Vanilla JavaScript SDK** (`src/plugins/vanilla-js-sdk.ts`)
+   - Implemented CaptchaClient, CaptchaWidget, createCaptchaWidget, initCaptchaWidgets
+   - Added 44 comprehensive unit tests
+   - All Vanilla SDK tests passing
 
 ### Running Tests
 
