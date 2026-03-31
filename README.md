@@ -518,7 +518,7 @@ class CircuitBreaker {
 | **Vue.js** | Plugin | < 5 minutes | ✅ Complete |
 | **Angular** | Component | < 5 minutes | ✅ Complete (requires manual import) |
 | **Svelte** | Component | < 5 minutes | ✅ Complete |
-| **WordPress** | Plugin | < 5 minutes | 🚧 In Progress |
+| **WordPress** | Plugin | < 5 minutes | ✅ Complete |
 | **Drupal** | Module | < 5 minutes | 🚧 In Progress |
 
 ### API Support
@@ -659,9 +659,25 @@ import { CaptchaWidget } from 'secure-captcha-plugin/react';
 
 #### WordPress
 ```php
-// Add to any form
-<?php echo captcha_get_html(); ?>
+// Shortcode usage
+echo do_shortcode('[secure_captcha type="math" difficulty="medium"]');
+
+// Or use in templates
+<?php echo do_shortcode('[secure_captcha]'); ?>
 ```
+
+**WordPress Plugin Features:**
+- Admin settings page for configuration
+- Shortcode: `[secure_captcha]`
+- Widget support for sidebars
+- Login, Registration, Comments protection
+- WooCommerce integration
+- Contact Form 7, WPForms, Gravity Forms, Ninja Forms support
+
+**Installation:**
+1. Copy `wordpress/secure-captcha/` to `wp-content/plugins/`
+2. Activate plugin in WordPress admin
+3. Configure at Settings > Secure CAPTCHA
 
 ---
 
