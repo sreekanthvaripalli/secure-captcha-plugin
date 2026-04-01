@@ -3321,24 +3321,26 @@ gh run view <run-id> --log
 
 ### Test Status
 
-**All 1,491 tests passing** ✅
+**All 1,732 tests passing** ✅
 
-- **Test Suites**: 40 passed, 40 total
-- **Tests**: 1,491 passed, 1,491 total
+- **Test Suites**: 47 passed, 47 total
+- **Tests**: 1,732 passed, 1,732 total
 - **Snapshots**: 0 total
-- **Time**: ~39 seconds
+- **Time**: ~55 seconds
 - **Test Projects**: 3 (default, React, Vue)
+- **Code Coverage**: 84.8% statements (up from 76%)
 
 ### Test Coverage by Category
 
 | Category | Test Files | Tests | Status |
 |----------|-----------|-------|--------|
 | **Core** | 6 | 200+ | ✅ |
-| **Security** | 12 | 500+ | ✅ |
+| **Security** | 15 | 600+ | ✅ |
 | **Plugins** | 9 | 300+ | ✅ |
 | **Infrastructure** | 8 | 250+ | ✅ |
 | **Compliance** | 3 | 130+ | ✅ |
 | **Documentation** | 2 | 110+ | ✅ |
+| **GraphQL** | 2 | 50+ | ✅ |
 
 ### Running Tests
 
