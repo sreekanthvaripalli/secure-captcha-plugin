@@ -93,9 +93,9 @@ export interface ValidateCaptchaBody {
  * Koa CAPTCHA Middleware Class
  */
 export class KoaCaptchaMiddleware {
-  private captchaService: CaptchaService;
-  private configService: SecurityConfigurationService;
-  private options: Required<Omit<KoaCaptchaOptions, 'errorMessages'>> & {
+  private readonly captchaService: CaptchaService;
+  private readonly configService: SecurityConfigurationService;
+  private readonly options: Required<Omit<KoaCaptchaOptions, 'errorMessages'>> & {
     errorMessages: CaptchaErrorMessages;
   };
 

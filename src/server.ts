@@ -52,21 +52,23 @@ export class CaptchaServer {
    */
   private setupMiddleware(): void {
     // Security headers with Helmet.js
-    this.app.use(helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          scriptSrc: ["'self'"],
-          imgSrc: ["'self'", "data:", "https:"],
+    this.app.use(
+      helmet({
+        contentSecurityPolicy: {
+          directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'"],
+            imgSrc: ["'self'", 'data:', 'https:'],
+          },
         },
-      },
-      hsts: {
-        maxAge: 31536000,
-        includeSubDomains: true,
-        preload: true,
-      },
-    }));
+        hsts: {
+          maxAge: 31536000,
+          includeSubDomains: true,
+          preload: true,
+        },
+      })
+    );
 
     // CORS configuration
     this.app.use(cors(this.configService.getCorsConfig()));
@@ -84,23 +86,25 @@ export class CaptchaServer {
     // Request logging and metrics
     this.app.use((req: Request, res: Response, next: NextFunction) => {
       const start = Date.now();
-      
+
       res.on('finish', () => {
         const duration = Date.now() - start;
-        
+
         // Record Prometheus metrics
         prometheusMetrics.recordRequest(req.method, req.path, res.statusCode, duration);
-        
-        console.log(JSON.stringify({
-          timestamp: new Date().toISOString(),
-          requestId: req.id,
-          method: req.method,
-          url: req.url,
-          status: res.statusCode,
-          duration: `${duration}ms`,
-          ip: req.ip,
-          userAgent: req.get('user-agent'),
-        }));
+
+        console.log(
+          JSON.stringify({
+            timestamp: new Date().toISOString(),
+            requestId: req.id,
+            method: req.method,
+            url: req.url,
+            status: res.statusCode,
+            duration: `${duration}ms`,
+            ip: req.ip,
+            userAgent: req.get('user-agent'),
+          })
+        );
       });
 
       next();
@@ -121,7 +125,7 @@ export class CaptchaServer {
       legacyHeaders: false,
       handler: (req: Request, _res: Response) => {
         prometheusMetrics.recordRateLimitHit(req.path);
-      }
+      },
     });
     this.app.use('/api/', limiter);
 
@@ -144,7 +148,9 @@ export class CaptchaServer {
 
       // Validate query parameters
       if (req.query && typeof req.query === 'object') {
-        const validation = this.validationService.validateParameterPollution(req.query as Record<string, unknown>);
+        const validation = this.validationService.validateParameterPollution(
+          req.query as Record<string, unknown>
+        );
         if (!validation.isValid) {
           const error = new Error(`Query validation failed: ${validation.threat}`);
           (error as any).status = 400;
@@ -185,89 +191,93 @@ export class CaptchaServer {
     });
 
     // Captcha generation endpoint
-    this.app.post('/api/v1/captcha/generate', async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const { type, difficulty, options } = req.body;
+    this.app.post(
+      '/api/v1/captcha/generate',
+      async (req: Request, res: Response, next: NextFunction) => {
+        try {
+          const { type, difficulty, options } = req.body;
 
-        // Validate required fields
-        if (!type) {
-          const error = new Error('Captcha type is required');
-          (error as any).status = 400;
-          (error as any).code = 'INVALID_REQUEST';
-          return next(error);
+          // Validate required fields
+          if (!type) {
+            const error = new Error('Captcha type is required');
+            (error as any).status = 400;
+            (error as any).code = 'INVALID_REQUEST';
+            return next(error);
+          }
+
+          if (!difficulty) {
+            const error = new Error('Difficulty level is required');
+            (error as any).status = 400;
+            (error as any).code = 'INVALID_REQUEST';
+            return next(error);
+          }
+
+          // Validate type
+          if (!this.captchaService.isSupportedType(type)) {
+            const error = new Error(`Unsupported captcha type: ${type}`);
+            (error as any).status = 400;
+            (error as any).code = 'INVALID_CAPTCHA_TYPE';
+            return next(error);
+          }
+
+          // Generate captcha
+          const response = await this.captchaService.generateCaptcha(type, difficulty, {
+            ...options,
+            ip: req.ip,
+            userAgent: req.get('user-agent'),
+          });
+
+          res.json({
+            success: true,
+            data: response,
+          });
+        } catch (error) {
+          next(error);
         }
-
-        if (!difficulty) {
-          const error = new Error('Difficulty level is required');
-          (error as any).status = 400;
-          (error as any).code = 'INVALID_REQUEST';
-          return next(error);
-        }
-
-        // Validate type
-        if (!this.captchaService.isSupportedType(type)) {
-          const error = new Error(`Unsupported captcha type: ${type}`);
-          (error as any).status = 400;
-          (error as any).code = 'INVALID_CAPTCHA_TYPE';
-          return next(error);
-        }
-
-        // Generate captcha
-        const response = await this.captchaService.generateCaptcha(type, difficulty, {
-          ...options,
-          ip: req.ip,
-          userAgent: req.get('user-agent'),
-        });
-
-        res.json({
-          success: true,
-          data: response,
-        });
-
-      } catch (error) {
-        next(error);
       }
-    });
+    );
 
     // Captcha validation endpoint
-    this.app.post('/api/v1/captcha/validate', async (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const { sessionId, response, type } = req.body;
+    this.app.post(
+      '/api/v1/captcha/validate',
+      async (req: Request, res: Response, next: NextFunction) => {
+        try {
+          const { sessionId, response, type } = req.body;
 
-        // Validate required fields
-        if (!sessionId) {
-          const error = new Error('Session ID is required');
-          (error as any).status = 400;
-          (error as any).code = 'INVALID_REQUEST';
-          return next(error);
+          // Validate required fields
+          if (!sessionId) {
+            const error = new Error('Session ID is required');
+            (error as any).status = 400;
+            (error as any).code = 'INVALID_REQUEST';
+            return next(error);
+          }
+
+          if (!response) {
+            const error = new Error('Response is required');
+            (error as any).status = 400;
+            (error as any).code = 'INVALID_REQUEST';
+            return next(error);
+          }
+
+          if (!type) {
+            const error = new Error('Captcha type is required');
+            (error as any).status = 400;
+            (error as any).code = 'INVALID_REQUEST';
+            return next(error);
+          }
+
+          // Validate captcha
+          const result = await this.captchaService.validateResponse(sessionId, response, type);
+
+          res.json({
+            success: true,
+            data: result,
+          });
+        } catch (error) {
+          next(error);
         }
-
-        if (!response) {
-          const error = new Error('Response is required');
-          (error as any).status = 400;
-          (error as any).code = 'INVALID_REQUEST';
-          return next(error);
-        }
-
-        if (!type) {
-          const error = new Error('Captcha type is required');
-          (error as any).status = 400;
-          (error as any).code = 'INVALID_REQUEST';
-          return next(error);
-        }
-
-        // Validate captcha
-        const result = await this.captchaService.validateResponse(sessionId, response, type);
-
-        res.json({
-          success: true,
-          data: result,
-        });
-
-      } catch (error) {
-        next(error);
       }
-    });
+    );
 
     // List available captcha types
     this.app.get('/api/v1/captcha/types', (_req: Request, res: Response) => {
@@ -306,20 +316,22 @@ export class CaptchaServer {
       const code = err.code || 'INTERNAL_ERROR';
       const message = err.message || 'An unexpected error occurred';
 
-      console.error(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        requestId: req.id,
-        error: {
-          code,
-          message,
-          stack: err.stack,
-        },
-        request: {
-          method: req.method,
-          url: req.url,
-          ip: req.ip,
-        },
-      }));
+      console.error(
+        JSON.stringify({
+          timestamp: new Date().toISOString(),
+          requestId: req.id,
+          error: {
+            code,
+            message,
+            stack: err.stack,
+          },
+          request: {
+            method: req.method,
+            url: req.url,
+            ip: req.ip,
+          },
+        })
+      );
 
       res.status(status).json({
         success: false,
@@ -374,7 +386,6 @@ export class CaptchaServer {
         console.log('Starting a new worker...');
         cluster.fork();
       });
-
     } else {
       this.app.listen(this.port, () => {
         console.log(`Worker ${process.pid} started on port ${this.port}`);
@@ -404,7 +415,7 @@ export class CaptchaServer {
 if (require.main === module) {
   const port = parseInt(process.env.PORT || '3000', 10);
   const workers = parseInt(process.env.WORKERS || '1', 10);
-  
+
   const server = new CaptchaServer(port, workers);
   server.start();
 }

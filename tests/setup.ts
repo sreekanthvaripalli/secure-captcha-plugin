@@ -1,4 +1,4 @@
-63// Test setup file for Jest
+63; // Test setup file for Jest
 // This file runs before each test suite
 
 // Set test environment variables
@@ -33,14 +33,14 @@ global.testUtils = {
     }
     return result;
   },
-  
+
   generateTestEmail: (): string => {
     return `test-${Date.now()}@example.com`;
   },
-  
+
   wait: (ms: number): Promise<void> => {
     return new Promise(resolve => setTimeout(resolve, ms));
-  }
+  },
 };
 
 // Mock console methods in test environment to reduce noise

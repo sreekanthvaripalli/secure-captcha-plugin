@@ -86,9 +86,9 @@ export interface ValidateCaptchaBody {
  * Express CAPTCHA Middleware Class
  */
 export class ExpressCaptchaMiddleware {
-  private captchaService: CaptchaService;
-  private configService: SecurityConfigurationService;
-  private options: Required<Omit<ExpressCaptchaOptions, 'errorMessages'>> & {
+  private readonly captchaService: CaptchaService;
+  private readonly configService: SecurityConfigurationService;
+  private readonly options: Required<Omit<ExpressCaptchaOptions, 'errorMessages'>> & {
     errorMessages: CaptchaErrorMessages;
   };
 

@@ -7,10 +7,12 @@
  * - Rate limiting per client
  * - Request validation
  * - Security logging
+ *
+ * Uses graphql-http for GraphQL v16 compatibility
  */
 
 import { Request, Response } from 'express';
-import { graphqlHTTP } from 'express-graphql';
+import { createHandler } from 'graphql-http/lib/use/express';
 import { schema } from './schema';
 import { JWTService } from '../security/jwt';
 import { APIKeyService } from '../security/api-key';
@@ -140,55 +142,31 @@ async function authenticateRequest(
   return null;
 }
 
-// Check authorization
-function checkAuthorization(context: GraphQLContext, requiredScope?: string): boolean {
-  if (!requiredScope) {
-    return true;
-  }
-
-  if (context.user) {
-    if (context.user.scope.includes('*') || context.user.scope.includes(requiredScope)) {
-      return true;
-    }
-  }
-
-  if (context.apiKey) {
-    if (context.apiKey.scopes.includes('*') || context.apiKey.scopes.includes(requiredScope)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 // Create GraphQL middleware
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function createGraphQLMiddleware(options?: {
   requireAuth?: boolean;
   requiredScope?: string;
   enablePlayground?: boolean;
   enableTracing?: boolean;
-}): any {
-  const {
-    requireAuth = false,
-    requiredScope,
-    enablePlayground = process.env.NODE_ENV !== 'production',
-  } = options || {};
+}) {
+  const { requireAuth = false, requiredScope } = options || {};
 
   return [
     graphqlRateLimiter,
-    graphqlHTTP({
+    createHandler({
       schema: schema,
-      graphiql: enablePlayground,
-      context: async (req: Request, res: Response) => {
-        const auth = await authenticateRequest(req);
+      context: async req => {
+        const auth = await authenticateRequest(req as unknown as Request);
 
         if (requireAuth && !auth) {
           throw new Error('Authentication required');
         }
 
-        const context: GraphQLContext = {
-          req,
-          res,
+        // Build a plain object context compatible with graphql-http
+        const context: Record<string, unknown> = {
+          req: req as unknown as Request,
+          res: (req as any).res,
           rateLimit: {
             limit: 100,
             remaining: 100,
@@ -202,39 +180,18 @@ export function createGraphQLMiddleware(options?: {
           context.apiKey = auth;
         }
 
-        if (requiredScope && !checkAuthorization(context, requiredScope)) {
-          throw new Error('Insufficient permissions');
+        if (requiredScope && auth) {
+          const hasScope =
+            ('scope' in auth && (auth as { scope: string[] }).scope.includes('*')) ||
+            ('scope' in auth && (auth as { scope: string[] }).scope.includes(requiredScope)) ||
+            ('scopes' in auth && (auth as { scopes: string[] }).scopes.includes('*')) ||
+            ('scopes' in auth && (auth as { scopes: string[] }).scopes.includes(requiredScope));
+          if (!hasScope) {
+            throw new Error('Insufficient permissions');
+          }
         }
 
         return context;
-      },
-      customFormatErrorFn: (error: any) => {
-        const securityLogger = createSecurityLogger();
-        securityLogger.logSecurityEvent({
-          action: 'graphql_error',
-          resource: error.path?.join('.') || 'unknown',
-          reason: error.message,
-          metadata: {
-            extensions: error.extensions,
-          },
-        });
-
-        if (
-          process.env.NODE_ENV === 'production' &&
-          error.extensions?.code === 'INTERNAL_SERVER_ERROR'
-        ) {
-          return {
-            message: 'Internal server error',
-            extensions: { code: 'INTERNAL_SERVER_ERROR' },
-          };
-        }
-
-        return {
-          message: error.message,
-          locations: error.locations,
-          path: error.path,
-          extensions: error.extensions,
-        };
       },
     }),
   ];

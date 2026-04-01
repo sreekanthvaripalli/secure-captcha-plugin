@@ -10,7 +10,6 @@ module.exports = {
   endOfLine: 'lf',
   quoteProps: 'as-needed',
   jsxSingleQuote: false,
-  jsxBracketSameLine: false,
   rangeStart: 0,
   rangeEnd: Infinity,
   requirePragma: false,

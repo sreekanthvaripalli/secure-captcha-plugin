@@ -191,7 +191,7 @@ export class CaptchaClient {
   private readonly timeout: number;
   private readonly headers: Record<string, string>;
   private readonly useLocalService: boolean;
-  private captchaService: CaptchaService | null = null;
+  private readonly captchaService: CaptchaService | null = null;
 
   constructor(options: CaptchaClientOptions = {}) {
     this.baseUrl = options.baseUrl || '/api/v1/captcha';
@@ -314,12 +314,12 @@ export class CaptchaClient {
  * Renders a CAPTCHA challenge with input and validation
  */
 export class CaptchaWidget {
-  private container: HTMLElement;
-  private client: CaptchaClient;
+  private readonly container: HTMLElement;
+  private readonly client: CaptchaClient;
   private state: CaptchaState;
-  private options: Required<CaptchaOptions>;
-  private theme: Required<CaptchaTheme>;
-  private handlers: CaptchaEventHandlers;
+  private readonly options: Required<CaptchaOptions>;
+  private readonly theme: Required<CaptchaTheme>;
+  private readonly handlers: CaptchaEventHandlers;
   private autoRefreshInterval: number | null = null;
   private selectedType: CaptchaType;
   private inputElement: HTMLInputElement | null = null;

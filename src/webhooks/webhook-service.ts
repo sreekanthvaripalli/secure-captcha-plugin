@@ -205,7 +205,9 @@ export class WebhookService {
 
     while (this.deliveryQueue.length > 0) {
       const delivery = this.deliveryQueue.shift();
-      if (!delivery) continue;
+      if (!delivery) {
+        continue;
+      }
 
       await this.processDelivery(delivery);
     }
