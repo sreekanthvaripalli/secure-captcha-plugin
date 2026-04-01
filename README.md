@@ -3321,12 +3321,12 @@ gh run view <run-id> --log
 
 ### Test Status
 
-**All 1,732 tests passing** ✅
+**All 1,878 tests passing** ✅
 
-- **Test Suites**: 47 passed, 47 total
-- **Tests**: 1,732 passed, 1,732 total
+- **Test Suites**: 50 passed, 50 total
+- **Tests**: 1,878 passed, 1,878 total
 - **Snapshots**: 0 total
-- **Time**: ~55 seconds
+- **Time**: ~60 seconds
 - **Test Projects**: 3 (default, React, Vue)
 - **Code Coverage**: 84.8% statements (up from 76%)
 
@@ -3341,6 +3341,7 @@ gh run view <run-id> --log
 | **Compliance** | 3 | 130+ | ✅ |
 | **Documentation** | 2 | 110+ | ✅ |
 | **GraphQL** | 2 | 50+ | ✅ |
+| **Integration** | 3 | 146 | ✅ |
 
 ### Running Tests
 
@@ -3356,6 +3357,11 @@ npm run test:unit
 
 # Run integration tests only
 npm run test:integration
+
+# Run specific integration test suites
+npm test -- --testPathPattern="tests/integration/api-integration"
+npm test -- --testPathPattern="tests/integration/database-integration"
+npm test -- --testPathPattern="tests/integration/plugin-integration"
 
 # Run security tests only
 npm run test:security
