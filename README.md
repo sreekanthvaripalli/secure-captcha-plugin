@@ -528,8 +528,8 @@ class CircuitBreaker {
 |----------|----------|---------------|
 | **RESTful** | HTTP/HTTPS | [OpenAPI 3.0](docs/openapi.yaml), [Swagger UI](docs/swagger/index.html), [Postman](docs/postman/secure-captcha-api.postman_collection.json) |
 | **GraphQL** | HTTP/HTTPS | [Schema](src/graphql/schema.ts), [Middleware](src/graphql/middleware.ts) |
+| **Webhooks** | HTTP/HTTPS | [Service](src/webhooks/webhook-service.ts), [Middleware](src/webhooks/webhook-middleware.ts) |
 | **WebSocket** | WS/WSS | Real-time events |
-| **Webhooks** | HTTP/HTTPS | Event-driven |
 
 ### Quick Integration Examples
 
@@ -3321,39 +3321,24 @@ gh run view <run-id> --log
 
 ### Test Status
 
-**All 1,381 tests passing** ✅
+**All 1,491 tests passing** ✅
 
-- **Test Suites**: 37 passed, 37 total
-- **Tests**: 1,381 passed, 1,381 total
+- **Test Suites**: 40 passed, 40 total
+- **Tests**: 1,491 passed, 1,491 total
 - **Snapshots**: 0 total
-- **Time**: ~41 seconds
+- **Time**: ~39 seconds
+- **Test Projects**: 3 (default, React, Vue)
 
-### Recent Test Fixes (March 31, 2026)
+### Test Coverage by Category
 
-Fixed lint errors and test issues:
-
-1. **Vue.js Plugin Lint Fixes** (`src/plugins/vue-captcha.ts`)
-   - Added explicit return type `Record<string, string>` to `typeButtonStyle` function
-   - Added explicit return type `Record<string, string | number>` to `getButtonStyle` function
-   - Fixed TypeScript strict mode compliance
-
-2. **Jest Configuration Fix** (`jest.config.js`)
-   - Updated React project transform pattern from `'^.+\\.tsx$'` to `'^.+\\.[tj]sx?$'`
-   - Ensures both `.ts` and `.tsx` files are properly transformed by ts-jest
-
-3. **React Test Fixes**
-   - Added mock for failed validation response to ensure attempts counter is visible
-   - Added missing `session-id` element to TestComponent
-
-4. **Svelte Component Implementation** (`src/plugins/svelte-captcha.ts`)
-   - Implemented complete Svelte component with store, action, and helper functions
-   - Added 30+ comprehensive unit tests
-   - All Svelte tests passing
-
-5. **Vanilla JavaScript SDK** (`src/plugins/vanilla-js-sdk.ts`)
-   - Implemented CaptchaClient, CaptchaWidget, createCaptchaWidget, initCaptchaWidgets
-   - Added 44 comprehensive unit tests
-   - All Vanilla SDK tests passing
+| Category | Test Files | Tests | Status |
+|----------|-----------|-------|--------|
+| **Core** | 6 | 200+ | ✅ |
+| **Security** | 12 | 500+ | ✅ |
+| **Plugins** | 9 | 300+ | ✅ |
+| **Infrastructure** | 8 | 250+ | ✅ |
+| **Compliance** | 3 | 130+ | ✅ |
+| **Documentation** | 2 | 110+ | ✅ |
 
 ### Running Tests
 
@@ -3364,8 +3349,20 @@ npm test
 # Run tests with coverage
 npm run test:coverage
 
+# Run unit tests only
+npm run test:unit
+
+# Run integration tests only
+npm run test:integration
+
+# Run security tests only
+npm run test:security
+
+# Run performance tests only
+npm run test:performance
+
 # Run specific test file
-npm test -- tests/unit/react-captcha.test.tsx
+npm test -- tests/unit/captcha-generator.test.ts
 
 # Run tests in watch mode
 npm run test:watch

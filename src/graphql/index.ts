@@ -1,6 +1,6 @@
 /**
  * GraphQL Module Exports
- * 
+ *
  * Provides GraphQL API for Secure CAPTCHA Plugin including:
  * - Schema definition
  * - Query and mutation resolvers
@@ -20,7 +20,7 @@ export type {
   SecurityEvent,
   HealthStatus,
   CaptchaSession,
-  RateLimitInfo
+  RateLimitInfo,
 } from './types';
 
 // Event names for subscriptions
@@ -28,5 +28,5 @@ export {
   CAPTCHA_GENERATED,
   CAPTCHA_VALIDATED,
   SECURITY_EVENT,
-  RATE_LIMIT_EXCEEDED
+  RATE_LIMIT_EXCEEDED,
 } from './schema';

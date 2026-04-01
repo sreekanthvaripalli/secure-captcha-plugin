@@ -1,6 +1,6 @@
 /**
  * GraphQL Schema for Secure CAPTCHA Plugin
- * 
+ *
  * Provides GraphQL API for CAPTCHA operations including:
  * - CAPTCHA generation and validation
  * - Session management
@@ -19,7 +19,7 @@ import {
   GraphQLEnumType,
   GraphQLList,
   GraphQLNonNull,
-  GraphQLInputObjectType
+  GraphQLInputObjectType,
 } from 'graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { CaptchaService } from '../core/captcha-service';
@@ -40,8 +40,8 @@ const CaptchaTypeEnum = new GraphQLEnumType({
     TEXT: { value: 'text' },
     MATH: { value: 'math' },
     LOGIC: { value: 'logic' },
-    IMAGE: { value: 'image' }
-  }
+    IMAGE: { value: 'image' },
+  },
 });
 
 const CaptchaDifficultyEnum = new GraphQLEnumType({
@@ -49,8 +49,8 @@ const CaptchaDifficultyEnum = new GraphQLEnumType({
   values: {
     EASY: { value: 'easy' },
     MEDIUM: { value: 'medium' },
-    HARD: { value: 'hard' }
-  }
+    HARD: { value: 'hard' },
+  },
 });
 
 const SessionStatusEnum = new GraphQLEnumType({
@@ -59,16 +59,16 @@ const SessionStatusEnum = new GraphQLEnumType({
     ACTIVE: { value: 'active' },
     VALIDATED: { value: 'validated' },
     EXPIRED: { value: 'expired' },
-    FAILED: { value: 'failed' }
-  }
+    FAILED: { value: 'failed' },
+  },
 });
 
 const HealthStatusEnum = new GraphQLEnumType({
   name: 'HealthStatus',
   values: {
     HEALTHY: { value: 'healthy' },
-    UNHEALTHY: { value: 'unhealthy' }
-  }
+    UNHEALTHY: { value: 'unhealthy' },
+  },
 });
 
 // Input types
@@ -78,8 +78,8 @@ const CaptchaOptionsInput = new GraphQLInputObjectType({
     length: { type: GraphQLInt },
     categories: { type: new GraphQLList(GraphQLString) },
     operations: { type: new GraphQLList(GraphQLString) },
-    language: { type: GraphQLString }
-  }
+    language: { type: GraphQLString },
+  },
 });
 
 const GenerateCaptchaInput = new GraphQLInputObjectType({
@@ -87,8 +87,8 @@ const GenerateCaptchaInput = new GraphQLInputObjectType({
   fields: {
     type: { type: new GraphQLNonNull(CaptchaTypeEnum) },
     difficulty: { type: new GraphQLNonNull(CaptchaDifficultyEnum) },
-    options: { type: CaptchaOptionsInput }
-  }
+    options: { type: CaptchaOptionsInput },
+  },
 });
 
 const ValidateCaptchaInput = new GraphQLInputObjectType({
@@ -96,8 +96,8 @@ const ValidateCaptchaInput = new GraphQLInputObjectType({
   fields: {
     sessionId: { type: new GraphQLNonNull(GraphQLString) },
     response: { type: new GraphQLNonNull(GraphQLString) },
-    type: { type: new GraphQLNonNull(CaptchaTypeEnum) }
-  }
+    type: { type: new GraphQLNonNull(CaptchaTypeEnum) },
+  },
 });
 
 // Object types
@@ -107,8 +107,8 @@ const MemoryType = new GraphQLObjectType({
     rss: { type: new GraphQLNonNull(GraphQLInt) },
     heapTotal: { type: new GraphQLNonNull(GraphQLInt) },
     heapUsed: { type: new GraphQLNonNull(GraphQLInt) },
-    external: { type: new GraphQLNonNull(GraphQLInt) }
-  }
+    external: { type: new GraphQLNonNull(GraphQLInt) },
+  },
 });
 
 const HealthType = new GraphQLObjectType({
@@ -118,8 +118,8 @@ const HealthType = new GraphQLObjectType({
     timestamp: { type: new GraphQLNonNull(GraphQLString) },
     version: { type: new GraphQLNonNull(GraphQLString) },
     uptime: { type: new GraphQLNonNull(GraphQLFloat) },
-    memory: { type: new GraphQLNonNull(MemoryType) }
-  }
+    memory: { type: new GraphQLNonNull(MemoryType) },
+  },
 });
 
 const CaptchaChallengeType = new GraphQLObjectType({
@@ -130,8 +130,8 @@ const CaptchaChallengeType = new GraphQLObjectType({
     type: { type: new GraphQLNonNull(CaptchaTypeEnum) },
     difficulty: { type: new GraphQLNonNull(CaptchaDifficultyEnum) },
     expiresIn: { type: new GraphQLNonNull(GraphQLInt) },
-    createdAt: { type: new GraphQLNonNull(GraphQLString) }
-  }
+    createdAt: { type: new GraphQLNonNull(GraphQLString) },
+  },
 });
 
 const ValidationResponseType = new GraphQLObjectType({
@@ -140,8 +140,8 @@ const ValidationResponseType = new GraphQLObjectType({
     valid: { type: new GraphQLNonNull(GraphQLBoolean) },
     securityScore: { type: new GraphQLNonNull(GraphQLInt) },
     message: { type: new GraphQLNonNull(GraphQLString) },
-    sessionId: { type: new GraphQLNonNull(GraphQLString) }
-  }
+    sessionId: { type: new GraphQLNonNull(GraphQLString) },
+  },
 });
 
 const CaptchaTypeInfoType = new GraphQLObjectType({
@@ -150,8 +150,8 @@ const CaptchaTypeInfoType = new GraphQLObjectType({
     type: { type: new GraphQLNonNull(GraphQLString) },
     name: { type: new GraphQLNonNull(GraphQLString) },
     difficulties: { type: new GraphQLNonNull(new GraphQLList(CaptchaDifficultyEnum)) },
-    description: { type: new GraphQLNonNull(GraphQLString) }
-  }
+    description: { type: new GraphQLNonNull(GraphQLString) },
+  },
 });
 
 const CaptchaStatsType = new GraphQLObjectType({
@@ -162,8 +162,8 @@ const CaptchaStatsType = new GraphQLObjectType({
     successRate: { type: new GraphQLNonNull(GraphQLFloat) },
     averageGenerationTime: { type: new GraphQLNonNull(GraphQLFloat) },
     averageValidationTime: { type: new GraphQLNonNull(GraphQLFloat) },
-    activeSessions: { type: new GraphQLNonNull(GraphQLInt) }
-  }
+    activeSessions: { type: new GraphQLNonNull(GraphQLInt) },
+  },
 });
 
 const SecurityEventType = new GraphQLObjectType({
@@ -175,8 +175,8 @@ const SecurityEventType = new GraphQLObjectType({
     timestamp: { type: new GraphQLNonNull(GraphQLString) },
     description: { type: new GraphQLNonNull(GraphQLString) },
     ipAddress: { type: GraphQLString },
-    userAgent: { type: GraphQLString }
-  }
+    userAgent: { type: GraphQLString },
+  },
 });
 
 const CaptchaSessionType = new GraphQLObjectType({
@@ -190,8 +190,8 @@ const CaptchaSessionType = new GraphQLObjectType({
     expiresAt: { type: new GraphQLNonNull(GraphQLString) },
     attempts: { type: new GraphQLNonNull(GraphQLInt) },
     maxAttempts: { type: new GraphQLNonNull(GraphQLInt) },
-    securityScore: { type: new GraphQLNonNull(GraphQLInt) }
-  }
+    securityScore: { type: new GraphQLNonNull(GraphQLInt) },
+  },
 });
 
 const RateLimitInfoType = new GraphQLObjectType({
@@ -199,8 +199,8 @@ const RateLimitInfoType = new GraphQLObjectType({
   fields: {
     limit: { type: new GraphQLNonNull(GraphQLInt) },
     remaining: { type: new GraphQLNonNull(GraphQLInt) },
-    reset: { type: new GraphQLNonNull(GraphQLInt) }
-  }
+    reset: { type: new GraphQLNonNull(GraphQLInt) },
+  },
 });
 
 // Error type
@@ -210,8 +210,8 @@ const ErrorType = new GraphQLObjectType({
     code: { type: new GraphQLNonNull(GraphQLString) },
     message: { type: new GraphQLNonNull(GraphQLString) },
     requestId: { type: GraphQLString },
-    timestamp: { type: GraphQLString }
-  }
+    timestamp: { type: GraphQLString },
+  },
 });
 
 // Union types for responses
@@ -220,8 +220,8 @@ const GenerateCaptchaResponse = new GraphQLObjectType({
   fields: {
     success: { type: new GraphQLNonNull(GraphQLBoolean) },
     data: { type: CaptchaChallengeType },
-    error: { type: ErrorType }
-  }
+    error: { type: ErrorType },
+  },
 });
 
 const ValidateCaptchaResponse = new GraphQLObjectType({
@@ -229,8 +229,8 @@ const ValidateCaptchaResponse = new GraphQLObjectType({
   fields: {
     success: { type: new GraphQLNonNull(GraphQLBoolean) },
     data: { type: ValidationResponseType },
-    error: { type: ErrorType }
-  }
+    error: { type: ErrorType },
+  },
 });
 
 // Services (lazy initialized)
@@ -250,32 +250,32 @@ const QueryType = new GraphQLObjectType({
     health: {
       type: new GraphQLNonNull(HealthType),
       description: 'Get API health status',
-      resolve: () => ({
+      resolve: (): Record<string, unknown> => ({
         status: 'healthy',
         timestamp: new Date().toISOString(),
         version: '1.0.0',
         uptime: process.uptime(),
-        memory: process.memoryUsage()
-      })
+        memory: process.memoryUsage(),
+      }),
     },
     captchaTypes: {
       type: new GraphQLNonNull(new GraphQLList(CaptchaTypeInfoType)),
       description: 'Get available CAPTCHA types and difficulties',
-      resolve: () => {
+      resolve: (): Array<Record<string, unknown>> => {
         const service = getCaptchaService();
         const types = service.getAvailableTypes();
         return types.map(type => ({
           type,
           name: `${type.charAt(0).toUpperCase() + type.slice(1)} Captcha`,
           difficulties: ['easy', 'medium', 'hard'],
-          description: `${type.charAt(0).toUpperCase() + type.slice(1)} based CAPTCHA challenge`
+          description: `${type.charAt(0).toUpperCase() + type.slice(1)} based CAPTCHA challenge`,
         }));
-      }
+      },
     },
     captchaStats: {
       type: new GraphQLNonNull(CaptchaStatsType),
       description: 'Get CAPTCHA statistics and metrics',
-      resolve: async () => {
+      resolve: async (): Promise<Record<string, number>> => {
         // Parse metrics to extract relevant stats
         return {
           totalGenerated: 0,
@@ -283,22 +283,22 @@ const QueryType = new GraphQLObjectType({
           successRate: 0,
           averageGenerationTime: 0,
           averageValidationTime: 0,
-          activeSessions: 0
+          activeSessions: 0,
         };
-      }
+      },
     },
     captchaSession: {
       type: CaptchaSessionType,
       description: 'Get CAPTCHA session by ID',
       args: {
-        sessionId: { type: new GraphQLNonNull(GraphQLString) }
+        sessionId: { type: new GraphQLNonNull(GraphQLString) },
       },
-      resolve: async () => {
+      resolve: async (): Promise<null> => {
         // Implementation would fetch session from store
         return null;
-      }
-    }
-  }
+      },
+    },
+  },
 });
 
 // Mutation type
@@ -309,16 +309,12 @@ const MutationType = new GraphQLObjectType({
       type: new GraphQLNonNull(GenerateCaptchaResponse),
       description: 'Generate a new CAPTCHA challenge',
       args: {
-        input: { type: new GraphQLNonNull(GenerateCaptchaInput) }
+        input: { type: new GraphQLNonNull(GenerateCaptchaInput) },
       },
-      resolve: async (_parent, { input }) => {
+      resolve: async (_parent, { input }): Promise<Record<string, unknown>> => {
         try {
           const service = getCaptchaService();
-          const result = await service.generateCaptcha(
-            input.type,
-            input.difficulty,
-            input.options
-          );
+          const result = await service.generateCaptcha(input.type, input.difficulty, input.options);
 
           const challenge = {
             sessionId: result.sessionId,
@@ -326,7 +322,7 @@ const MutationType = new GraphQLObjectType({
             type: result.type,
             difficulty: result.difficulty,
             expiresIn: result.expiresIn,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
           };
 
           // Publish subscription event
@@ -334,27 +330,28 @@ const MutationType = new GraphQLObjectType({
 
           return {
             success: true,
-            data: challenge
+            data: challenge,
           };
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const err = error as Record<string, unknown>;
           return {
             success: false,
             error: {
-              code: error.code || 'GENERATION_ERROR',
-              message: error.message || 'Failed to generate CAPTCHA',
-              timestamp: new Date().toISOString()
-            }
+              code: (err.code as string) || 'GENERATION_ERROR',
+              message: (err.message as string) || 'Failed to generate CAPTCHA',
+              timestamp: new Date().toISOString(),
+            },
           };
         }
-      }
+      },
     },
     validateCaptcha: {
       type: new GraphQLNonNull(ValidateCaptchaResponse),
       description: 'Validate a CAPTCHA response',
       args: {
-        input: { type: new GraphQLNonNull(ValidateCaptchaInput) }
+        input: { type: new GraphQLNonNull(ValidateCaptchaInput) },
       },
-      resolve: async (_parent, { input }) => {
+      resolve: async (_parent, { input }): Promise<Record<string, unknown>> => {
         try {
           const service = getCaptchaService();
           const result = await service.validateResponse(
@@ -367,7 +364,7 @@ const MutationType = new GraphQLObjectType({
             valid: result.valid,
             securityScore: result.securityScore,
             message: result.message,
-            sessionId: input.sessionId
+            sessionId: input.sessionId,
           };
 
           // Publish subscription event
@@ -375,21 +372,22 @@ const MutationType = new GraphQLObjectType({
 
           return {
             success: true,
-            data: validationResult
+            data: validationResult,
           };
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const err = error as Record<string, unknown>;
           return {
             success: false,
             error: {
-              code: error.code || 'VALIDATION_ERROR',
-              message: error.message || 'Failed to validate CAPTCHA',
-              timestamp: new Date().toISOString()
-            }
+              code: (err.code as string) || 'VALIDATION_ERROR',
+              message: (err.message as string) || 'Failed to validate CAPTCHA',
+              timestamp: new Date().toISOString(),
+            },
           };
         }
-      }
-    }
-  }
+      },
+    },
+  },
 });
 
 // Subscription type
@@ -399,29 +397,29 @@ const SubscriptionType = new GraphQLObjectType({
     captchaGenerated: {
       type: CaptchaChallengeType,
       description: 'Subscribe to CAPTCHA generation events',
-      subscribe: () => (pubsub as any).asyncIterator([CAPTCHA_GENERATED])
+      subscribe: (): AsyncIterator<unknown> => (pubsub as any).asyncIterator([CAPTCHA_GENERATED]),
     },
     captchaValidated: {
       type: ValidationResponseType,
       description: 'Subscribe to CAPTCHA validation events',
-      subscribe: () => (pubsub as any).asyncIterator([CAPTCHA_VALIDATED])
+      subscribe: (): AsyncIterator<unknown> => (pubsub as any).asyncIterator([CAPTCHA_VALIDATED]),
     },
     securityEvent: {
       type: SecurityEventType,
       description: 'Subscribe to security events',
-      subscribe: () => (pubsub as any).asyncIterator([SECURITY_EVENT])
+      subscribe: (): AsyncIterator<unknown> => (pubsub as any).asyncIterator([SECURITY_EVENT]),
     },
     rateLimitExceeded: {
       type: RateLimitInfoType,
       description: 'Subscribe to rate limit exceeded events',
-      subscribe: () => (pubsub as any).asyncIterator([RATE_LIMIT_EXCEEDED])
-    }
-  }
+      subscribe: (): AsyncIterator<unknown> => (pubsub as any).asyncIterator([RATE_LIMIT_EXCEEDED]),
+    },
+  },
 });
 
 // Create schema
 export const schema = new GraphQLSchema({
   query: QueryType,
   mutation: MutationType,
-  subscription: SubscriptionType
+  subscription: SubscriptionType,
 });

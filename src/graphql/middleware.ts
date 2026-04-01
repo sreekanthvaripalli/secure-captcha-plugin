@@ -1,6 +1,6 @@
 /**
  * GraphQL Middleware for Secure CAPTCHA Plugin
- * 
+ *
  * Provides:
  * - Express middleware integration
  * - JWT/API Key authentication
@@ -45,16 +45,18 @@ const graphqlRateLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 100, // 100 requests per minute
   message: {
-    errors: [{
-      message: 'Too many requests, please try again later',
-      extensions: { code: 'RATE_LIMITED' }
-    }]
+    errors: [
+      {
+        message: 'Too many requests, please try again later',
+        extensions: { code: 'RATE_LIMITED' },
+      },
+    ],
   },
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req: Request) => {
-    return req.ip || req.headers['x-forwarded-for'] as string || 'unknown';
-  }
+    return req.ip || (req.headers['x-forwarded-for'] as string) || 'unknown';
+  },
 });
 
 // Create security logger instance
@@ -64,31 +66,36 @@ function createSecurityLogger(): SecurityLogger {
     enableFileLogging: false,
     logFilePath: './logs/security.log',
     maxLogFileSize: 10485760,
-    maxLogFiles: 5
+    maxLogFiles: 5,
   });
 }
 
 // Authentication middleware
-async function authenticateRequest(req: Request): Promise<GraphQLContext['user'] | GraphQLContext['apiKey'] | null> {
+async function authenticateRequest(
+  req: Request
+): Promise<GraphQLContext['user'] | GraphQLContext['apiKey'] | null> {
   const authHeader = req.headers.authorization;
-  
+
   if (!authHeader) {
     return null;
   }
 
   const [scheme, token] = authHeader.split(' ');
-  
+
   if (scheme !== 'Bearer' || !token) {
     return null;
   }
 
   // Try JWT first
   try {
-    const jwtService = new JWTService({
-      secret: process.env.JWT_SECRET || 'default-secret',
-      issuer: process.env.JWT_ISSUER || 'secure-captcha',
-      audience: process.env.JWT_AUDIENCE || 'secure-captcha-api'
-    }, createSecurityLogger());
+    const jwtService = new JWTService(
+      {
+        secret: process.env.JWT_SECRET || 'default-secret',
+        issuer: process.env.JWT_ISSUER || 'secure-captcha',
+        audience: process.env.JWT_AUDIENCE || 'secure-captcha-api',
+      },
+      createSecurityLogger()
+    );
 
     const decoded = jwtService.validateToken(token);
     if (decoded.valid && decoded.payload) {
@@ -96,7 +103,7 @@ async function authenticateRequest(req: Request): Promise<GraphQLContext['user']
         userId: decoded.payload.sub || '',
         clientId: (decoded.payload as any).clientId || '',
         scope: ((decoded.payload as any).scope as string[]) || [],
-        roles: ((decoded.payload as any).roles as string[]) || []
+        roles: ((decoded.payload as any).roles as string[]) || [],
       };
     }
   } catch {
@@ -105,14 +112,17 @@ async function authenticateRequest(req: Request): Promise<GraphQLContext['user']
 
   // Try API key
   try {
-    const apiKeyService = new APIKeyService({
-      enableKeyHashing: true,
-      enableRateLimiting: true
-    }, createSecurityLogger());
+    const apiKeyService = new APIKeyService(
+      {
+        enableKeyHashing: true,
+        enableRateLimiting: true,
+      },
+      createSecurityLogger()
+    );
 
     const validation = apiKeyService.validateAPIKey(token, {
       endpoint: '/graphql',
-      method: 'POST'
+      method: 'POST',
     });
 
     if (validation.valid) {
@@ -120,7 +130,7 @@ async function authenticateRequest(req: Request): Promise<GraphQLContext['user']
         keyId: validation.keyId || '',
         userId: validation.userId || '',
         permissions: validation.permissions || [],
-        scopes: validation.scopes || []
+        scopes: validation.scopes || [],
       };
     }
   } catch {
@@ -157,11 +167,11 @@ export function createGraphQLMiddleware(options?: {
   requiredScope?: string;
   enablePlayground?: boolean;
   enableTracing?: boolean;
-}) {
+}): any {
   const {
     requireAuth = false,
     requiredScope,
-    enablePlayground = process.env.NODE_ENV !== 'production'
+    enablePlayground = process.env.NODE_ENV !== 'production',
   } = options || {};
 
   return [
@@ -182,8 +192,8 @@ export function createGraphQLMiddleware(options?: {
           rateLimit: {
             limit: 100,
             remaining: 100,
-            reset: Math.floor(Date.now() / 1000) + 60
-          }
+            reset: Math.floor(Date.now() / 1000) + 60,
+          },
         };
 
         if (auth && 'userId' in auth && 'scope' in auth) {
@@ -205,14 +215,17 @@ export function createGraphQLMiddleware(options?: {
           resource: error.path?.join('.') || 'unknown',
           reason: error.message,
           metadata: {
-            extensions: error.extensions
-          }
+            extensions: error.extensions,
+          },
         });
 
-        if (process.env.NODE_ENV === 'production' && error.extensions?.code === 'INTERNAL_SERVER_ERROR') {
+        if (
+          process.env.NODE_ENV === 'production' &&
+          error.extensions?.code === 'INTERNAL_SERVER_ERROR'
+        ) {
           return {
             message: 'Internal server error',
-            extensions: { code: 'INTERNAL_SERVER_ERROR' }
+            extensions: { code: 'INTERNAL_SERVER_ERROR' },
           };
         }
 
@@ -220,10 +233,10 @@ export function createGraphQLMiddleware(options?: {
           message: error.message,
           locations: error.locations,
           path: error.path,
-          extensions: error.extensions
+          extensions: error.extensions,
         };
-      }
-    })
+      },
+    }),
   ];
 }
 

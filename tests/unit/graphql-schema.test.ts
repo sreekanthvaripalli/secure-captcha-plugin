@@ -54,7 +54,7 @@ describe('GraphQL Schema', () => {
       `;
 
       const result = await graphql({ schema, source: query });
-      
+
       expect(result.errors).toBeUndefined();
       expect(result.data).toBeDefined();
       const health = result.data?.health as any;
@@ -78,12 +78,12 @@ describe('GraphQL Schema', () => {
       `;
 
       const result = await graphql({ schema, source: query });
-      
+
       expect(result.errors).toBeUndefined();
       expect(result.data).toBeDefined();
       expect(Array.isArray(result.data?.captchaTypes)).toBe(true);
       expect((result.data?.captchaTypes as any[]).length).toBeGreaterThan(0);
-      
+
       const types = result.data?.captchaTypes as any[];
       const typeNames = types.map(t => t.type);
       expect(typeNames).toContain('text');
@@ -109,7 +109,7 @@ describe('GraphQL Schema', () => {
       `;
 
       const result = await graphql({ schema, source: query });
-      
+
       expect(result.errors).toBeUndefined();
       expect(result.data).toBeDefined();
       expect(result.data?.captchaStats).toBeDefined();
@@ -139,7 +139,7 @@ describe('GraphQL Schema', () => {
       `;
 
       const result = await graphql({ schema, source: mutation });
-      
+
       expect(result.errors).toBeUndefined();
       expect(result.data).toBeDefined();
       const generateCaptcha = result.data?.generateCaptcha as any;
@@ -171,7 +171,7 @@ describe('GraphQL Schema', () => {
       `;
 
       const result = await graphql({ schema, source: mutation });
-      
+
       expect(result.errors).toBeUndefined();
       expect(result.data).toBeDefined();
       const generateCaptcha = result.data?.generateCaptcha as any;
@@ -200,7 +200,7 @@ describe('GraphQL Schema', () => {
       `;
 
       const result = await graphql({ schema, source: mutation });
-      
+
       expect(result.errors).toBeUndefined();
       expect(result.data).toBeDefined();
       const generateCaptcha = result.data?.generateCaptcha as any;
@@ -228,7 +228,7 @@ describe('GraphQL Schema', () => {
       `;
 
       const result = await graphql({ schema, source: mutation });
-      
+
       expect(result.errors).toBeUndefined();
       expect(result.data).toBeDefined();
       const generateCaptcha = result.data?.generateCaptcha as any;
@@ -254,7 +254,7 @@ describe('GraphQL Schema', () => {
 
       // This should fail at schema validation level since INVALID is not a valid enum value
       const result = await graphql({ schema, source: mutation });
-      
+
       expect(result.errors).toBeDefined();
     });
   });
@@ -284,7 +284,7 @@ describe('GraphQL Schema', () => {
       `;
 
       const result = await graphql({ schema, source: mutation });
-      
+
       // Should return result (service may return success even for invalid session)
       expect(result.data).toBeDefined();
       const validateCaptcha = result.data?.validateCaptcha as any;
@@ -306,11 +306,13 @@ describe('GraphQL Schema', () => {
         type: 'text',
         difficulty: 'easy',
         expiresIn: 300,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
 
       // This tests that pubsub.publish works
-      await expect(pubsub.publish(CAPTCHA_GENERATED, { captchaGenerated: testChallenge })).resolves.toBeUndefined();
+      await expect(
+        pubsub.publish(CAPTCHA_GENERATED, { captchaGenerated: testChallenge })
+      ).resolves.toBeUndefined();
     });
 
     test('should publish captcha validated event', async () => {
@@ -318,17 +320,19 @@ describe('GraphQL Schema', () => {
         valid: true,
         securityScore: 95,
         message: 'Valid',
-        sessionId: 'test-session'
+        sessionId: 'test-session',
       };
 
-      await expect(pubsub.publish(CAPTCHA_VALIDATED, { captchaValidated: testValidation })).resolves.toBeUndefined();
+      await expect(
+        pubsub.publish(CAPTCHA_VALIDATED, { captchaValidated: testValidation })
+      ).resolves.toBeUndefined();
     });
   });
 
   describe('Type Validation', () => {
     test('should validate enum types', () => {
       const types = schema.getTypeMap();
-      
+
       expect(types['CaptchaType']).toBeDefined();
       expect(types['CaptchaDifficulty']).toBeDefined();
       expect(types['SessionStatus']).toBeDefined();
@@ -337,7 +341,7 @@ describe('GraphQL Schema', () => {
 
     test('should validate input types', () => {
       const types = schema.getTypeMap();
-      
+
       expect(types['GenerateCaptchaInput']).toBeDefined();
       expect(types['ValidateCaptchaInput']).toBeDefined();
       expect(types['CaptchaOptionsInput']).toBeDefined();
@@ -345,7 +349,7 @@ describe('GraphQL Schema', () => {
 
     test('should validate object types', () => {
       const types = schema.getTypeMap();
-      
+
       expect(types['CaptchaChallenge']).toBeDefined();
       expect(types['ValidationResponse']).toBeDefined();
       expect(types['CaptchaTypeInfo']).toBeDefined();
@@ -375,7 +379,7 @@ describe('GraphQL Schema', () => {
       `;
 
       const result = await graphql({ schema, source: mutation });
-      
+
       // Should fail at schema validation since type is required
       expect(result.errors).toBeDefined();
     });
@@ -394,7 +398,7 @@ describe('GraphQL Schema', () => {
       `;
 
       const result = await graphql({ schema, source: mutation });
-      
+
       // Should fail at schema validation since sessionId should be String
       expect(result.errors).toBeDefined();
     });
