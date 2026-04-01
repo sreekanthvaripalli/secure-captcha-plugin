@@ -37,7 +37,7 @@ module.exports = {
     {
       displayName: 'node',
       testMatch: ['**/*.test.ts'],
-      testPathIgnorePatterns: ['/node_modules/', 'vue-captcha.test.ts'],
+      testPathIgnorePatterns: ['/node_modules/', 'vue-captcha.test.ts', 'tests/e2e/'],
       testEnvironment: 'node',
       setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
       transform: {

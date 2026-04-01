@@ -180,3 +180,10 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 node_modules
+
+# Playwright
+playwright-report/
+test-results/
+test-results.json
+.blob-report/
+playwright/.cache/

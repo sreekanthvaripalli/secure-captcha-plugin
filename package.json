@@ -27,7 +27,16 @@
     "prepare": "husky install",
     "clean": "rm -rf dist coverage",
     "docker:build": "docker build -t secure-captcha-plugin .",
-    "docker:run": "docker run -p 3000:3000 secure-captcha-plugin"
+    "docker:run": "docker run -p 3000:3000 secure-captcha-plugin",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:chromium": "playwright test --project=chromium",
+    "test:e2e:firefox": "playwright test --project=firefox",
+    "test:e2e:webkit": "playwright test --project=webkit",
+    "test:e2e:mobile": "playwright test --project='Mobile Chrome' --project='Mobile Safari'"
   },
   "keywords": [
     "captcha",
@@ -88,6 +97,7 @@
     "@angular/platform-browser": "^19.2.18",
     "@angular/platform-browser-dynamic": "^19.2.18",
     "@nestjs/testing": "^11.1.17",
+    "@playwright/test": "^1.59.1",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.6.1",
@@ -116,6 +126,7 @@
     "js-yaml": "^4.1.1",
     "lint-staged": "^15.2.0",
     "nodemon": "^3.0.3",
+    "playwright": "^1.59.1",
     "prettier": "^3.2.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

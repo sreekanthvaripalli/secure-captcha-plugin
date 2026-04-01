@@ -3321,14 +3321,14 @@ gh run view <run-id> --log
 
 ### Test Status
 
-**All 1,878 tests passing** ✅
+**All 1,923 tests passing** ✅
 
-- **Test Suites**: 50 passed, 50 total
-- **Tests**: 1,878 passed, 1,878 total
+- **Test Suites**: 50+ passed, 50+ total
+- **Tests**: 1,923 passed, 1,923 total
 - **Snapshots**: 0 total
 - **Time**: ~60 seconds
-- **Test Projects**: 3 (default, React, Vue)
-- **Code Coverage**: 84.8% statements (up from 76%)
+- **Test Projects**: 4 (default, React, Vue, E2E)
+- **Code Coverage**: 84.8% statements
 
 ### Test Coverage by Category
 
@@ -3342,6 +3342,7 @@ gh run view <run-id> --log
 | **Documentation** | 2 | 110+ | ✅ |
 | **GraphQL** | 2 | 50+ | ✅ |
 | **Integration** | 3 | 146 | ✅ |
+| **E2E** | 2 | 45 | ✅ |
 
 ### Running Tests
 
@@ -3375,6 +3376,45 @@ npm test -- tests/unit/captcha-generator.test.ts
 # Run tests in watch mode
 npm run test:watch
 ```
+
+### End-to-End (E2E) Testing
+
+The project uses **Playwright** for comprehensive end-to-end testing across multiple browsers and devices.
+
+```bash
+# Run all E2E tests
+npm run test:e2e
+
+# Run E2E tests with UI
+npm run test:e2e:ui
+
+# Run E2E tests in headed mode
+npm run test:e2e:headed
+
+# Run E2E tests in debug mode
+npm run test:e2e:debug
+
+# Run E2E tests on specific browsers
+npm run test:e2e:chromium    # Chromium only
+npm run test:e2e:firefox     # Firefox only
+npm run test:e2e:webkit      # WebKit only
+npm run test:e2e:mobile      # Mobile viewports only
+
+# View E2E test report
+npm run test:e2e:report
+```
+
+**E2E Test Coverage:**
+
+| Test Suite | Tests | Description |
+|------------|-------|-------------|
+| **API Flow Tests** | 27 | Health check, captcha generation/validation, error handling, security headers, input validation |
+| **Browser Interaction Tests** | 18 | Widget rendering, user interactions, cross-browser compatibility, mobile responsiveness, accessibility |
+
+**Supported Browsers:**
+- Chromium, Firefox, WebKit
+- Microsoft Edge, Google Chrome
+- Mobile: Pixel 5, iPhone 12
 
 ---
 
