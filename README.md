@@ -3589,12 +3589,51 @@ gh workflow run security.yml
 ```
 
 #### 5. Deploy Workflow (`.github/workflows/deploy.yml`)
-Automated deployment to staging and production:
-- **Staging**: Deploys on push to `main` branch
-- **Production**: Deploys on version tags (`v*`)
-- **Manual**: Supports manual deployment via workflow dispatch
-- Runs smoke tests after deployment
+Automated deployment to staging and production with multiple deployment strategies:
+- **Staging**: Deploys on push to `main` branch (rolling deployment)
+- **Production**: Deploys on version tags (`v*`) (blue-green deployment)
+- **Manual**: Supports manual deployment via workflow dispatch with strategy selection (rolling, blue-green, canary)
+- **Rollback**: Automated rollback job for failed deployments
+- **Canary Promotion**: Dedicated job to promote canary deployments
+- Runs health checks and smoke tests after deployment
 - Creates GitHub releases for production deployments
+
+**Deployment Strategies:**
+
+| Strategy | Description | Use Case |
+|----------|-------------|----------|
+| **Rolling** | Gradual pod replacement with zero downtime | Default, staging deployments |
+| **Blue-Green** | Two identical environments with instant traffic switch | Production deployments, instant rollback |
+| **Canary** | Gradual traffic shift with metrics-based promotion | Risk-sensitive production deployments |
+
+**Deployment Scripts:**
+
+All deployment scripts are located in `scripts/deploy/`:
+
+```bash
+# Deploy with rolling strategy (default)
+bash scripts/deploy/deploy.sh -e staging -v 1.2.0 -s rolling deploy
+
+# Deploy with blue-green strategy
+bash scripts/deploy/deploy.sh -e production -v 1.2.0 -s blue-green deploy
+
+# Deploy with canary strategy
+bash scripts/deploy/deploy.sh -e production -v 1.2.0 -s canary deploy
+
+# Rollback deployment
+bash scripts/deploy/deploy.sh -e production rollback
+
+# Run health checks
+bash scripts/deploy/deploy.sh -e production health
+
+# Check deployment status
+bash scripts/deploy/deploy.sh -e production status
+
+# Promote canary deployment
+bash scripts/deploy/deploy.sh -e production promote
+```
+
+**Manual Deployment via GitHub Actions:**
 
 ```bash
 # Deploy to staging (automatic on main branch push)
@@ -3604,10 +3643,25 @@ git push origin main
 git tag v1.0.0
 git push origin v1.0.0
 
-# Manual deployment
-gh workflow run deploy.yml -f environment=staging
-gh workflow run deploy.yml -f environment=production
+# Manual deployment with strategy selection
+gh workflow run deploy.yml \
+  -f environment=production \
+  -f strategy=blue-green \
+  -f version=1.2.0
+
+# Rollback deployment
+gh workflow run deploy.yml \
+  -f action=rollback \
+  -f environment=production \
+  -f strategy=blue-green
+
+# Promote canary deployment
+gh workflow run deploy.yml \
+  -f action=promote-canary \
+  -f environment=production
 ```
+
+For detailed deployment documentation, see [Deployment Guide](docs/DEPLOYMENT_GUIDE.md).
 
 ### Required Secrets
 

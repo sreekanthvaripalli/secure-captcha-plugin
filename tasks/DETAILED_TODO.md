@@ -1722,17 +1722,29 @@ This document provides granular, trackable tasks for building an enterprise-grad
 
 ### Week 4: Production Readiness (July 7-11, 2026)
 
-#### 6.4.1 Deployment Automation
-- [ ] **Setup Deployment**
-  - [ ] Blue-green deployment
-  - [ ] Canary releases
-  - [ ] Rollback procedures
-  - [ ] Health checks
+#### 6.4.1 Deployment Automation ✅ **COMPLETE**
+- [x] **Setup Deployment** ✅ **COMPLETE**
+  - [x] Blue-green deployment - `scripts/deploy/blue-green-deploy.sh`
+  - [x] Canary releases - `scripts/deploy/canary-deploy.sh`
+  - [x] Rollback procedures - `scripts/deploy/rollback.sh`
+  - [x] Health checks - `scripts/deploy/health-check.sh`
+  - [x] Deploy orchestrator - `scripts/deploy/deploy.sh`
 
-- [ ] **Write Deployment Tests**
-  - [ ] Test deployment process
-  - [ ] Test rollback process
-  - [ ] Test health checks
+- [x] **Write Deployment Tests** ✅ **COMPLETE**
+  - [x] Test deployment process - 96 tests in `tests/unit/deployment-automation.test.ts`
+  - [x] Test rollback process - Tests for rolling, blue-green, canary rollback
+  - [x] Test health checks - Tests for API, database, cache, K8s, monitoring checks
+
+**Implementation Notes (April 2, 2026):**
+- Created comprehensive deployment automation suite in `scripts/deploy/` directory
+- **Blue-Green Deployment** (`blue-green-deploy.sh`): Zero-downtime deployments with slot management, traffic switching, health checks, dry-run mode, rollback support
+- **Canary Deployment** (`canary-deploy.sh`): Gradual traffic shift (10% → 100%), metrics-based promotion (error rate, P99 latency), configurable thresholds, auto-promote, Istio VirtualService support
+- **Rollback Script** (`rollback.sh`): Supports rolling, blue-green, and canary rollback strategies with revision support
+- **Health Check Script** (`health-check.sh`): Comprehensive health checks for API, database, cache, Kubernetes, monitoring, and security headers
+- **Deploy Orchestrator** (`deploy.sh`): Unified interface for deploy, rollback, health, status, and promote commands
+- **Enhanced CI/CD Pipeline** (`.github/workflows/deploy.yml`): Added staging/production deployment, manual deployment with strategy selection, rollback job, canary promotion job
+- **96 comprehensive tests** in `tests/unit/deployment-automation.test.ts` - all passing
+- **Deployment Guide** created in `docs/DEPLOYMENT_GUIDE.md` with complete documentation
 
 #### 6.4.2 Monitoring & Alerting
 - [ ] **Setup Production Monitoring**

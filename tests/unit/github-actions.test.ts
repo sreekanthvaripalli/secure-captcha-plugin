@@ -414,15 +414,15 @@ describe('GitHub Actions Workflows', () => {
       expect(job.environment.url).toBe('https://captcha.example.com');
     });
 
-    test('deploy-staging runs smoke tests', () => {
+    test('deploy-staging runs health checks', () => {
       const steps = deployWorkflow.jobs['deploy-staging'].steps;
-      const smokeTestStep = steps.find((s: any) => s.name === 'Run smoke tests');
-      expect(smokeTestStep).toBeDefined();
+      const healthCheckStep = steps.find((s: any) => s.name === 'Run health checks');
+      expect(healthCheckStep).toBeDefined();
     });
 
     test('deploy-production runs smoke tests', () => {
       const steps = deployWorkflow.jobs['deploy-production'].steps;
-      const smokeTestStep = steps.find((s: any) => s.name === 'Run production smoke tests');
+      const smokeTestStep = steps.find((s: any) => s.name && s.name.includes('smoke tests'));
       expect(smokeTestStep).toBeDefined();
     });
 

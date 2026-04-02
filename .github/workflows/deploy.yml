@@ -15,6 +15,19 @@ on:
         options:
           - staging
           - production
+      strategy:
+        description: 'Deployment strategy'
+        required: true
+        default: 'rolling'
+        type: choice
+        options:
+          - rolling
+          - blue-green
+          - canary
+      version:
+        description: 'Version to deploy (for manual trigger)'
+        required: false
+        default: 'latest'
 
 jobs:
   deploy-staging:
@@ -41,19 +54,33 @@ jobs:
       - name: Build application
         run: npm run build
       
-      - name: Deploy to staging
-        run: |
-          echo "Deploying to staging environment..."
-          # Add your staging deployment commands here
-          # Example: kubectl apply -f k8s/ --namespace=staging
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_STAGING }}
+      - name: Run tests
+        run: npm test
       
-      - name: Run smoke tests
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+      
+      - name: Configure Kubernetes credentials
         run: |
-          echo "Running smoke tests..."
-          # Add your smoke test commands here
-          # Example: curl -f https://staging.captcha.example.com/api/v1/health
+          mkdir -p $HOME/.kube
+          # Try base64 decode first, fall back to plain text
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > $HOME/.kube/config 2>/dev/null || \
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+          kubectl cluster-info
+      
+      - name: Deploy to staging (rolling)
+        run: |
+          VERSION=${GITHUB_SHA::8}
+          bash scripts/deploy/deploy.sh -e staging -v "$VERSION" -s rolling deploy
+      
+      - name: Run health checks
+        run: |
+          bash scripts/deploy/health-check.sh -e staging
+        env:
+          BASE_URL: https://staging.captcha.example.com
   
   deploy-production:
     name: Deploy to Production
@@ -79,19 +106,39 @@ jobs:
       - name: Build application
         run: npm run build
       
-      - name: Deploy to production
-        run: |
-          echo "Deploying to production environment..."
-          # Add your production deployment commands here
-          # Example: kubectl apply -f k8s/ --namespace=production
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_PRODUCTION }}
+      - name: Run tests
+        run: npm test
       
-      - name: Run production smoke tests
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+      
+      - name: Configure Kubernetes credentials
+        run: |
+          mkdir -p $HOME/.kube
+          # Try base64 decode first, fall back to plain text
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > $HOME/.kube/config 2>/dev/null || \
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+          kubectl cluster-info
+      
+      - name: Deploy to production (blue-green)
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          bash scripts/deploy/deploy.sh -e production -v "$VERSION" -s blue-green deploy
+      
+      - name: Run health checks
+        run: |
+          bash scripts/deploy/health-check.sh -e production
+        env:
+          BASE_URL: https://captcha.example.com
+      
+      - name: Run smoke tests
         run: |
           echo "Running production smoke tests..."
-          # Add your production smoke test commands here
-          # Example: curl -f https://captcha.example.com/api/v1/health
+          curl -f https://captcha.example.com/api/v1/health
+          curl -f https://captcha.example.com/api/v1/captcha/types
       
       - name: Create GitHub release
         uses: softprops/action-gh-release@v1
@@ -128,15 +175,114 @@ jobs:
       - name: Build application
         run: npm run build
       
+      - name: Run tests
+        run: npm test
+      
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+      
+      - name: Configure Kubernetes credentials
+        run: |
+          mkdir -p $HOME/.kube
+          KUBE_CONFIG_SECRET="${{ github.event.inputs.environment == 'production' && secrets.KUBE_CONFIG_PRODUCTION || secrets.KUBE_CONFIG_STAGING }}"
+          # Try base64 decode first, fall back to plain text
+          echo "$KUBE_CONFIG_SECRET" | base64 -d > $HOME/.kube/config 2>/dev/null || \
+          echo "$KUBE_CONFIG_SECRET" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+          kubectl cluster-info
+      
       - name: Deploy to ${{ github.event.inputs.environment }}
         run: |
-          echo "Deploying to ${{ github.event.inputs.environment }} environment..."
-          # Add your deployment commands here
-          # Example: kubectl apply -f k8s/ --namespace=${{ github.event.inputs.environment }}
+          VERSION="${{ github.event.inputs.version }}"
+          if [ "$VERSION" = "latest" ]; then
+            VERSION="${GITHUB_SHA::8}"
+          fi
+          STRATEGY="${{ github.event.inputs.strategy }}"
+          bash scripts/deploy/deploy.sh -e "${{ github.event.inputs.environment }}" -v "$VERSION" -s "$STRATEGY" deploy
+      
+      - name: Run health checks
+        run: |
+          bash scripts/deploy/health-check.sh -e "${{ github.event.inputs.environment }}"
         env:
-          KUBE_CONFIG: ${{ github.event.inputs.environment == 'production' && secrets.KUBE_CONFIG_PRODUCTION || secrets.KUBE_CONFIG_STAGING }}
+          BASE_URL: ${{ github.event.inputs.environment == 'production' && 'https://captcha.example.com' || 'https://staging.captcha.example.com' }}
       
       - name: Run smoke tests
         run: |
-          echo "Running smoke tests..."
-          # Add your smoke test commands here
+          BASE_URL="${{ github.event.inputs.environment == 'production' && 'https://captcha.example.com' || 'https://staging.captcha.example.com' }}"
+          curl -f "$BASE_URL/api/v1/health"
+          curl -f "$BASE_URL/api/v1/captcha/types"
+  
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'rollback'
+    environment:
+      name: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+      
+      - name: Configure Kubernetes credentials
+        run: |
+          mkdir -p $HOME/.kube
+          KUBE_CONFIG_SECRET="${{ github.event.inputs.environment == 'production' && secrets.KUBE_CONFIG_PRODUCTION || secrets.KUBE_CONFIG_STAGING }}"
+          # Try base64 decode first, fall back to plain text
+          echo "$KUBE_CONFIG_SECRET" | base64 -d > $HOME/.kube/config 2>/dev/null || \
+          echo "$KUBE_CONFIG_SECRET" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+          kubectl cluster-info
+      
+      - name: Rollback deployment
+        run: |
+          STRATEGY="${{ github.event.inputs.strategy || 'rolling' }}"
+          bash scripts/deploy/deploy.sh -e "${{ github.event.inputs.environment }}" -s "$STRATEGY" rollback
+      
+      - name: Run health checks
+        run: |
+          bash scripts/deploy/health-check.sh -e "${{ github.event.inputs.environment }}"
+        env:
+          BASE_URL: ${{ github.event.inputs.environment == 'production' && 'https://captcha.example.com' || 'https://staging.captcha.example.com' }}
+  
+  canary-promote:
+    name: Promote Canary Deployment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'promote-canary'
+    environment:
+      name: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+      
+      - name: Configure Kubernetes credentials
+        run: |
+          mkdir -p $HOME/.kube
+          KUBE_CONFIG_SECRET="${{ github.event.inputs.environment == 'production' && secrets.KUBE_CONFIG_PRODUCTION || secrets.KUBE_CONFIG_STAGING }}"
+          # Try base64 decode first, fall back to plain text
+          echo "$KUBE_CONFIG_SECRET" | base64 -d > $HOME/.kube/config 2>/dev/null || \
+          echo "$KUBE_CONFIG_SECRET" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+          kubectl cluster-info
+      
+      - name: Promote canary
+        run: |
+          bash scripts/deploy/deploy.sh -e "${{ github.event.inputs.environment }}" promote
+      
+      - name: Run health checks
+        run: |
+          bash scripts/deploy/health-check.sh -e "${{ github.event.inputs.environment }}"
+        env:
+          BASE_URL: ${{ github.event.inputs.environment == 'production' && 'https://captcha.example.com' || 'https://staging.captcha.example.com' }}
