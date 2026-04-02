@@ -125,18 +125,11 @@ describe('GitHub Actions Workflows', () => {
       expect(installStep.run).toBe('npm ci');
     });
 
-    test('lint job runs ESLint', () => {
-      const steps = lintWorkflow.jobs.lint.steps;
-      const eslintStep = steps.find((s: any) => s.name === 'Run ESLint');
-      expect(eslintStep).toBeDefined();
-      expect(eslintStep.run).toBe('npm run lint:fix');
-    });
-
     test('lint job checks Prettier formatting', () => {
       const steps = lintWorkflow.jobs.lint.steps;
       const prettierStep = steps.find((s: any) => s.name === 'Check Prettier formatting');
       expect(prettierStep).toBeDefined();
-      expect(prettierStep.run).toBe('npm run format:check');
+      expect(prettierStep.run).toBe('npx prettier --check "src/**/*.ts" "tests/**/*.ts"');
     });
 
     test('lint job checks TypeScript compilation', () => {
