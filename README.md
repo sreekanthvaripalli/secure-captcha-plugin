@@ -502,6 +502,133 @@ class CircuitBreaker {
 - **Connection Pooling**: PostgreSQL: 100+ connections
 - **Multi-level Caching**: L1: Memory, L2: Redis
 
+### Database Optimization
+
+The plugin includes a comprehensive `DatabaseOptimizer` service for PostgreSQL query optimization and performance monitoring.
+
+#### Query Caching
+
+```typescript
+import { DatabaseOptimizer } from 'secure-captcha-plugin';
+
+// Initialize with connection pool
+const optimizer = new DatabaseOptimizer(securityConfig);
+
+// Execute query with automatic caching
+const result = await optimizer.query('SELECT * FROM users WHERE id = $1', [1]);
+
+// Execute with custom TTL
+const cachedResult = await optimizer.queryWithCache(
+  'SELECT * FROM products WHERE category = $1',
+  ['electronics'],
+  120000 // 2 minutes TTL
+);
+
+// Get cache statistics
+const cacheStats = optimizer.getCacheStats();
+console.log(`Cache entries: ${cacheStats.entries}`);
+console.log(`Hit rate: ${cacheStats.hitRate}%`);
+
+// Clear cache
+optimizer.clearCache();
+
+// Invalidate specific cache entries
+optimizer.invalidateCache('users');
+```
+
+#### Slow Query Analysis
+
+```typescript
+// Analyze a slow query
+const analysis = await optimizer.analyzeSlowQuery(
+  'SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC',
+  [123]
+);
+
+console.log(analysis.recommendations); // Optimization recommendations
+console.log(analysis.indexSuggestions); // Index suggestions
+
+// Get slow query log
+const slowQueries = optimizer.getSlowQueryLog();
+console.log(`Total slow queries: ${slowQueries.length}`);
+
+// Clear slow query log
+optimizer.clearSlowQueryLog();
+```
+
+#### JOIN Analysis
+
+```typescript
+// Analyze JOIN operations in a query
+const joinAnalysis = await optimizer.analyzeJoins(`
+  SELECT u.*, o.total
+  FROM users u
+  INNER JOIN orders o ON u.id = o.user_id
+  LEFT JOIN products p ON o.product_id = p.id
+  WHERE u.status = 'active'
+`);
+
+console.log(joinAnalysis.tables); // ['users', 'orders', 'products']
+console.log(joinAnalysis.joinTypes); // ['INNER', 'LEFT']
+console.log(joinAnalysis.recommendations); // Optimization recommendations
+console.log(joinAnalysis.estimatedCost); // Estimated query cost
+```
+
+#### Missing Index Detection
+
+```typescript
+// Detect missing indexes across the database
+const missingIndexes = await optimizer.detectMissingIndexes();
+
+for (const index of missingIndexes) {
+  console.log(`Table: ${index.table}`);
+  console.log(`Columns: ${index.columns.join(', ')}`);
+  console.log(`Reason: ${index.reason}`);
+  console.log(`Estimated improvement: ${index.estimatedImprovement}`);
+}
+```
+
+#### Index Management
+
+```typescript
+// Create database indexes
+await optimizer.createIndex('users', ['email', 'status']);
+await optimizer.createIndex('orders', ['user_id', 'created_at'], 'orders_user_created_idx');
+
+// Analyze table statistics
+await optimizer.analyzeTable('users');
+await optimizer.analyzeTable('orders');
+```
+
+#### Query Plan Analysis
+
+The optimizer automatically analyzes query plans and provides recommendations for:
+- Sequential scans (suggests adding indexes)
+- Nested loop joins (suggests hash/merge joins for large datasets)
+- Sort operations (suggests indexes to avoid sorting)
+- Hash operations (suggests work_mem configuration)
+- High query cost (>10,000)
+- Large row estimates (>100,000)
+
+#### Configuration
+
+```typescript
+const optimizer = new DatabaseOptimizer(securityConfig, {
+  max: 20,                    // Max connections
+  min: 2,                     // Min connections
+  idleTimeoutMillis: 30000,   // Idle timeout
+  connectionTimeoutMillis: 5000
+});
+
+// Configure query cache
+optimizer.configureQueryCache({
+  enabled: true,
+  maxEntries: 1000,
+  defaultTTL: 60000,    // 1 minute
+  maxMemoryMB: 100
+});
+```
+
 ---
 
 ## 🔌 Integration
