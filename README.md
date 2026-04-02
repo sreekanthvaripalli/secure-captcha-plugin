@@ -2692,6 +2692,97 @@ The module initializes with three default clients:
 - **Performance Dashboard**: Request rate, latency, throughput
 - **Security Dashboard**: Security events, bot detection rate
 - **Business Dashboard**: Captcha types usage, difficulty distribution
+- **Performance Profiling Dashboard**: CPU latency percentiles, memory usage, cache hit rate, system resources
+
+### Performance Profiling
+
+The plugin includes a comprehensive performance profiling system for CPU, memory, and network analysis.
+
+#### Features
+
+- **CPU Profiling**: Track execution time, CPU time, wall time, and percentiles (p50, p95, p99)
+- **Memory Profiling**: Heap usage tracking, memory leak detection with linear regression analysis
+- **Network Profiling**: Request/response size tracking, compression ratio, throughput calculation
+- **Object Pooling**: Reusable object pools for reducing GC pressure
+- **Bottleneck Detection**: Automatic identification of performance bottlenecks with recommendations
+
+#### Usage
+
+```typescript
+import { PerformanceProfilerService, ObjectPool } from 'secure-captcha-plugin';
+
+// Create profiler
+const profiler = new PerformanceProfilerService({
+  cpuProfilingEnabled: true,
+  memoryProfilingEnabled: true,
+  networkProfilingEnabled: true,
+  bottleneckThresholds: {
+    cpu: { p95: 100, p99: 500, avg: 50 },
+    memory: { heapUsedPercent: 80, growthRate: 1024 * 1024 },
+    network: { latency: 200, payloadSize: 1024 * 1024 }
+  }
+});
+
+// Profile synchronous operations
+const result = profiler.profileSync('captcha-generate', () => {
+  return generateCaptcha();
+});
+
+// Profile asynchronous operations
+const result = await profiler.profileAsync('captcha-validate', async () => {
+  return await validateCaptcha(response);
+});
+
+// Take memory snapshots
+profiler.takeMemorySnapshot();
+
+// Detect memory leaks
+const leakReport = profiler.detectMemoryLeaks();
+if (leakReport) {
+  console.log(`Memory leak risk: ${leakReport.summary.riskLevel}`);
+}
+
+// Generate performance report
+const report = profiler.generateReport();
+console.log(`Bottlenecks: ${report.bottlenecks.length}`);
+console.log(`Recommendations: ${report.recommendations}`);
+
+// Use object pooling for expensive objects
+const pool = profiler.getPool('captcha-session', () => createSession());
+const session = pool.acquire();
+// ... use session
+pool.release(session);
+```
+
+#### Middleware Integration
+
+```typescript
+import { performanceMiddleware, performanceEndpoint, performanceHealthCheck } from 'secure-captcha-plugin';
+
+// Add performance middleware to Express
+app.use(performanceMiddleware({
+  enabled: true,
+  sampleRate: 100,
+  trackRequestBodySize: true,
+  trackResponseBodySize: true,
+  excludePaths: ['/health', '/metrics']
+}));
+
+// Add performance report endpoint
+app.get('/api/v1/performance', performanceEndpoint);
+
+// Add performance health check
+app.get('/api/v1/performance/health', performanceHealthCheck);
+```
+
+#### Performance Dashboard
+
+The Grafana Performance Profiling Dashboard (`grafana/dashboards/performance-profiling-dashboard.json`) includes:
+
+- **CPU Performance**: HTTP request latency (P95, P99, Avg), CAPTCHA generation/validation latency, throughput
+- **Memory Performance**: Heap usage breakdown, heap usage percentage, event loop lag
+- **Cache Performance**: Cache hit rate, cache operation latency
+- **System Resources**: CPU usage, server uptime
 
 ### Logging (ELK Stack)
 
