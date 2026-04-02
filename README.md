@@ -2784,6 +2784,112 @@ The Grafana Performance Profiling Dashboard (`grafana/dashboards/performance-pro
 - **Cache Performance**: Cache hit rate, cache operation latency
 - **System Resources**: CPU usage, server uptime
 
+### Caching Optimization
+
+The plugin includes an advanced multi-level caching system with comprehensive optimization features.
+
+#### Features
+
+- **Multi-Level Caching**: L1: In-memory cache with LRU eviction, L2: Redis distributed cache
+- **Adaptive TTL**: Automatic TTL adjustment based on access frequency (configurable minTTL/maxTTL)
+- **Optimized Key Generation**: SHA-256 hashing for long keys, namespace/version/userId/sessionId support
+- **Priority-Based Cache Warming**: Load critical data first with high/medium/low priority levels
+- **Pattern-Based Hit Ratio Analysis**: Track hit rates per key pattern for granular insights
+- **Production-Safe Scanning**: Uses Redis SCAN instead of KEYS for pattern matching
+- **Comprehensive Statistics**: patternHitRates, averageTTL, evictionCount, cleanupCount
+
+#### Usage
+
+```typescript
+import { CacheService } from 'secure-captcha-plugin';
+
+// Create cache service with optimized configuration
+const cacheService = new CacheService(securityConfig, {
+  ttl: 300,                    // Default TTL: 5 minutes
+  memoryLimit: 1000,           // Max entries in memory cache
+  enableAdaptiveTTL: true,     // Enable adaptive TTL
+  minTTL: 60,                  // Minimum TTL: 1 minute
+  maxTTL: 3600,                // Maximum TTL: 1 hour
+  enableCompression: true,     // Enable compression for large payloads
+  compressionThreshold: 1024,  // Compress payloads > 1KB
+  namespace: 'myapp'           // Namespace for multi-tenant support
+});
+
+// Generate optimized cache keys
+const key = cacheService.generateKey('captcha-session', {
+  namespace: 'auth',
+  version: 'v2',
+  userId: 'user-123',
+  sessionId: 'session-456'
+});
+
+// Get data from cache (L1: Memory, L2: Redis)
+const data = await cacheService.get(key);
+
+// Set data in cache with adaptive TTL
+await cacheService.set(key, { token: 'abc123' }, 600);
+
+// Warm cache with priority-based loading
+await cacheService.warmCache([
+  { key: 'config', data: appConfig, priority: 'high' },
+  { key: 'templates', data: emailTemplates, priority: 'medium' },
+  { key: 'translations', data: i18nData, priority: 'low' }
+]);
+
+// Get cache statistics with pattern hit rates
+const stats = cacheService.getStats();
+console.log(`Hit rate: ${stats.hitRate}%`);
+console.log(`Average TTL: ${stats.averageTTL}s`);
+console.log(`Evictions: ${stats.evictionCount}`);
+
+// Get pattern-specific statistics
+const patternStats = cacheService.getPatternStats();
+console.log('Pattern hit rates:', patternStats);
+
+// Invalidate cache by pattern
+const invalidated = await cacheService.invalidate('captcha:generate');
+console.log(`Invalidated ${invalidated} keys`);
+
+// Clear all cache
+const cleared = await cacheService.clear();
+console.log(`Cleared ${cleared} keys`);
+
+// Shutdown cache service
+await cacheService.shutdown();
+```
+
+#### Cache Key Options
+
+| Option | Type | Description | Default |
+|--------|------|-------------|---------|
+| `namespace` | string | Namespace for multi-tenant isolation | `'captcha'` |
+| `version` | string | API version for cache busting | `'v1'` |
+| `userId` | string | User identifier for user-specific caching | - |
+| `sessionId` | string | Session identifier for session-specific caching | - |
+
+#### Cache Warmup Options
+
+| Option | Type | Description | Default |
+|--------|------|-------------|---------|
+| `key` | string | Cache key | Required |
+| `data` | any | Data to cache | Required |
+| `ttl` | number | Time-to-live in seconds | Default TTL |
+| `priority` | `'high' \| 'medium' \| 'low'` | Loading priority | `'medium'` |
+
+#### Cache Statistics
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `totalRequests` | number | Total cache requests |
+| `hits` | number | Total cache hits |
+| `misses` | number | Total cache misses |
+| `hitRate` | number | Cache hit rate percentage |
+| `memoryUsage` | number | Memory cache size in bytes |
+| `patternHitRates` | object | Per-pattern hit/miss/hitRate |
+| `averageTTL` | number | Average TTL across memory cache |
+| `evictionCount` | number | Total LRU evictions |
+| `cleanupCount` | number | Total expired entries cleaned |
+
 ### Logging (ELK Stack)
 
 - Structured logging with Winston
