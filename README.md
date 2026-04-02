@@ -3365,6 +3365,97 @@ cd tests/penetration/automated
 ./container-scan.sh secure-captcha-plugin:latest
 ```
 
+---
+
+## 🔍 Vulnerability Assessment
+
+The Secure CAPTCHA Plugin includes a comprehensive vulnerability assessment suite for continuous security validation.
+
+### Vulnerability Assessment Components
+
+| Component | Description | Location |
+|-----------|-------------|----------|
+| **Vulnerability Assessment Script** | Orchestrates all scanning phases | `tests/penetration/automated/vulnerability-assessment.sh` |
+| **Dependency Scanning** | npm audit, Snyk, OWASP Dependency Check | `tests/penetration/automated/dependency-scan.sh` |
+| **Container Scanning** | Trivy, Docker Scout, Hadolint | `tests/penetration/automated/container-scan.sh` |
+| **SonarQube Configuration** | Static code analysis configuration | `sonar-project.properties` |
+| **Security Review Checklist** | Comprehensive code review checklist | `tests/penetration/reports/code-security-review-checklist.md` |
+| **Unit Tests** | 83 tests for vulnerability assessment | `tests/unit/vulnerability-assessment.test.ts` |
+
+### Running Vulnerability Assessment
+
+```bash
+# Run comprehensive vulnerability assessment
+cd tests/penetration/automated
+./vulnerability-assessment.sh . ./results
+
+# Run dependency scanning only
+./dependency-scan.sh .
+
+# Run container scanning only
+./container-scan.sh secure-captcha-plugin:latest
+
+# Run vulnerability assessment unit tests
+npm test -- --testPathPattern="vulnerability-assessment"
+```
+
+### Vulnerability Assessment Phases
+
+The vulnerability assessment script runs 5 phases:
+
+1. **Dependency Scanning**: npm audit, Snyk, OWASP Dependency Check, outdated packages
+2. **Container Scanning**: Trivy image scan, Hadolint Dockerfile lint, best practices check
+3. **Static Code Analysis**: ESLint security, TypeScript type check, SonarQube, security pattern scan
+4. **Configuration Scanning**: Dockerfile security, Kubernetes manifests, environment configuration
+5. **Report Generation**: Comprehensive markdown report with risk score and remediation plan
+
+### Risk Scoring
+
+The assessment calculates a weighted risk score:
+
+| Severity | Weight | Action Timeline |
+|----------|--------|-----------------|
+| Critical | 10 | 24 hours |
+| High | 7 | 7 days |
+| Medium | 4 | 30 days |
+| Low | 1 | 90 days |
+
+| Score Range | Risk Level | Action Required |
+|-------------|------------|-----------------|
+| 0-20 | LOW | Monitor and address in regular maintenance |
+| 21-50 | MEDIUM | Schedule remediation within 30 days |
+| 51-100 | HIGH | Immediate remediation required within 7 days |
+| 100+ | CRITICAL | Emergency remediation required within 24 hours |
+
+### SonarQube Integration
+
+```bash
+# Run SonarQube analysis (requires SonarQube server)
+sonar-scanner
+
+# Or using Docker
+docker run --rm \
+  -e SONAR_HOST_URL=http://host.docker.internal:9000 \
+  -e SONAR_LOGIN=your_token \
+  -v "$(pwd):/usr/src" \
+  sonarsource/sonar-scanner-cli
+```
+
+### Code Security Review
+
+Use the [Code Security Review Checklist](tests/penetration/reports/code-security-review-checklist.md) for manual code reviews:
+
+- **Input Validation**: SQL injection, XSS, command injection prevention
+- **Authentication & Authorization**: JWT, API keys, OAuth 2.0 security
+- **Data Protection**: Encryption at rest and in transit
+- **Session Management**: Cookie security, session timeout
+- **Error Handling & Logging**: No sensitive data exposure
+- **Cryptography**: Algorithm selection, key management
+- **API Security**: Rate limiting, CORS, request validation
+- **Infrastructure Security**: Docker, Kubernetes best practices
+- **Dependency Security**: Vulnerability management
+- **OWASP Top 10**: Complete coverage checklist
+
 ### Penetration Test Reports
 
 A comprehensive report template is available at `tests/penetration/reports/penetration-report-template.md` with sections for executive summary, OWASP Top 10 coverage, findings, remediation plan, and sign-off.
