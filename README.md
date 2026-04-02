@@ -3308,12 +3308,76 @@ gh run view <run-id> --log
 
 ---
 
+## 🛡️ Penetration Testing
+
+The Secure CAPTCHA Plugin includes a comprehensive penetration testing suite for automated and manual security testing.
+
+### Automated Scanning Scripts
+
+| Script | Tool | Purpose |
+|--------|------|---------|
+| **zap-scan.sh** | OWASP ZAP | Web application vulnerability scanning |
+| **nikto-scan.sh** | Nikto | Web server misconfiguration detection |
+| **nmap-scan.sh** | Nmap | Network port and service discovery |
+| **sqlmap-test.sh** | SQLMap | SQL injection vulnerability testing |
+| **dependency-scan.sh** | npm audit, Snyk | Dependency vulnerability scanning |
+| **container-scan.sh** | Trivy, Hadolint | Container security scanning |
+| **run-all-scans.sh** | Orchestrator | Run all scans and generate report |
+
+### Manual Testing Procedures
+
+| Document | Coverage |
+|----------|----------|
+| **auth-bypass.md** | JWT manipulation, API key bypass, OAuth 2.0 bypass, session fixation, rate limiting bypass |
+| **injection-tests.md** | SQL, Command, NoSQL, LDAP, Header, Template, XML injection |
+| **xss-tests.md** | Reflected XSS, CSP bypass, DOM-based XSS, Stored XSS, Header XSS |
+| **csrf-tests.md** | Token validation, SameSite cookies, Origin/Referer validation, CORS protection |
+| **session-hijacking.md** | Token prediction, Session fixation, Timeout/expiration, Storage security |
+
+### Automated Security Tests
+
+**75 comprehensive penetration tests** covering:
+- Authentication bypass (JWT manipulation, API key bypass)
+- Injection attacks (SQL, Command, NoSQL, Template injection)
+- Cross-Site Scripting (10+ XSS payloads)
+- CSRF attacks (Content-Type, Origin validation)
+- Session hijacking (Invalid sessions, Session ID generation)
+- Input validation (Parameter pollution, Path traversal, Oversized input)
+- Security headers (X-Content-Type-Options, X-Frame-Options, HSTS, CSP)
+- Rate limiting, HTTP method tampering, Information disclosure, SSRF
+
+### Running Penetration Tests
+
+```bash
+# Run automated security tests
+npm test -- --testPathPattern="penetration-testing"
+
+# Run all automated scans
+cd tests/penetration/automated
+./run-all-scans.sh http://localhost:3000
+
+# Run individual scans
+./zap-scan.sh http://localhost:3000 baseline
+./nikto-scan.sh localhost 3000
+./nmap-scan.sh localhost quick
+./sqlmap-test.sh http://localhost:3000
+./dependency-scan.sh .
+./container-scan.sh secure-captcha-plugin:latest
+```
+
+### Penetration Test Reports
+
+A comprehensive report template is available at `tests/penetration/reports/penetration-report-template.md` with sections for executive summary, OWASP Top 10 coverage, findings, remediation plan, and sign-off.
+
+---
+
 ## 📚 Documentation
 
 - **[Functional Specification](tasks/FUNCTIONAL_SPECIFICATION.md)**: Complete functional requirements
 - **[Implementation Plan](tasks/IMPLEMENTATION_PLAN.md)**: 24-week implementation timeline
 - **[Detailed TODO](tasks/DETAILED_TODO.md)**: Granular task breakdown
 - **[Testing Strategy](tasks/TESTING_STRATEGY.md)**: Comprehensive testing approach
+- **[Penetration Testing Guide](tests/penetration/README.md)**: Penetration testing procedures
 
 ---
 
