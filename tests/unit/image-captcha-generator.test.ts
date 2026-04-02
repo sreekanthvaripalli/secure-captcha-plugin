@@ -200,18 +200,23 @@ describe('ImageCaptchaGenerator', () => {
         difficulty: 'easy',
       };
 
-      // Generate multiple times to increase chance of getting pattern matching puzzle
-      let hasPatternMatching = false;
-      for (let i = 0; i < 20; i++) {
-        const response = await generator.generate(input);
-        if (response.challenge.includes('pattern')) {
-          hasPatternMatching = true;
-          break;
-        }
-      }
+      // Mock Math.random to force pattern-matching puzzle type
+      const originalRandom = Math.random;
+      let callCount = 0;
+      Math.random = () => {
+        callCount++;
+        // First call is for selectPuzzleType - return 0.25 to get index 1 (pattern-matching)
+        if (callCount === 1) return 0.25;
+        return originalRandom();
+      };
 
-      // Pattern matching puzzles should be generated
-      expect(hasPatternMatching).toBe(true);
+      const response = await generator.generate(input);
+
+      // Restore original Math.random
+      Math.random = originalRandom;
+
+      // Pattern matching puzzles should contain "pattern" in the question
+      expect(response.challenge.toLowerCase()).toContain('pattern');
     });
 
     test('should generate spatial arrangement puzzles', async () => {
