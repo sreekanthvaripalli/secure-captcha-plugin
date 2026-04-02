@@ -2929,7 +2929,98 @@ curl -X POST http://localhost:3000/api/v1/captcha/generate \
   -d '{"type":"image","difficulty":"easy"}'
 ```
 
-### Performance Testing
+### Load Testing (k6)
+
+The Secure CAPTCHA Plugin includes comprehensive load testing scripts using [k6](https://k6.io/) to validate performance under various load conditions.
+
+#### Prerequisites
+
+```bash
+# Install k6
+brew install k6  # macOS
+# or
+sudo apt-get install k6  # Ubuntu/Debian
+# or
+# See https://k6.io/docs/getting-started/installation/ for other platforms
+```
+
+#### Load Test Scripts
+
+| Script | Description | Target |
+|--------|-------------|--------|
+| `tests/load/captcha-generation.js` | CAPTCHA generation endpoint load test | 1,000 RPS |
+| `tests/load/captcha-validation.js` | CAPTCHA validation endpoint load test | 5,000 RPS |
+| `tests/load/concurrent-users.js` | 10,000+ concurrent users simulation | 10,000+ users |
+| `tests/load/sustained-load.js` | 1-hour sustained load stability test | 500 RPS |
+| `tests/load/spike-load.js` | Sudden traffic spike test | 0 → 1,000+ users |
+
+#### Quick Start
+
+```bash
+# Run all load tests (quick mode - 30s each)
+./tests/load/run-all-tests.sh quick
+
+# Run all load tests (smoke mode - 10s each)
+./tests/load/run-all-tests.sh smoke
+
+# Run all load tests (full mode - 1m each)
+./tests/load/run-all-tests.sh full
+```
+
+#### Individual Test Execution
+
+```bash
+# CAPTCHA Generation Test (target: 1,000 RPS)
+k6 run tests/load/captcha-generation.js
+
+# CAPTCHA Validation Test (target: 5,000 RPS)
+k6 run tests/load/captcha-validation.js
+
+# Concurrent Users Test (target: 10,000+ users)
+k6 run tests/load/concurrent-users.js
+
+# Sustained Load Test (1 hour)
+k6 run tests/load/sustained-load.js
+
+# Spike Load Test (sudden traffic spike)
+k6 run tests/load/spike-load.js
+```
+
+#### Custom Configuration
+
+```bash
+# Custom URL and virtual users
+k6 run -e BASE_URL=http://staging:3000 --vus 100 --duration 60s \
+  tests/load/captcha-generation.js
+
+# Export results to JSON
+k6 run --out json=results.json tests/load/captcha-generation.js
+
+# Run with cloud reporting
+k6 run --out cloud tests/load/captcha-generation.js
+```
+
+#### Performance Thresholds
+
+| Metric | Target | Description |
+|--------|--------|-------------|
+| p95 Latency (Generate) | < 500ms | 95% of generation requests |
+| p95 Latency (Validate) | < 200ms | 95% of validation requests |
+| Error Rate | < 1% | Overall error rate |
+| Success Rate | > 99% | Successful operations |
+| User Journey p95 | < 2s | Complete captcha flow |
+| Spike Recovery | < 60s | Recovery after traffic spike |
+
+#### Load Test Report
+
+After running tests, fill out the report template at `tests/load/load-test-report.md` with your results.
+
+```bash
+# View report template
+cat tests/load/load-test-report.md
+```
+
+### Performance Testing (Quick)
 
 ```bash
 # Test API response times
@@ -2937,18 +3028,6 @@ time curl -s http://localhost:3000/api/v1/health
 
 # Test concurrent requests (requires Apache Bench)
 ab -n 1000 -c 100 http://localhost:3000/api/v1/health
-
-# Test captcha generation performance
-ab -n 500 -c 50 -p post_data.json -T application/json \
-  http://localhost:3000/api/v1/captcha/generate
-```
-
-**Sample post_data.json:**
-```json
-{
-  "type": "text",
-  "difficulty": "medium"
-}
 ```
 
 ### Docker Deployment
