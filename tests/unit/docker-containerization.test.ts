@@ -130,7 +130,7 @@ describe('Docker Containerization', () => {
 
       // Count healthcheck occurrences
       const healthcheckMatches = content.match(/healthcheck:/g);
-      expect(healthcheckMatches).toHaveLength(5); // 5 services
+      expect(healthcheckMatches).toHaveLength(6); // 6 services (app, redis, postgres, prometheus, grafana, alertmanager)
 
       // Check for specific health check commands (with escaped quotes in YAML)
       expect(content).toContain('curl -f http://localhost:3000/api/v1/health');
@@ -384,7 +384,7 @@ describe('Docker Containerization', () => {
 
       // All services should use the same network
       const networkReferences = composeContent.match(/secure-captcha-network/g);
-      expect(networkReferences).toHaveLength(6); // 5 services + 1 network definition
+      expect(networkReferences).toHaveLength(7); // 6 services + 1 network definition
     });
   });
 
