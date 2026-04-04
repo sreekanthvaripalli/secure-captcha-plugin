@@ -199,11 +199,19 @@ export class MathCaptchaGenerator extends BaseCaptchaGenerator {
     }
 
     // Build expression and calculate answer
-    const { expression, answer, steps } = this.buildExpression(numbers, ops, difficulty);
+    const result = this.buildExpression(numbers, ops, difficulty);
+    let expression = result.expression;
+    const answer = result.answer;
+    const steps = result.steps;
+
+    // Round all numbers in expression to 2 decimal places for clean display
+    expression = expression.replace(/\d+\.\d+/g, match => {
+      return parseFloat(match).toFixed(2).replace(/\.00$/, '');
+    });
 
     return {
       expression,
-      answer,
+      answer: Math.round(answer * 100) / 100,
       steps,
     };
   }

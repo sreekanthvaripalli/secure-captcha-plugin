@@ -121,6 +121,12 @@ export interface CaptchaResponse {
   difficulty: Difficulty;
   expiresIn: number;
   metadata: SessionMetadata;
+  text?: string;
+  answer?: string;
+  imageUrl?: string;
+  question?: string;
+  options?: string[];
+  correctAnswer?: number;
 }
 
 export interface ValidationResponse {

@@ -113,6 +113,7 @@ export class LogicCaptchaGenerator extends BaseCaptchaGenerator {
       type: 'logic',
       difficulty,
       expiresIn: 300000,
+      correctAnswer: puzzle.correctAnswer,
       metadata: {
         ip: 'unknown',
         userAgent: 'unknown',

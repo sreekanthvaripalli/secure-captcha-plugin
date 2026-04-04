@@ -148,8 +148,14 @@ describe('CaptchaService', () => {
 
   describe('validateResponse', () => {
     test('should validate correct response', async () => {
-      const response = await service.generateCaptcha('text', 'medium');
-      const result = await service.validateResponse(response.sessionId, response.challenge, 'text');
+      // Use math captcha for this test since it doesn't require internal answer property
+      const response = await service.generateCaptcha('math', 'easy');
+      // For math captchas we can extract answer from challenge
+      const expression = response.challenge.replace(' = ?', '').trim();
+      // Simple math evaluation for testing
+      const answer = eval(expression).toString();
+
+      const result = await service.validateResponse(response.sessionId, answer, 'math');
 
       expect(result.valid).toBe(true);
       expect(result.securityScore).toBe(100);
@@ -227,9 +233,14 @@ describe('CaptchaService', () => {
     });
 
     test('should update session status on successful validation', async () => {
-      const response = await service.generateCaptcha('text', 'medium');
+      // Use math captcha for this test since it doesn't require internal answer property
+      const response = await service.generateCaptcha('math', 'easy');
+      // For math captchas we can extract answer from challenge
+      const expression = response.challenge.replace(' = ?', '').trim();
+      // Simple math evaluation for testing
+      const answer = eval(expression).toString();
 
-      await service.validateResponse(response.sessionId, response.challenge, 'text');
+      await service.validateResponse(response.sessionId, answer, 'math');
 
       const session = service.getSession(response.sessionId);
       expect(session?.status).toBe('validated');

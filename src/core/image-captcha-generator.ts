@@ -123,6 +123,7 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
       type: 'image',
       difficulty,
       expiresIn: 300000,
+      correctAnswer: puzzle.correctAnswer,
       metadata: {
         ip: 'unknown',
         userAgent: 'unknown',
@@ -210,16 +211,30 @@ export class ImageCaptchaGenerator extends BaseCaptchaGenerator {
       }
     }
 
-    // Count objects of a specific type
-    const targetObject = selectedObjects[Math.floor(Math.random() * selectedObjects.length)];
-    let count = 0;
+    // Count objects present in grid and select one that actually exists
+    const objectCounts = new Map<string, number>();
     for (const row of grid) {
       for (const cell of row) {
-        if (cell === targetObject) {
-          count++;
+        if (cell !== '⬜' && cell !== '❓') {
+          objectCounts.set(cell, (objectCounts.get(cell) || 0) + 1);
         }
       }
     }
+
+    // Ensure we have at least one object in the grid
+    if (objectCounts.size === 0) {
+      // If grid is empty, place at least one object
+      const randomObject = selectedObjects[Math.floor(Math.random() * selectedObjects.length)];
+      const randomRow = Math.floor(Math.random() * grid.length);
+      const randomCol = Math.floor(Math.random() * grid[0].length);
+      grid[randomRow][randomCol] = randomObject;
+      objectCounts.set(randomObject, 1);
+    }
+
+    // Select a random target object that actually exists in the grid
+    const availableObjects = Array.from(objectCounts.keys());
+    const targetObject = availableObjects[Math.floor(Math.random() * availableObjects.length)];
+    const count = objectCounts.get(targetObject)!;
 
     const svgImage = this.generateGridSvg(grid);
     const options = this.generateNumericOptions(count, 4);

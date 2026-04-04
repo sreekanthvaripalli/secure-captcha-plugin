@@ -119,6 +119,7 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
     return {
       sessionId,
       challenge,
+      text: text,
       type: 'text',
       difficulty,
       expiresIn: 300000, // 5 minutes default

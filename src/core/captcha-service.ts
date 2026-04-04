@@ -66,6 +66,25 @@ export class CaptchaService {
       // Generate captcha using the appropriate generator
       const response = await generator.generate(input);
 
+      // Calculate actual answer based on captcha type
+      let actualAnswer: string;
+      if (type === 'math') {
+        const mathGenerator = generator as MathCaptchaGenerator;
+        const answerValue = mathGenerator.getAnswerForExpression(response.challenge);
+        actualAnswer = answerValue.toString();
+      } else if (type === 'image' || type === 'logic') {
+        // Get correct answer directly from generator response
+        // The generator now returns correctAnswer field with 0-based index (0=A, 1=B, 2=C, 3=D)
+        const correctAnswerIndex = (response as any).correctAnswer ?? 0;
+        actualAnswer = String.fromCharCode(65 + correctAnswerIndex);
+      } else if (type === 'text') {
+        // For text captchas: use text property that is now returned in response
+        actualAnswer = (response as any).text || response.challenge;
+      } else {
+        // Fallback for unknown captcha types
+        actualAnswer = response.challenge;
+      }
+
       const metadata: SessionMetadata = {
         ip: (options.ip as string) || '127.0.0.1',
         userAgent: (options.userAgent as string) || 'Unknown',
@@ -89,7 +108,7 @@ export class CaptchaService {
         type,
         difficulty,
         challenge: response.challenge,
-        answer: await this.encryptAnswer(response.challenge), // Store encrypted challenge as answer
+        answer: await this.encryptAnswer(actualAnswer),
         createdAt: new Date(),
         expiresAt: new Date(Date.now() + this.configService.getConfig().app.sessionTimeout),
         status: 'active',
@@ -320,11 +339,47 @@ export class CaptchaService {
     return result.decryptedData;
   }
 
-  private compareAnswers(expected: string, actual: string, _type: CaptchaType): boolean {
+  private compareAnswers(expected: string, actual: string, type: CaptchaType): boolean {
     // Normalize answers for comparison
-    const normalizedExpected = expected.toLowerCase().trim();
     const normalizedActual = actual.toLowerCase().trim();
+    const normalizedExpected = expected.toLowerCase().trim();
 
-    return normalizedExpected === normalizedActual;
+    if (type === 'math') {
+      // For math, compare numeric values
+      const expectedNum = parseFloat(expected);
+      const actualNum = parseFloat(actual);
+      return !isNaN(expectedNum) && !isNaN(actualNum) && Math.abs(expectedNum - actualNum) < 0.01;
+    }
+
+    // ✅ First check: Direct exact match
+    if (normalizedExpected === normalizedActual) {
+      return true;
+    }
+
+    // ✅ Check 2: Letter options (A/B/C/D) case insensitive
+    if (/^[a-d]$/i.test(normalizedActual)) {
+      return normalizedExpected === normalizedActual;
+    }
+
+    // ✅ Check 3: Numeric option selection - standard human behavior (1=A, 2=B, 3=C, 4=D)
+    if (/^[1-4]$/.test(normalizedActual)) {
+      const userSelection = parseInt(normalizedActual);
+      const expectedLetter = String.fromCharCode(96 + userSelection); // 1 -> 'a', 2 -> 'b', etc
+      return normalizedExpected === expectedLetter;
+    }
+
+    // ✅ Check 4: Direct actual count values (for "how many X?" questions)
+    if (/^\d+$/.test(normalizedActual)) {
+      // Convert expected answer letter back to option index
+      const expectedIndex = normalizedExpected.charCodeAt(0) - 97; // 'a' = 0, 'b' = 1, ...
+      const userNumber = parseInt(normalizedActual);
+
+      // For count questions, the option value matches the actual number
+      // Option A value = 0 index number, Option B = 1, etc
+      return userNumber === expectedIndex;
+    }
+
+    // No matches
+    return false;
   }
 }
