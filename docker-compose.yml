@@ -81,6 +81,7 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus-rules.yml:/etc/prometheus/prometheus-rules.yml
       - prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -89,6 +90,7 @@ services:
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--storage.tsdb.retention.time=200h'
       - '--web.enable-lifecycle'
+      - '--rule.alertmanagers=http://alertmanager:9093/api/v1/alerts'
     networks:
       - secure-captcha-network
     healthcheck:
@@ -121,6 +123,28 @@ services:
       timeout: 10s
       retries: 3
 
+  # Alertmanager for alerting and notifications
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: secure-captcha-alertmanager
+    restart: unless-stopped
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager-data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.enable-lifecycle'
+    networks:
+      - secure-captcha-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 networks:
   secure-captcha-network:
     driver: bridge
@@ -133,4 +157,6 @@ volumes:
   prometheus-data:
     driver: local
   grafana-data:
+    driver: local
+  alertmanager-data:
     driver: local

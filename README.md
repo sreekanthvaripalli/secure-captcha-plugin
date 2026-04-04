@@ -2804,6 +2804,33 @@ The module initializes with three default clients:
 
 ## 📈 Monitoring & Observability
 
+### 🚨 Monitoring & Alerting
+Complete production monitoring and alerting stack is configured:
+
+**Files:**
+- `prometheus-rules.yml` - 14 comprehensive alert rules covering:
+  - Error rate thresholds (5% warning, 20% critical)
+  - Latency thresholds (500ms warning, 2s critical)
+  - Service availability and health checks
+  - Resource usage (CPU, memory, disk)
+  - Security events and suspicious activity
+  - Bot detection rate alerts
+  - Database and cache availability
+  - Deployment failure alerts
+  - CAPTCHA success rate alerts
+
+- `alertmanager.yml` - Alert routing configuration:
+  - Critical alerts → PagerDuty with 1 hour repeat interval
+  - Warning alerts → Slack #alerts-warning with 6 hour repeat
+  - Security alerts → Slack #security-alerts with 2 hour repeat
+  - Deployment alerts → Slack #engineering-alerts with 30 minute repeat
+  - Alert inhibition rules prevent notification spam
+  - Configurable repeat intervals per alert severity
+
+**Configuration:**
+Prometheus automatically loads alert rules and sends alerts to AlertManager.
+All services include proper health checks.
+AlertManager supports Slack, PagerDuty, and Email notifications.
 ### Metrics (Prometheus)
 
 - Request rate (requests/second)

@@ -3,10 +3,14 @@ global:
   evaluation_interval: 15s
 
 rule_files:
-  # - "first_rules.yml"
-  # - "second_rules.yml"
+  - "prometheus-rules.yml"
 
 scrape_configs:
+  # Alertmanager
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets: ['alertmanager:9093']
+
   # Prometheus self-monitoring
   - job_name: 'prometheus'
     static_configs:
