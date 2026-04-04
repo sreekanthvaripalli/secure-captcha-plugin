@@ -34,6 +34,8 @@ RUN apk update && apk upgrade && \
     apk add --no-cache \
     tini \
     curl \
+    fontconfig \
+    ttf-dejavu \
     && rm -rf /var/cache/apk/*
 
 # Create non-root user

@@ -3384,6 +3384,42 @@ ab -n 1000 -c 100 http://localhost:3000/api/v1/health
 
 ### Docker Deployment
 
+The project includes a production-ready multi-stage Dockerfile.
+
+#### Important Note for Image Rendering
+**Fonts must be installed in the container** for proper CAPTCHA image generation. Without fonts, you will see empty boxes instead of text characters.
+
+The Dockerfile already includes all required dependencies:
+```dockerfile
+# Installed for proper CAPTCHA rendering
+fontconfig
+ttf-dejavu
+```
+
+#### Build and Run
+```bash
+# Build the image
+docker build -t secure-captcha-plugin .
+
+# Run the container
+docker run -p 3000:3000 secure-captcha-plugin
+```
+
+#### Environment Variables
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3000` | Server port |
+| `NODE_ENV` | `production` | Node environment |
+| `WORKERS` | `1` | Number of cluster workers |
+
+#### Render.com Deployment
+For automatic deployment to Render, use the following settings:
+- **Build Command**: `npm install && npm run build`
+- **Start Command**: `node dist/server.js`
+- **Dockerfile Path**: `./Dockerfile`
+
+> ⚠️ **Critical**: When deploying to Render/AWS/GCP/Azure, ensure you use the provided Dockerfile. Direct deployments without Docker will have missing font issues.
+
 ```bash
 # Pull the image
 docker pull secure-captcha-plugin:latest

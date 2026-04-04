@@ -264,7 +264,7 @@ export class TextCaptchaGenerator extends BaseCaptchaGenerator {
         <text 
           x="${x}" 
           y="${y + yOffset}" 
-          font-family="Arial, sans-serif" 
+          font-family="DejaVu Sans, Arial, Liberation Sans, sans-serif"
           font-size="${fontSize}px" 
           font-weight="bold"
           fill="rgb(${color.r}, ${color.g}, ${color.b})"
