@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Captcha Live Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .captcha-container {
+            transition: all 0.3s ease;
+        }
+        .captcha-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .success-animation {
+            animation: successPulse 0.5s ease;
+        }
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <div class="container mx-auto px-4 py-12">
+        <div class="max-w-xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-10">
+                <h1 class="text-4xl font-bold text-white mb-4">🔐 Secure Captcha Plugin</h1>
+                <p class="text-white/80 text-lg">Live Integration Demo with Staging Server</p>
+                <div class="mt-4 inline-flex items-center gap-2 bg-green-500/20 text-green-200 px-4 py-2 rounded-full">
+                    <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                    Connected to: secure-captcha-plugin.onrender.com
+                </div>
+            </div>
+
+            <!-- Demo Form -->
+            <div class="bg-white rounded-2xl shadow-2xl p-8 captcha-container">
+                <form id="demoForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                        <input type="email" id="email" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                               placeholder="you@example.com" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                        <input type="text" id="fullname" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                               placeholder="John Doe" required>
+                    </div>
+
+                    <!-- CORS Warning -->
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                            <div>
+                                <h4 class="font-medium text-amber-800">⚠️ Running via <code>file://</code> protocol detected</h4>
+                                <p class="text-sm text-amber-700 mt-1">You will see CORS errors. Run this page from a local web server instead:</p>
+                                <code class="text-xs bg-amber-100 px-2 py-1 rounded mt-2 inline-block">python3 -m http.server 8080</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Captcha Widget -->
+                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-semibold text-gray-800">Human Verification</h3>
+                            <button type="button" id="refreshCaptcha" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                                Refresh Captcha
+                            </button>
+                        </div>
+
+                        <div id="captchaDisplay" class="mb-4">
+                            <div class="bg-white rounded-lg p-4 text-center min-h-[80px] flex items-center justify-center border border-gray-300">
+                                <div class="flex items-center gap-2 text-gray-500">
+                                    <svg class="w-5 h-5 spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Loading captcha...
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <input type="text" id="captchaAnswer" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                   placeholder="Enter the characters shown above" required>
+                            <input type="hidden" id="captchaToken">
+                        </div>
+                    </div>
+
+                    <!-- Status Messages -->
+                    <div id="statusMessage" class="hidden"></div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="submitBtn"
+                            class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-lg transition transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+                        <span>Submit Form</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Info Footer -->
+            <div class="mt-8 text-center text-white/60 text-sm">
+                <p>This demo connects to the staging API endpoint:<br>
+                <code class="bg-white/10 px-2 py-1 rounded">https://secure-captcha-plugin.onrender.com/api</code></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://secure-captcha-plugin.onrender.com/api/v1';
+        const CAPTCHA_TYPES = ['text', 'math', 'logic', 'image'];
+        const CAPTCHA_DIFFICULTIES = ['easy', 'medium', 'hard'];
+        let currentTypeIndex = 0;
+        let currentDifficultyIndex = 1;
+        let currentCaptchaType = 'text';
+        
+        // DOM Elements
+        const form = document.getElementById('demoForm');
+        const captchaDisplay = document.getElementById('captchaDisplay');
+        const captchaAnswer = document.getElementById('captchaAnswer');
+        const captchaToken = document.getElementById('captchaToken');
+        const refreshCaptchaBtn = document.getElementById('refreshCaptcha');
+        const submitBtn = document.getElementById('submitBtn');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // Load captcha
+        async function loadCaptcha() {
+            try {
+                captchaDisplay.innerHTML = `
+                    <div class="bg-white rounded-lg p-4 text-center min-h-[80px] flex items-center justify-center border border-gray-300">
+                        <div class="flex items-center gap-2 text-gray-500">
+                            <svg class="w-5 h-5 spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Loading captcha...
+                        </div>
+                    </div>
+                `;
+
+                // Cycle through different CAPTCHA types and difficulties on each refresh
+                const type = CAPTCHA_TYPES[currentTypeIndex % CAPTCHA_TYPES.length];
+                const difficulty = CAPTCHA_DIFFICULTIES[currentDifficultyIndex % CAPTCHA_DIFFICULTIES.length];
+                
+                currentTypeIndex++;
+                currentDifficultyIndex++;
+                currentCaptchaType = type;
+                
+                const response = await fetch(`${API_BASE}/captcha/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type, difficulty })
+                });
+
+                if (!response.ok) throw new Error('Failed to load captcha');
+                
+                const data = await response.json();
+                
+                captchaToken.value = data.data.sessionId;
+                
+                // Display captcha (image or text)
+                if (data.data.imageUrl) {
+                    captchaDisplay.innerHTML = `<img src="${data.data.imageUrl}" alt="Captcha" class="w-full rounded-lg">`;
+                } else if (data.data.challenge) {
+                    if (data.data.challenge.startsWith('data:image')) {
+                        captchaDisplay.innerHTML = `<img src="${data.data.challenge}" alt="Captcha" class="w-full rounded-lg">`;
+                    } else if (data.data.challenge.includes('[Image: data:image')) {
+                        // Extract base64 image from challenge string for image captchas
+                        const imageMatch = data.data.challenge.match(/\[Image:\s*(data:image[^\]]+)\]/);
+                        if (imageMatch) {
+                            // Split challenge into question part before image, and options part after image
+                            const [beforeImage, afterImage] = data.data.challenge.split(/\[Image:\s*data:image[^\]]+\]\s*/);
+                            const questionText = beforeImage.trim();
+                            const optionsText = afterImage.trim();
+                            
+                            // Fix image sizing - add max-width and proper scaling
+                            captchaDisplay.innerHTML = `
+                                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg p-4">
+                                    <div class="mb-3 text-center font-medium">${questionText.replace(/\n/g, '<br>')}</div>
+                             <div class="bg-white rounded-lg p-3 mb-3 overflow-x-auto" style="min-height: 80px; width: 100%;">
+                                 <div class="flex justify-center min-w-max">
+                                     <img src="${imageMatch[1]}" alt="Captcha" class="h-auto object-contain rounded" style="max-height: 140px; width: auto; min-width: 270px; padding: 4px;">
+                                 </div>
+                             </div>
+                                    <div class="text-left font-mono text-sm">
+                                        ${optionsText.replace(/\n/g, '<br>')}
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            // All other text challenges including logic captchas with newlines
+                            // Replace escaped newlines \\n and actual newlines \n
+                            const formattedText = data.data.challenge
+                                .replace(/\\n/g, '<br>')
+                                .replace(/\n/g, '<br>')
+                                .replace(/\r/g, '');
+                            
+                            captchaDisplay.innerHTML = `
+                                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg p-4 text-center font-mono text-xl whitespace-pre-line break-words">
+                                    ${formattedText}
+                                </div>
+                            `;
+                        }
+                    } else if (data.data.challenge.startsWith('data:image')) {
+                        // Direct base64 image without wrapping
+                        captchaDisplay.innerHTML = `
+                            <div class="flex justify-center items-center bg-white rounded-lg p-2 border border-gray-300">
+                                <img src="${data.data.challenge}" alt="Captcha" class="max-w-full max-h-[120px] object-contain rounded">
+                            </div>
+                        `;
+                    } else {
+                        // Normal text / math challenge
+                        captchaDisplay.innerHTML = `
+                            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg p-4 text-center font-mono text-2xl tracking-wider break-all">
+                                ${data.data.challenge}
+                            </div>
+                        `;
+                    }
+                } else if (data.data.question) {
+                    captchaDisplay.innerHTML = `
+                        <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg p-4 text-center font-mono text-2xl tracking-wider">
+                            ${data.data.question}
+                        </div>
+                    `;
+                } else if (data.data.text) {
+                    captchaDisplay.innerHTML = `
+                        <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg p-4 text-center font-mono text-3xl tracking-widest select-none">
+                            ${data.data.text}
+                        </div>
+                    `;
+                }
+
+                captchaAnswer.value = '';
+                // Update placeholder based on captcha type
+                if (type === 'image' || type === 'logic') {
+                  captchaAnswer.placeholder = 'Enter your answer (A, B, C, D or number)';
+                } else if (type === 'math') {
+                  captchaAnswer.placeholder = 'Enter the numeric answer';
+                } else {
+                  captchaAnswer.placeholder = 'Enter the characters shown above';
+                }
+                captchaAnswer.focus();
+                hideStatus();
+                
+            } catch (error) {
+                captchaDisplay.innerHTML = `
+                    <div class="bg-red-50 rounded-lg p-4 text-center text-red-600">
+                        ❌ Failed to load captcha. Click refresh to try again.
+                    </div>
+                `;
+            }
+        }
+
+        // Verify captcha
+        async function verifyCaptcha(answer, token) {
+            try {
+                const response = await fetch(`${API_BASE}/captcha/validate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        sessionId: token, 
+                        response: answer,
+                        type: currentCaptchaType
+                    })
+                });
+
+                return await response.json();
+            } catch (error) {
+                return { success: false, error: 'Network error' };
+            }
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            statusMessage.classList.remove('hidden');
+            statusMessage.className = `p-4 rounded-lg ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+            statusMessage.innerHTML = message;
+        }
+
+        function hideStatus() {
+            statusMessage.classList.add('hidden');
+        }
+
+        // Event Listeners
+        refreshCaptchaBtn.addEventListener('click', loadCaptcha);
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <svg class="w-5 h-5 spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Verifying...
+            `;
+
+            const result = await verifyCaptcha(captchaAnswer.value, captchaToken.value);
+            
+            if (result.success && result.data.valid) {
+                showStatus(`
+                    <div class="flex items-center gap-3 success-animation">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <strong>✅ Captcha Verified Successfully!</strong><br>
+                            Form would be submitted. Welcome ${document.getElementById('fullname').value}!
+                        </div>
+                    </div>
+                `, 'success');
+                
+                // Load new captcha after success
+                setTimeout(loadCaptcha, 2000);
+            } else {
+                showStatus(`
+                    <div class="flex items-center gap-3">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <strong>❌ Verification Failed</strong><br>
+                            ${result.message || 'Please try again with the new captcha.'}
+                        </div>
+                    </div>
+                `, 'error');
+                loadCaptcha();
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `
+                <span>Submit Form</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                </svg>
+            `;
+        });
+
+        // Check protocol and show/hide warning
+        if (window.location.protocol === 'file:') {
+            document.querySelector('.bg-amber-50').style.display = 'block';
+        } else {
+            document.querySelector('.bg-amber-50').style.display = 'none';
+        }
+
+        // Initial load
+        loadCaptcha();
+    </script>
+</body>
+</html>
