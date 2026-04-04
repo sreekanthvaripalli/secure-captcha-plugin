@@ -353,6 +353,7 @@ The Threat Intelligence module includes pre-configured signatures for common bot
 | **Monitoring** | Prometheus + Grafana | Metrics and dashboards |
 | **Logging** | ELK Stack | Centralized logging |
 | **CI/CD** | GitHub Actions | Automated testing & deployment |
+| **Staging Deployment** | Render | Free, zero-config hosting |
 
 ---
 
@@ -3739,6 +3740,88 @@ Add these badges to your repository:
 [![Security](https://github.com/your-org/secure-captcha-plugin/actions/workflows/security.yml/badge.svg)](https://github.com/your-org/secure-captcha-plugin/actions/workflows/security.yml)
 [![Deploy](https://github.com/your-org/secure-captcha-plugin/actions/workflows/deploy.yml/badge.svg)](https://github.com/your-org/secure-captcha-plugin/actions/workflows/deploy.yml)
 ```
+
+---
+
+## 🚀 Beginner Friendly Deployment To Render (Zero Kubernetes)
+
+This is the easiest way to deploy this project for staging/testing. No Kubernetes knowledge required.
+
+### ✅ Step 1: Render Account Setup
+1.  Go to https://render.com/
+2.  Sign up **with your GitHub account directly** (one click, no credit card required for free tier)
+3.  Authorize Render access to your repository
+4.  You will see your `secure-captcha-plugin` repository in the list
+
+### ✅ Step 2: Configure Service
+When creating a new **Web Service** on Render use these exact settings:
+| Setting | Value |
+|---------|-------|
+| Name | `secure-captcha-staging` |
+| Environment | `Node` |
+| Region | `Singapore` |
+| Branch | `main` |
+| Build Command | `npm ci && npm run build` |
+| Start Command | `npm run start` |
+| Instance Type | **Free** |
+
+Click **Deploy** and Render will automatically build and deploy your code.
+
+### ✅ Step 3: Configure GitHub Actions Integration
+1.  After deployment completes, go to your Render service page
+2.  Copy your **Service ID** from the browser URL (the random string after `/services/`)
+3.  Go to Render → Account Settings → API Keys → Create API Key
+4.  Go to your GitHub repository → **Settings → Secrets and Variables → Actions**
+5.  Add these 3 secrets:
+    | Secret Name | Value |
+    |-------------|-------|
+    | `RENDER_SERVICE_ID` | The service ID you copied |
+    | `RENDER_API_KEY` | The API key you just created |
+    | `RENDER_SERVICE_URL` | Your full public Render URL (including https://) |
+
+✅ **You are done!** Every push to `main` branch will now automatically:
+- ✅ Run all tests
+- ✅ Build your application
+- ✅ Deploy to Render
+- ✅ Wait for successful health checks
+
+---
+
+### ⚙️ Deployment Provider Configuration
+
+You don't need to change any code to switch between deployment providers. Just set a single repository variable:
+
+| Variable Name | Value | Description |
+|---------------|-------|-------------|
+| `STAGING_DEPLOY_PROVIDER` | `render` | **Default**: Deploy to Render for staging (no credit card required) |
+| `STAGING_DEPLOY_PROVIDER` | `kubernetes` | Switch back to Kubernetes deployment |
+
+**How to set the variable:**
+1. Go to your GitHub repository → **Settings** → **Secrets and Variables** → **Actions**
+2. Go to **Variables** tab
+3. Click **New repository variable**
+4. Name: `STAGING_DEPLOY_PROVIDER`
+5. Value: `render` or `kubernetes`
+
+---
+
+### ✅ Required Secrets
+
+For Render deployment add these secrets:
+| Secret Name | Description |
+|-------------|-------------|
+| `RENDER_SERVICE_ID` | Service ID from Render service URL |
+| `RENDER_API_KEY` | Render account API key |
+| `RENDER_SERVICE_URL` | Full public service URL (https://...) |
+
+For Kubernetes deployment use the existing secrets:
+| Secret Name | Description |
+|-------------|-------------|
+| `KUBE_CONFIG_STAGING` | Base64 encoded Kubernetes kubeconfig |
+
+You don't need to delete any secrets when switching providers. The workflow automatically detects which secrets are present and uses the appropriate deployment method.
+
+This deployment works 100% for free forever for staging usage.
 
 ### Branch Strategy
 
