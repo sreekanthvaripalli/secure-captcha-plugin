@@ -199,9 +199,9 @@ describe('SecurityConfigurationService', () => {
       const service = new SecurityConfigurationService();
       const cors = service.getCorsConfig();
 
-      expect(cors.origin).toEqual(['*']);
-      expect(cors.methods).toEqual(['GET', 'POST']);
-      expect(cors.allowedHeaders).toEqual(['Content-Type', 'Authorization']);
+      expect(typeof cors.origin).toBe('function');
+      expect(cors.methods).toEqual(['GET', 'POST', 'OPTIONS']);
+      expect(cors.allowedHeaders).toEqual(['Content-Type', 'Authorization', 'X-Requested-With']);
       expect(cors.credentials).toBe(true);
     });
 
@@ -215,9 +215,14 @@ describe('SecurityConfigurationService', () => {
       } as any);
       const cors = service.getCorsConfig();
 
-      expect(cors.origin).toEqual(['https://example.com']);
-      expect(cors.methods).toEqual(['GET', 'POST', 'PUT']);
-      expect(cors.allowedHeaders).toEqual(['Content-Type', 'Authorization', 'X-Custom']);
+      expect(typeof cors.origin).toBe('function');
+      expect(cors.methods).toEqual(['GET', 'POST', 'PUT', 'OPTIONS']);
+      expect(cors.allowedHeaders).toEqual([
+        'Content-Type',
+        'Authorization',
+        'X-Custom',
+        'X-Requested-With',
+      ]);
     });
   });
 

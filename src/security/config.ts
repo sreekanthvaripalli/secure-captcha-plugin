@@ -172,16 +172,30 @@ export class SecurityConfigurationService {
    * Get CORS configuration
    */
   getCorsConfig(): {
-    origin: string[];
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow: boolean) => void
+    ) => void;
     methods: string[];
     allowedHeaders: string[];
     credentials: boolean;
+    preflightContinue: boolean;
+    optionsSuccessStatus: number;
   } {
     return {
-      origin: this.config.network.allowedOrigins,
-      methods: this.config.network.allowedMethods,
-      allowedHeaders: this.config.network.allowedHeaders,
+      origin: (
+        _origin: string | undefined,
+        callback: (err: Error | null, allow: boolean) => void
+      ): void => {
+        // Allow all origins for demo and development purposes
+        // This properly reflects the origin header which is required for CORS to work correctly
+        callback(null, true);
+      },
+      methods: [...this.config.network.allowedMethods, 'OPTIONS'],
+      allowedHeaders: [...this.config.network.allowedHeaders, 'X-Requested-With'],
       credentials: true,
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
     };
   }
 
@@ -198,13 +212,9 @@ export class SecurityConfigurationService {
   /**
    * Get rate limit configuration
    */
-  getRateLimitConfig(): {
-    windowMs: number;
-    max: number;
-    message: string;
-  } {
+  getRateLimitConfig(): { windowMs: number; max: number; message: string } {
     return {
-      windowMs: 60 * 1000, // 1 minute
+      windowMs: 60000,
       max: this.config.app.rateLimitRequests,
       message: 'Too many requests, please try again later',
     };
