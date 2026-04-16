@@ -3797,11 +3797,11 @@ After adding the secrets, you can verify they're working by:
 Add these badges to your repository:
 
 ```markdown
-[![Lint](https://github.com/your-org/secure-captcha-plugin/actions/workflows/lint.yml/badge.svg)](https://github.com/your-org/secure-captcha-plugin/actions/workflows/lint.yml)
-[![Test](https://github.com/your-org/secure-captcha-plugin/actions/workflows/test.yml/badge.svg)](https://github.com/your-org/secure-captcha-plugin/actions/workflows/test.yml)
-[![Build](https://github.com/your-org/secure-captcha-plugin/actions/workflows/build.yml/badge.svg)](https://github.com/your-org/secure-captcha-plugin/actions/workflows/build.yml)
-[![Security](https://github.com/your-org/secure-captcha-plugin/actions/workflows/security.yml/badge.svg)](https://github.com/your-org/secure-captcha-plugin/actions/workflows/security.yml)
-[![Deploy](https://github.com/your-org/secure-captcha-plugin/actions/workflows/deploy.yml/badge.svg)](https://github.com/your-org/secure-captcha-plugin/actions/workflows/deploy.yml)
+[![Lint](https://github.com/sreekanthvaripalli/secure-captcha-plugin/actions/workflows/lint.yml/badge.svg)](https://github.com/sreekanthvaripalli/secure-captcha-plugin/actions/workflows/lint.yml)
+[![Test](https://github.com/sreekanthvaripalli/secure-captcha-plugin/actions/workflows/test.yml/badge.svg)](https://github.com/sreekanthvaripalli/secure-captcha-plugin/actions/workflows/test.yml)
+[![Build](https://github.com/sreekanthvaripalli/secure-captcha-plugin/actions/workflows/build.yml/badge.svg)](https://github.com/sreekanthvaripalli/secure-captcha-plugin/actions/workflows/build.yml)
+[![Security](https://github.com/sreekanthvaripalli/secure-captcha-plugin/actions/workflows/security.yml/badge.svg)](https://github.com/sreekanthvaripalli/secure-captcha-plugin/actions/workflows/security.yml)
+[![Deploy](https://github.com/sreekanthvaripalli/secure-captcha-plugin/actions/workflows/deploy.yml/badge.svg)](https://github.com/sreekanthvaripalli/secure-captcha-plugin/actions/workflows/deploy.yml)
 ```
 
 ---
@@ -4184,7 +4184,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/secure-captcha-plugin.git
+git clone https://github.com/sreekanthvaripalli/secure-captcha-plugin.git
 
 # Install dependencies
 npm install
@@ -4214,10 +4214,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Documentation**: [docs.secure-captcha-plugin.com](https://docs.secure-captcha-plugin.com)
-- **Issues**: [GitHub Issues](https://github.com/your-org/secure-captcha-plugin/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-org/secure-captcha-plugin/discussions)
-- **Security**: [Security Policy](SECURITY.md)
+- **Issues**: [GitHub Issues](https://github.com/sreekanthvaripalli/secure-captcha-plugin/issues)
 
 ---
 
