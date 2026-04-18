@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Captcha React Live Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .captcha-container {
+            transition: all 0.3s ease;
+        }
+        .captcha-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .success-animation {
+            animation: successPulse 0.5s ease;
+        }
+        @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback } = React;
+
+        const API_BASE = 'https://secure-captcha-plugin.onrender.com/api/v1';
+        const CAPTCHA_TYPES = ['text', 'math', 'logic', 'image'];
+        const CAPTCHA_DIFFICULTIES = ['easy', 'medium', 'hard'];
+
+        function App() {
+            const [formData, setFormData] = useState({ email: '', fullname: '' });
+            const [isLoading, setIsLoading] = useState(true);
+            const [captchaData, setCaptchaData] = useState(null);
+            const [answer, setAnswer] = useState('');
+            const [typeIndex, setTypeIndex] = useState(0);
+            const [difficultyIndex, setDifficultyIndex] = useState(1);
+            const [status, setStatus] = useState(null);
+            const [placeholder, setPlaceholder] = useState('Enter the characters shown above');
+            const [submitStatus, setSubmitStatus] = useState(null);
+            const [isSubmitting, setIsSubmitting] = useState(false);
+
+            const loadCaptcha = useCallback(async () => {
+                setIsLoading(true);
+                setStatus(null);
+                setSubmitStatus(null);
+                setAnswer('');
+
+                try {
+                    const type = CAPTCHA_TYPES[typeIndex % CAPTCHA_TYPES.length];
+                    const difficulty = CAPTCHA_DIFFICULTIES[difficultyIndex % CAPTCHA_DIFFICULTIES.length];
+
+                    setTypeIndex(prev => prev + 1);
+                    setDifficultyIndex(prev => prev + 1);
+
+                    if (type === 'image' || type === 'logic') {
+                        setPlaceholder('Enter your answer (A, B, C, D or number)');
+                    } else if (type === 'math') {
+                        setPlaceholder('Enter the numeric answer');
+                    } else {
+                        setPlaceholder('Enter the characters shown above');
+                    }
+
+                    const response = await fetch(`${API_BASE}/captcha/generate`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type, difficulty })
+                    });
+
+                    if (!response.ok) throw new Error('Failed to load captcha');
+                    
+                    const data = await response.json();
+                    setCaptchaData({ ...data.data, type });
+                } catch (error) {
+                    setStatus({ type: 'error', message: 'Failed to load captcha. Click refresh to try again.' });
+                } finally {
+                    setIsLoading(false);
+                }
+            }, [typeIndex, difficultyIndex]);
+
+            const verifyCaptcha = async () => {
+                if (!captchaData || !answer.trim()) return;
+
+                setIsLoading(true);
+                try {
+                    const response = await fetch(`${API_BASE}/captcha/validate`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            sessionId: captchaData.sessionId, 
+                            response: answer,
+                            type: captchaData.type,
+                        useCurrentSession: true
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success && result.data.valid) {
+                        setStatus(null);
+                        setSubmitStatus('success');
+                        setIsSubmitting(false);
+                        setTimeout(() => {
+                            setSubmitStatus(null);
+                            loadCaptcha();
+                        }, 2000);
+                    } else {
+                        setStatus({ type: 'error', message: result.message || '❌ Verification Failed. Please try again.' });
+                        setSubmitStatus(null);
+                        setIsSubmitting(false);
+                        // Don't auto reload captcha, show error first
+                    }
+                } catch (error) {
+                    setStatus({ type: 'error', message: 'Network error. Please try again.' });
+                } finally {
+                    setIsLoading(false);
+                    setAnswer('');
+                }
+            };
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setIsSubmitting(true);
+                verifyCaptcha();
+            };
+
+            const renderChallenge = () => {
+                if (!captchaData) return null;
+                const { challenge, imageUrl } = captchaData;
+
+                if (imageUrl) {
+                    return <img src={imageUrl} alt="Captcha" className="w-full rounded-lg" />;
+                }
+
+                if (challenge) {
+                    if (challenge.startsWith('data:image')) {
+                        return (
+                            <div className="flex justify-center items-center bg-white rounded-lg p-2 border border-gray-300">
+                                <img src={challenge} alt="Captcha" className="max-w-full max-h-[120px] object-contain rounded" />
+                            </div>
+                        );
+                    }
+
+                    if (challenge.includes('[Image: data:image')) {
+                        const imageMatch = challenge.match(/\[Image:\s*(data:image[^\]]+)\]/);
+                        if (imageMatch) {
+                            const [beforeImage, afterImage] = challenge.split(/\[Image:\s*data:image[^\]]+\]\s*/);
+                            const questionText = beforeImage.trim();
+                            const optionsText = afterImage.trim();
+                            
+                            return (
+                                <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg p-4">
+                                    <div className="mb-3 text-center font-medium">{questionText.replace(/\n/g, '<br>')}</div>
+                                    <div className="bg-white rounded-lg p-3 mb-3 overflow-x-auto" style={{minHeight: '80px', width: '100%'}}>
+                                        <div className="flex justify-center min-w-max">
+                                            <img src={imageMatch[1]} alt="Captcha" className="h-auto object-contain rounded" style={{maxHeight: '140px', width: 'auto', minWidth: '270px', padding: '4px'}} />
+                                        </div>
+                                    </div>
+                                    <div className="text-left font-mono text-sm whitespace-pre-line">
+                                        {optionsText}
+                                    </div>
+                                </div>
+                            );
+                        }
+                    }
+
+                    const formattedText = challenge.replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
+                    
+                    return (
+                        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg p-4 text-center font-mono text-xl whitespace-pre-line break-words" dangerouslySetInnerHTML={{__html: formattedText}} />
+                    );
+                }
+
+                return null;
+            };
+
+            useEffect(() => {
+                loadCaptcha();
+            }, []);
+
+            const isFileProtocol = window.location.protocol === 'file:';
+
+            return (
+                <div className="container mx-auto px-4 py-12">
+                    <div className="max-w-xl mx-auto">
+                        {/* Header */}
+                        <div className="text-center mb-10">
+                            <h1 className="text-4xl font-bold text-white mb-4">🔐 Secure Captcha Plugin</h1>
+                            <p className="text-white/80 text-lg">React Live Integration Demo with Staging Server</p>
+                            <div className="mt-4 inline-flex items-center gap-2 bg-green-500/20 text-green-200 px-4 py-2 rounded-full">
+                                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                                Connected to: secure-captcha-plugin.onrender.com
+                            </div>
+                        </div>
+
+                        {/* Demo Form */}
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 captcha-container">
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                                    <input 
+                                        type="email" 
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                        placeholder="you@example.com"
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                    <input 
+                                        type="text" 
+                                        value={formData.fullname}
+                                        onChange={(e) => setFormData({...formData, fullname: e.target.value})}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                        placeholder="John Doe"
+                                        required
+                                    />
+                                </div>
+
+                                {/* CORS Warning */}
+                                {isFileProtocol && (
+                                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                                        <div className="flex items-start gap-3">
+                                            <svg className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                            </svg>
+                                            <div>
+                                                <h4 className="font-medium text-amber-800">⚠️ Running via <code>file://</code> protocol detected</h4>
+                                                <p className="text-sm text-amber-700 mt-1">You will see CORS errors. Run this page from a local web server instead:</p>
+                                                <code className="text-xs bg-amber-100 px-2 py-1 rounded mt-2 inline-block">python3 -m http.server 8080</code>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Captcha Widget */}
+                                <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="font-semibold text-gray-800">Human Verification</h3>
+                                        <button 
+                                            type="button" 
+                                            onClick={loadCaptcha}
+                                            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-1"
+                                            disabled={isLoading}
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                            </svg>
+                                            Refresh Captcha
+                                        </button>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        {isLoading ? (
+                                            <div className="bg-white rounded-lg p-4 text-center min-h-[80px] flex items-center justify-center border border-gray-300">
+                                                <div className="flex items-center gap-2 text-gray-500">
+                                                    <svg className="w-5 h-5 spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Loading captcha...
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            renderChallenge()
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <input 
+                                            type="text" 
+                                            value={answer}
+                                            onChange={(e) => setAnswer(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && verifyCaptcha()}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                            placeholder={placeholder}
+                                            disabled={isLoading}
+                                        />
+                                    </div>
+
+                                    {status && (
+                                        <div className={`mt-4 p-4 rounded-lg ${status.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                            {status.message}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {submitStatus === 'success' && (
+                                    <div className="p-4 rounded-lg bg-green-100 text-green-800 success-animation">
+                                        <div className="flex items-center gap-3">
+                                            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            <div>
+                                                <strong>✅ Captcha Verified Successfully!</strong><br/>
+                                                Form would be submitted. Welcome {formData.fullname || 'User'}!
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Submit Button */}
+                                <button 
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-lg transition transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2">
+                                    <span>Submit Form</span>
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+
+                        {/* Info Footer */}
+                        <div className="mt-8 text-center text-white/60 text-sm">
+                            <p>This demo connects to the staging API endpoint:<br/>
+                            <code className="bg-white/10 px-2 py-1 rounded">https://secure-captcha-plugin.onrender.com/api</code></p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Render App
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
