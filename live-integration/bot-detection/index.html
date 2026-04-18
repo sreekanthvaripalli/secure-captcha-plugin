@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Captcha Bot Detection Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+        .scan-line {
+            background: linear-gradient(to bottom, transparent 50%, rgba(34, 197, 94, 0.1) 50%);
+            background-size: 100% 4px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            opacity: 0.3;
+            z-index: 10;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        .scan-animation {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(to right, transparent, #22c55e, transparent);
+            animation: scan 2s linear infinite;
+            box-shadow: 0 0 20px #22c55e, 0 0 40px #22c55e;
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px #ef4444; }
+            50% { box-shadow: 0 0 25px #ef4444, 0 0 50px #ef4444; }
+        }
+        .bot-detected-glow {
+            animation: glow 1s infinite;
+        }
+    </style>
+</head>
+<body class="font-mono text-gray-200">
+    <div class="container mx-auto px-4 py-12">
+        <div class="max-w-3xl mx-auto">
+            <div class="text-center mb-10">
+                <h1 class="text-4xl font-bold text-white mb-4">🤖 Bot Detection System</h1>
+                <p className="text-gray-400 text-lg">Secure Captcha Plugin - Behavioral Analysis Demo</p>
+            </div>
+
+            <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 mb-6 relative overflow-hidden">
+                <div class="scan-line"></div>
+                <div class="scan-animation"></div>
+                
+                <h2 class="text-xl font-semibold text-green-400 mb-4">✓ Real-time Bot Detection Metrics</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-600">
+                        <div class="text-sm text-gray-400 mb-1">Mouse Movement Speed</div>
+                        <div id="mouse-speed" class="text-2xl font-bold text-white">0 px/s</div>
+                        <div class="h-1 bg-gray-700 rounded mt-2">
+                            <div id="mouse-speed-bar" class="h-1 bg-green-500 rounded" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-600">
+                        <div class="text-sm text-gray-400 mb-1">Keystroke Timing Variance</div>
+                        <div id="key-variance" class="text-2xl font-bold text-white">0 ms</div>
+                        <div class="h-1 bg-gray-700 rounded mt-2">
+                            <div id="key-variance-bar" class="h-1 bg-green-500 rounded" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-4 rounded-lg border border-gray-600">
+                        <div class="text-sm text-gray-400 mb-1">Bot Probability</div>
+                        <div id="bot-probability" class="text-2xl font-bold text-green-400">0%</div>
+                        <div class="h-1 bg-gray-700 rounded mt-2">
+                            <div id="bot-probability-bar" class="h-1 bg-green-500 rounded" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3 mb-6">
+                    <div class="flex items-center gap-3">
+                        <div id="human-indicator" class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="text-green-400">✓ Human-like movement patterns detected</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div id="key-indicator" class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="text-green-400">✓ Natural typing rhythm detected</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div id="cursor-indicator" class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="text-green-400">✓ Cursor hesitation patterns normal</span>
+                    </div>
+                </div>
+
+                <div id="bot-warning" class="hidden">
+                    <div class="bg-red-900/50 border border-red-600 p-5 rounded-lg bot-detected-glow">
+                        <div class="flex items-center gap-4 mb-2">
+                            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                            <h3 class="text-xl font-bold text-red-400">⚠️ AUTOMATED BOT DETECTED</h3>
+                        </div>
+                        <p class="text-red-300">Suspicious behavior patterns identified. Additional verification required.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-2xl p-8 text-gray-800">
+                <h3 class="text-xl font-semibold mb-6">Test Form with Bot Detection</h3>
+                
+                <form id="test-form" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                        <input 
+                            type="text" 
+                            id="name"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition"
+                            placeholder="Enter your full name"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                        <input 
+                            type="email" 
+                            id="email"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition"
+                            placeholder="you@example.com"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                        <textarea 
+                            id="message"
+                            rows="4"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition resize-none"
+                            placeholder="Write a short message..."
+                            required
+                        ></textarea>
+                    </div>
+
+                    <button 
+                        type="submit"
+                        id="submit-btn"
+                        class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-lg transition"
+                    >
+                        Submit Form
+                    </button>
+                </form>
+            </div>
+
+            <div class="mt-6 bg-gray-800/50 border border-gray-700 rounded-xl p-6">
+                <h4 class="text-lg font-semibold mb-4 text-yellow-400">🔍 How to test bot detection:</h4>
+                <ul class="space-y-2 text-gray-300">
+                    <li>✅ <strong>Human:</strong> Move mouse naturally, type at normal speed with pauses</li>
+                    <li>🤖 <strong>Bot Simulation:</strong> Type extremely fast, use auto-fill, click button instantly</li>
+                    <li>⚡ Try pasting text with Ctrl+V - bot detection will trigger</li>
+                    <li>🏃 Try clicking submit button immediately after page loads</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class BotDetector {
+            constructor() {
+                this.mouseMovements = [];
+                this.keyTimings = [];
+                this.lastKeyTime = 0;
+                this.lastMousePosition = { x: 0, y: 0 };
+                this.lastMouseTime = Date.now();
+                this.pageLoadTime = Date.now();
+                this.pasteDetected = false;
+                this.botScore = 0;
+                this.init();
+            }
+
+            init() {
+                document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+                document.addEventListener('paste', () => {
+                    this.pasteDetected = true;
+                    this.botScore += 25;
+                    this.updateUI();
+                });
+                
+                document.getElementById('test-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.analyze();
+                });
+
+                setInterval(() => this.calculateMetrics(), 100);
+            }
+
+            handleMouseMove(e) {
+                const now = Date.now();
+                const dx = e.clientX - this.lastMousePosition.x;
+                const dy = e.clientY - this.lastMousePosition.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const timeDelta = now - this.lastMouseTime;
+                
+                if (timeDelta > 0) {
+                    const speed = distance / timeDelta * 1000;
+                    this.mouseMovements.push({ speed, time: now });
+                    if (this.mouseMovements.length > 50) this.mouseMovements.shift();
+                }
+
+                this.lastMousePosition = { x: e.clientX, y: e.clientY };
+                this.lastMouseTime = now;
+            }
+
+            handleKeyDown(e) {
+                const now = Date.now();
+                if (this.lastKeyTime > 0) {
+                    const delta = now - this.lastKeyTime;
+                    this.keyTimings.push(delta);
+                    if (this.keyTimings.length > 20) this.keyTimings.shift();
+                }
+                this.lastKeyTime = now;
+            }
+
+            calculateMetrics() {
+                const avgSpeed = this.mouseMovements.reduce((a, b) => a + b.speed, 0) / (this.mouseMovements.length || 1);
+                const avgVariance = this.calculateVariance(this.keyTimings);
+
+                this.updateMetric('mouse-speed', `${Math.round(avgSpeed)} px/s`, 'mouse-speed-bar', Math.min(avgSpeed / 5, 100));
+                this.updateMetric('key-variance', `${Math.round(avgVariance)} ms`, 'key-variance-bar', Math.min(avgVariance / 2, 100));
+                
+                this.calculateBotScore(avgSpeed, avgVariance);
+            }
+
+            calculateVariance(arr) {
+                if (arr.length < 2) return 0;
+                const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+                return Math.sqrt(arr.map(x => (x - mean) ** 2).reduce((a, b) => a + b, 0) / arr.length);
+            }
+
+            calculateBotScore(speed, variance) {
+                this.botScore = 0;
+                
+                if (speed > 400) this.botScore += 30;
+                if (variance < 30 && this.keyTimings.length > 5) this.botScore += 30;
+                if (this.pasteDetected) this.botScore += 25;
+                
+                const timeSinceLoad = Date.now() - this.pageLoadTime;
+                if (timeSinceLoad < 3000) this.botScore += Math.max(0, 20 - timeSinceLoad / 150);
+
+                this.updateMetric('bot-probability', `${Math.round(this.botScore)}%`, 'bot-probability-bar', this.botScore);
+                
+                const probEl = document.getElementById('bot-probability');
+                const probBar = document.getElementById('bot-probability-bar');
+                
+                if (this.botScore > 60) {
+                    probEl.className = 'text-2xl font-bold text-red-400';
+                    probBar.className = 'h-1 bg-red-500 rounded';
+                } else if (this.botScore > 30) {
+                    probEl.className = 'text-2xl font-bold text-yellow-400';
+                    probBar.className = 'h-1 bg-yellow-500 rounded';
+                } else {
+                    probEl.className = 'text-2xl font-bold text-green-400';
+                    probBar.className = 'h-1 bg-green-500 rounded';
+                }
+
+                document.getElementById('bot-warning').classList.toggle('hidden', this.botScore < 60);
+                
+                const indicators = ['human-indicator', 'key-indicator', 'cursor-indicator'];
+                indicators.forEach(id => {
+                    const el = document.getElementById(id);
+                    el.className = this.botScore < 40 ? 'w-3 h-3 rounded-full bg-green-500' : 'w-3 h-3 rounded-full bg-red-500';
+                });
+            }
+
+            updateMetric(id, text, barId, percentage) {
+                document.getElementById(id).textContent = text;
+                document.getElementById(barId).style.width = `${Math.max(0, Math.min(100, percentage))}%`;
+            }
+
+            analyze() {
+                const btn = document.getElementById('submit-btn');
+                btn.disabled = true;
+                btn.textContent = 'Analyzing behavior patterns...';
+
+                setTimeout(() => {
+                    if (this.botScore > 50) {
+                        alert('🚫 BOT DETECTED!\n\nSuspicious automated behavior patterns identified.\n\nBot Score: ' + Math.round(this.botScore) + '%\n\nCAPTCHA verification required.');
+                    } else {
+                        alert('✅ VERIFIED AS HUMAN\n\nThank you! Form submitted successfully.\n\nTrust Score: ' + Math.round(100 - this.botScore) + '%');
+                    }
+                    btn.disabled = false;
+                    btn.textContent = 'Submit Form';
+                    this.reset();
+                }, 1500);
+            }
+
+            reset() {
+                this.botScore = 0;
+                this.pasteDetected = false;
+                this.mouseMovements = [];
+                this.keyTimings = [];
+            }
+        }
+
+        window.addEventListener('load', () => {
+            new BotDetector();
+        });
+    </script>
+</body>
+</html>
